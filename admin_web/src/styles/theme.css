@@ -1,0 +1,160 @@
+/* ==========================================================================
+   Petalio Blossom – Design System: Rose Petal Theme
+   ========================================================================== */
+
+:root {
+  /* ─── Core Brand Tokens ────────────────────────────────────────── */
+  --pb-rose: #C2255C;        /* primary buttons, links, active menu item */
+  --pb-rose-hover: #A81D4E;
+  --pb-rose-bright: #E64980; /* chart highlights, focus ring */
+  --pb-rose-soft: #F4A8C4;   /* secondary chart bars, subtle accents */
+  --pb-tint: #FDE2EC;        /* hover, selected rows, pink badges */
+  --pb-blush: #FFF4F8;       /* page background */
+  --pb-plum: #3B0F2A;        /* sidebar, headings, main text */
+  --pb-plum-soft: #5A1A40;   /* sidebar hover */
+  --pb-leaf: #3E8E5A;        /* success (taken from logo leaves) */
+  --pb-leaf-tint: #E3F3E8;
+  --pb-gold: #F2B84B;        /* pending and warnings (flower centre) */
+  --pb-gold-tint: #FFF1CC;
+  --pb-danger: #B91C1C;
+  --pb-danger-tint: #FEE2E2;
+
+  /* ─── Text & Neutral Surfaces ───────────────────────────────────── */
+  --pb-text: #3B0F2A;
+  --pb-text-body: #5B4352;
+  --pb-text-muted: #8A7480;
+  --pb-border: #F1D5E0;
+  --pb-surface: #FFFFFF;
+  --pb-nav-text: #F8D7E5;
+
+  /* ─── Status Badge Text & Background Specifics ─────────────────── */
+  --pb-badge-gold-text: #7A5200;
+  --pb-badge-pink-text: #A81D4E;
+  --pb-badge-green-text: #25663E;
+  --pb-badge-red-text: #991B1B;
+  --pb-badge-grey-bg: #EFE7EB;
+  --pb-badge-grey-text: #5B4352;
+
+  /* ─── Shapes & Elevation ───────────────────────────────────────── */
+  --pb-radius-sm: 8px;
+  --pb-radius-md: 12px;
+  --pb-radius-lg: 14px;
+  --pb-radius-full: 9999px;
+  --pb-petal: 22px 4px 22px 4px;     /* signature corner on KPI cards & hero visual */
+  --pb-petal-sm: 14px 3px 14px 3px;  /* signature corner for primary button */
+  --pb-shadow: 0 6px 20px rgba(194, 37, 92, 0.08);
+
+  /* ─── Typography ───────────────────────────────────────────────── */
+  --pb-font-heading: "Fraunces", Georgia, serif;
+  --pb-font-body: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ─── Compatibility Bridge (Maps to existing component aliases) ── */
+  --font-sans: var(--pb-font-body);
+  --color-primary: var(--pb-rose);
+  --color-primary-hover: var(--pb-rose-hover);
+  --color-primary-light: var(--pb-rose-bright);
+  --color-deep-plum: var(--pb-plum);
+  --color-deep-plum-dark: var(--pb-plum);
+  --color-dusty-rose: var(--pb-rose-soft);
+  --color-dusty-rose-light: var(--pb-tint);
+  --color-lavender-pink: var(--pb-tint);
+  --color-lavender-pink-subtle: var(--pb-blush);
+  --color-warm-ivory: var(--pb-blush);
+  --color-white: var(--pb-surface);
+  --color-charcoal: var(--pb-text);
+  --color-text-primary: var(--pb-text);
+  --color-text-secondary: var(--pb-text-body);
+  --color-text-muted: var(--pb-text-muted);
+  --color-border: var(--pb-border);
+  --color-border-subtle: var(--pb-border);
+  --color-surface-hover: var(--pb-blush);
+
+  --color-success: var(--pb-leaf);
+  --color-success-bg: var(--pb-leaf-tint);
+  --color-success-border: var(--pb-leaf-tint);
+
+  --color-warning: var(--pb-gold);
+  --color-warning-bg: var(--pb-gold-tint);
+  --color-warning-border: var(--pb-gold-tint);
+
+  --color-danger: var(--pb-danger);
+  --color-danger-bg: var(--pb-danger-tint);
+  --color-danger-border: var(--pb-danger-tint);
+
+  --color-info: var(--pb-rose-bright);
+  --color-info-bg: var(--pb-tint);
+  --color-info-border: var(--pb-border);
+
+  --radius-xs: 6px;
+  --radius-sm: var(--pb-radius-sm);
+  --radius-md: var(--pb-radius-md);
+  --radius-lg: var(--pb-radius-md);
+  --radius-xl: 16px;
+  --radius-full: var(--pb-radius-full);
+
+  --shadow-xs: var(--pb-shadow);
+  --shadow-sm: var(--pb-shadow);
+  --shadow-md: var(--pb-shadow);
+  --shadow-lg: var(--pb-shadow);
+  --shadow-focus: 0 0 0 3px var(--pb-tint);
+
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--pb-font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  background-color: var(--pb-blush);
+  color: var(--pb-text-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Rules */
+h1, h2, h3, .page-title-group h1, .section-title, .hero-heading, .landing-cta-title {
+  font-family: var(--pb-font-heading);
+  font-weight: 500;
+  color: var(--pb-text);
+  letter-spacing: -0.01em;
+}
+
+/* Visible Keyboard Focus */
+*:focus-visible {
+  outline: 2px solid var(--pb-rose-bright) !important;
+  outline-offset: 2px !important;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: var(--pb-blush);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--pb-border);
+  border-radius: var(--pb-radius-sm);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pb-rose-soft);
+}

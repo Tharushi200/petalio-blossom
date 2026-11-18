@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+admin_web/node_modules/
+backend/node_modules/
+
+# Build output
+admin_web/dist/
+admin_web/.vite/
+
+# Python
+ml_service/__pycache__/
+ml_service/**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+ml_service/venv/
+ml_service/.venv/
+
+# ML Models (large binary files)
+ml_service/models/*.pkl
+ml_service/models/*.joblib
+
+# Environment variables (sensitive)
+.env
+backend/.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
