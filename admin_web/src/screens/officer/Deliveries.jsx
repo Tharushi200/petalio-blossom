@@ -9,69 +9,44 @@ import {
   Plus,
   Search,
   X,
-  ThermometerSnowflake,
-  Calendar
+  Calendar,
+  Phone
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
 import Button from '../../components/common/Button';
 
-// ─── Clean Deliveries Dataset ─────────────────────────────────────────────────
+// ─── Deliveries Dataset Aligned with Database Schema ─────────────────────────
+// DB Columns: delivery_id, delivery_code, order_id, officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status
 const INITIAL_DELIVERIES = [
   {
-    id: 'DEL-104',
-    orderId: 'ORD-8841',
-    van: 'Van #PB-04 (Chilled 4°C)',
-    driver: 'Kamal Bandara',
-    phone: '+94 77 123 4567',
-    route: 'Nuwara Eliya ➔ Colombo Expressway',
-    destination: 'The Kingsbury Hotel, Colombo 01',
-    departureTime: '06:30 AM',
-    estimatedArrival: '10:30 AM',
-    stems: 600,
-    status: 'IN_TRANSIT',
-    temperature: '4.2°C'
-  },
-  {
-    id: 'DEL-103',
-    orderId: 'ORD-8840',
-    van: 'Van #PB-02 (Insulated)',
-    driver: 'Sunil Fonseka',
-    phone: '+94 71 876 5432',
-    route: 'Welimada Depot ➔ Rajagiriya',
-    destination: 'Lassana Petals Studio, Rajagiriya',
-    departureTime: '07:00 AM',
-    estimatedArrival: '11:15 AM',
-    stems: 450,
-    status: 'IN_TRANSIT',
-    temperature: '5.1°C'
+    id: 'DEL-101',
+    orderCode: 'ORD-1001',
+    vehicleNumber: 'Van #PB-01',
+    driverName: 'Kamal Bandara',
+    driverPhone: '+94 77 123 4567',
+    destinationAddress: 'The Kingsbury Hotel, Colombo 01',
+    deliveryDate: '2026-11-20',
+    status: 'SCHEDULED'
   },
   {
     id: 'DEL-102',
-    orderId: 'ORD-8839',
-    van: 'Van #PB-01 (Express Chilled)',
-    driver: 'Dinesh Silva',
-    phone: '+94 76 999 8877',
-    route: 'Hakgala Hub ➔ Galle Face',
-    destination: 'Shangri-La Hotel, Colombo 02',
-    departureTime: '05:45 AM',
-    estimatedArrival: '09:45 AM',
-    stems: 250,
-    status: 'DELIVERED',
-    temperature: '3.8°C'
+    orderCode: 'ORD-1003',
+    vehicleNumber: 'Van #PB-04',
+    driverName: 'Sunil Fonseka',
+    driverPhone: '+94 71 876 5432',
+    destinationAddress: 'The Kingsbury Hotel, Colombo 01',
+    deliveryDate: '2026-11-19',
+    status: 'IN_TRANSIT'
   },
   {
-    id: 'DEL-101',
-    orderId: 'ORD-8837',
-    van: 'Van #PB-03 (Insulated)',
-    driver: 'Anura Kumara',
-    phone: '+94 77 444 3322',
-    route: 'Bandarawela ➔ Kollupitiya',
-    destination: 'Galle Face Hotel Ballroom',
-    departureTime: '08:00 AM',
-    estimatedArrival: '12:30 PM',
-    stems: 300,
-    status: 'SCHEDULED',
-    temperature: '4.0°C'
+    id: 'DEL-103',
+    orderCode: 'ORD-1004',
+    vehicleNumber: 'Van #PB-02',
+    driverName: 'Dinesh Silva',
+    driverPhone: '+94 76 999 8877',
+    destinationAddress: 'Shangri-La Hotel, Colombo 02',
+    deliveryDate: '2026-11-18',
+    status: 'DELIVERED'
   }
 ];
 
@@ -84,15 +59,12 @@ export default function Deliveries() {
   // New Delivery Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newForm, setNewForm] = useState({
-    orderId: 'ORD-8842',
-    van: 'Van #PB-04 (Chilled 4°C)',
-    driver: 'Kamal Bandara',
-    phone: '+94 77 123 4567',
-    route: 'Nuwara Eliya ➔ Colombo',
-    destination: 'Cinnamon Grand Hotel, Colombo 03',
-    departureTime: '07:00 AM',
-    estimatedArrival: '11:00 AM',
-    stems: 300
+    orderCode: 'ORD-1002',
+    vehicleNumber: 'Van #PB-01',
+    driverName: 'Kamal Bandara',
+    driverPhone: '+94 77 123 4567',
+    destinationAddress: 'Colombo 03',
+    deliveryDate: new Date().toISOString().split('T')[0]
   });
 
   const showToast = (msg) => {
@@ -104,7 +76,7 @@ export default function Deliveries() {
   const totalTrips = deliveries.length;
   const inTransitCount = deliveries.filter((d) => d.status === 'IN_TRANSIT').length;
   const completedCount = deliveries.filter((d) => d.status === 'DELIVERED').length;
-  const totalStemsMoved = deliveries.reduce((acc, d) => acc + d.stems, 0);
+  const scheduledCount = deliveries.filter((d) => d.status === 'SCHEDULED').length;
 
   // ── Filter & Search ─────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -115,9 +87,10 @@ export default function Deliveries() {
       list = list.filter(
         (d) =>
           d.id.toLowerCase().includes(q) ||
-          d.driver.toLowerCase().includes(q) ||
-          d.destination.toLowerCase().includes(q) ||
-          d.route.toLowerCase().includes(q)
+          d.orderCode.toLowerCase().includes(q) ||
+          d.driverName.toLowerCase().includes(q) ||
+          d.destinationAddress.toLowerCase().includes(q) ||
+          d.vehicleNumber.toLowerCase().includes(q)
       );
     }
 
@@ -143,9 +116,7 @@ export default function Deliveries() {
     const item = {
       id: newId,
       ...newForm,
-      stems: parseInt(newForm.stems) || 200,
-      status: 'SCHEDULED',
-      temperature: '4.0°C'
+      status: 'SCHEDULED'
     };
 
     setDeliveries([item, ...deliveries]);
@@ -182,8 +153,8 @@ export default function Deliveries() {
 
       {/* ── Page Header ─────────────────────────────────────────── */}
       <PageHeader
-        title="Deliveries & Cold Logistics"
-        subtitle="Schedule and track insulated van routes from highland flower farms to Colombo"
+        title="Deliveries & Dispatch"
+        subtitle="Manage and track order dispatches and delivery status"
         actions={
           <Button variant="primary" size="sm" onClick={() => setShowAddModal(true)}>
             <Plus size={15} /> Schedule Delivery
@@ -226,8 +197,39 @@ export default function Deliveries() {
             <Truck size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Total Scheduled Trips</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Total Deliveries</div>
             <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--pb-plum)' }}>{totalTrips}</div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: 'var(--pb-surface)',
+            padding: '1.1rem 1.25rem',
+            borderRadius: '12px',
+            border: '1px solid var(--pb-border)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}
+        >
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '10px',
+              background: '#FEF3C7',
+              color: '#B45309',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Clock size={22} />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Scheduled</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#B45309' }}>{scheduledCount}</div>
           </div>
         </div>
 
@@ -254,11 +256,11 @@ export default function Deliveries() {
               justifyContent: 'center'
             }}
           >
-            <Clock size={22} />
+            <Package size={22} />
           </div>
           <div>
             <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Active in Transit</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563EB' }}>{inTransitCount} Vans</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563EB' }}>{inTransitCount}</div>
           </div>
         </div>
 
@@ -288,39 +290,8 @@ export default function Deliveries() {
             <CheckCircle2 size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Delivered Successfully</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#15803D' }}>{completedCount} Trips</div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: 'var(--pb-surface)',
-            padding: '1.1rem 1.25rem',
-            borderRadius: '12px',
-            border: '1px solid var(--pb-border)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
-          }}
-        >
-          <div
-            style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '10px',
-              background: '#FDF2F8',
-              color: '#DB2777',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <Package size={22} />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Total Stems Dispatched</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--pb-plum)' }}>{totalStemsMoved.toLocaleString()}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Delivered</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#15803D' }}>{completedCount}</div>
           </div>
         </div>
       </div>
@@ -344,7 +315,7 @@ export default function Deliveries() {
           <Search size={16} color="var(--pb-text-muted)" />
           <input
             type="text"
-            placeholder="Search driver, route, destination..."
+            placeholder="Search driver, vehicle, address..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '100%', color: 'var(--pb-plum)' }}
@@ -380,11 +351,12 @@ export default function Deliveries() {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
           <thead>
             <tr style={{ background: 'var(--pb-blush)', borderBottom: '1px solid var(--pb-border)', color: 'var(--pb-plum)' }}>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Delivery Trip</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Vehicle & Driver</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Route & Destination</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Cargo & Temp</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Departure & ETA</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Delivery Code</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Order Code</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Vehicle</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Driver Details</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Destination Address</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Delivery Date</th>
               <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Status</th>
               <th style={{ padding: '0.85rem 1rem', fontWeight: 800, textAlign: 'right' }}>Actions</th>
             </tr>
@@ -402,29 +374,27 @@ export default function Deliveries() {
                 <tr key={del.id} style={{ borderBottom: '1px solid var(--pb-border)' }}>
                   <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: 'var(--pb-plum)' }}>
                     {del.id}
-                    <div style={{ fontSize: '0.72rem', color: 'var(--pb-text-muted)' }}>Order: {del.orderId}</div>
+                  </td>
+
+                  <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: 'var(--pb-rose)' }}>
+                    {del.orderCode}
+                  </td>
+
+                  <td style={{ padding: '0.85rem 1rem', color: 'var(--pb-text-body)' }}>
+                    {del.vehicleNumber}
                   </td>
 
                   <td style={{ padding: '0.85rem 1rem' }}>
-                    <div style={{ fontWeight: 800, color: 'var(--pb-plum)' }}>{del.driver}</div>
-                    <div style={{ fontSize: '0.74rem', color: 'var(--pb-text-muted)' }}>{del.van}</div>
+                    <div style={{ fontWeight: 800, color: 'var(--pb-plum)' }}>{del.driverName}</div>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--pb-text-muted)' }}>📞 {del.driverPhone}</div>
                   </td>
 
-                  <td style={{ padding: '0.85rem 1rem' }}>
-                    <div style={{ fontWeight: 700, color: 'var(--pb-text-body)' }}>{del.destination}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--pb-text-muted)' }}>🛣️ {del.route}</div>
+                  <td style={{ padding: '0.85rem 1rem', color: 'var(--pb-text-body)' }}>
+                    📍 {del.destinationAddress}
                   </td>
 
-                  <td style={{ padding: '0.85rem 1rem' }}>
-                    <div style={{ fontWeight: 800, color: 'var(--pb-rose)' }}>{del.stems} stems</div>
-                    <div style={{ fontSize: '0.72rem', color: '#0284C7', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <ThermometerSnowflake size={12} /> {del.temperature}
-                    </div>
-                  </td>
-
-                  <td style={{ padding: '0.85rem 1rem', fontSize: '0.8rem', color: 'var(--pb-text-body)' }}>
-                    <div>Dep: {del.departureTime}</div>
-                    <div style={{ color: 'var(--pb-text-muted)' }}>ETA: {del.estimatedArrival}</div>
+                  <td style={{ padding: '0.85rem 1rem', fontSize: '0.82rem', color: 'var(--pb-text-body)' }}>
+                    📅 {del.deliveryDate}
                   </td>
 
                   <td style={{ padding: '0.85rem 1rem' }}>
@@ -453,7 +423,7 @@ export default function Deliveries() {
                       </button>
                     ) : (
                       <span style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>
-                        {del.status === 'DELIVERED' ? '✓ Completed' : 'Waiting Dispatch'}
+                        {del.status === 'DELIVERED' ? '✓ Completed' : 'Pending Transit'}
                       </span>
                     )}
                   </td>
@@ -496,7 +466,7 @@ export default function Deliveries() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Truck size={22} color="var(--pb-rose)" />
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--pb-plum)', margin: 0 }}>
-                  Schedule Delivery Trip
+                  Schedule Delivery
                 </h3>
               </div>
               <button
@@ -511,14 +481,14 @@ export default function Deliveries() {
             <form onSubmit={handleCreateDelivery} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                  Destination & Client *
+                  Order Code *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Cinnamon Grand Hotel, Colombo 03"
-                  value={newForm.destination}
-                  onChange={(e) => setNewForm({ ...newForm, destination: e.target.value })}
+                  placeholder="e.g. ORD-1002"
+                  value={newForm.orderCode}
+                  onChange={(e) => setNewForm({ ...newForm, orderCode: e.target.value })}
                   style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                 />
               </div>
@@ -526,28 +496,27 @@ export default function Deliveries() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Vehicle *
-                  </label>
-                  <select
-                    value={newForm.van}
-                    onChange={(e) => setNewForm({ ...newForm, van: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  >
-                    <option value="Van #PB-04 (Chilled 4°C)">Van #PB-04 (Chilled)</option>
-                    <option value="Van #PB-02 (Insulated)">Van #PB-02 (Insulated)</option>
-                    <option value="Van #PB-01 (Express)">Van #PB-01 (Express)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Driver *
+                    Vehicle Number *
                   </label>
                   <input
                     type="text"
                     required
-                    value={newForm.driver}
-                    onChange={(e) => setNewForm({ ...newForm, driver: e.target.value })}
+                    placeholder="Van #PB-01"
+                    value={newForm.vehicleNumber}
+                    onChange={(e) => setNewForm({ ...newForm, vehicleNumber: e.target.value })}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
+                    Delivery Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={newForm.deliveryDate}
+                    onChange={(e) => setNewForm({ ...newForm, deliveryDate: e.target.value })}
                     style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                   />
                 </div>
@@ -556,30 +525,45 @@ export default function Deliveries() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Total Stems *
+                    Driver Name *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    min="10"
-                    value={newForm.stems}
-                    onChange={(e) => setNewForm({ ...newForm, stems: e.target.value })}
+                    placeholder="Kamal Bandara"
+                    value={newForm.driverName}
+                    onChange={(e) => setNewForm({ ...newForm, driverName: e.target.value })}
                     style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                   />
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Departure Time *
+                    Driver Phone *
                   </label>
                   <input
                     type="text"
-                    placeholder="07:00 AM"
-                    value={newForm.departureTime}
-                    onChange={(e) => setNewForm({ ...newForm, departureTime: e.target.value })}
+                    required
+                    placeholder="+94 77 123 4567"
+                    value={newForm.driverPhone}
+                    onChange={(e) => setNewForm({ ...newForm, driverPhone: e.target.value })}
                     style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                   />
                 </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
+                  Destination Address *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 48 Janadhipathi Mawatha, Colombo 01"
+                  value={newForm.destinationAddress}
+                  onChange={(e) => setNewForm({ ...newForm, destinationAddress: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                />
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
@@ -587,7 +571,7 @@ export default function Deliveries() {
                   Cancel
                 </Button>
                 <Button variant="primary" size="sm" type="submit" style={{ flex: 1 }}>
-                  Schedule Trip
+                  Schedule Delivery
                 </Button>
               </div>
             </form>
