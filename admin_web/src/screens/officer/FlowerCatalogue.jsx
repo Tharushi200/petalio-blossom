@@ -26,67 +26,83 @@ import Button from '../../components/common/Button';
 const INITIAL_FLOWERS = [
   {
     id: 'F001',
-    name: 'Red Naomi Rose',
+    name: 'Rose',
     category: 'Rose',
     unitPrice: 350,
     color: 'Red',
-    grade: 'A+',
     stock: 185,
     reorderLevel: 50,
-    vaseLife: '12 days',
-    image: '/rose.jpg', // 👈 Change Rose image here
-    description: 'Highland long-stem luxury red roses from Nuwara Eliya misty hills. High demand for weddings & Valentine.'
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb_tvdU2RR7rFV9ocrmcpiq_vWvZi4YghL6L5H_Tw6p39WwvwkUaxhyow&s=10',
+    colorImages: {
+      Red: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb_tvdU2RR7rFV9ocrmcpiq_vWvZi4YghL6L5H_Tw6p39WwvwkUaxhyow&s=10',
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9WplrCjweskxgoi8O7DP--3rRenFdyHiNgbqI1wSKV1PrLDtdW5w2xaM&s=10',
+      Yellow: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfuWNvNc0Dna8j1PQVqLW2ergG9Mg9igFr-KvfDUKU4tnYJ42p4DfFD4Kj&s=10',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF8PFDR5srBBId2__xrwx7X0LGBkfiMttenTFZIq6xD9MnOnPu-pzPYFE&s=10'
+    },
+    description: 'Highland long-stem luxury roses from Nuwara Eliya misty hills. High demand for weddings & Valentine.'
   },
   {
     id: 'F002',
-    name: 'Dendrobium Orchid',
+    name: 'Orchid',
     category: 'Orchid',
     unitPrice: 420,
     color: 'White',
-    grade: 'A+',
     stock: 95,
     reorderLevel: 40,
-    vaseLife: '21 days',
-    image: '/orchid.jpg', // 👈 Change Orchid image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA1OMi69MtnnAVjiMaBEUBZrljQ5k8eszw6kwKcteJlecE0t9UgnR0uBvD&s=10',
+    colorImages: {
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA1OMi69MtnnAVjiMaBEUBZrljQ5k8eszw6kwKcteJlecE0t9UgnR0uBvD&s=10',
+      Purple: 'https://georgewood.com/cdn/shop/products/rouge-0000.jpg?v=1772724232',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtr6jvL_B3Z9b4KtQkVHIib7kru_nlPn3UNaRZ6gpB7J0wB56XvyWeeSU&s=10'
+    },
     description: 'Exotic tropical shaded orchids grown in Welimada. Long-life sprays for luxury corporate lobbies.'
   },
   {
     id: 'F003',
-    name: 'Casablanca White Lily',
+    name: 'Lily',
     category: 'Lily',
     unitPrice: 830,
     color: 'White',
-    grade: 'A+',
     stock: 60,
     reorderLevel: 40,
-    vaseLife: '10 days',
-    image: '/lily.jpg', // 👈 Change Lily image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsybGsp0VZnLWS3RLEba1KLQDJaPKo9zFVH9xpdeXvBJMBplAIgqJngoQ&s=10',
+    colorImages: {
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsybGsp0VZnLWS3RLEba1KLQDJaPKo9zFVH9xpdeXvBJMBplAIgqJngoQ&s=10',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQw1LlpVG8v3iKwdHx5X4nHwgZjrlo-rZmOxfDpdGhSdhpK980mi1uII74&s=10',
+      Yellow: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTOPH384Y96czcSsc-4VYnZptTBGJmjicGBfbSpAIS5WLPP-ZE5OqoXKLc&s=10'
+    },
     description: 'Fragrant Oriental white lilies cultivated in Ambewela alpine fields. Ideal for hotel banquets.'
   },
   {
     id: 'F004',
-    name: 'Standard Pink Carnation',
+    name: 'Carnation',
     category: 'Carnation',
     unitPrice: 300,
     color: 'Red',
-    grade: 'A',
     stock: 220,
     reorderLevel: 60,
-    vaseLife: '14 days',
-    image: '/carnation.jpg', // 👈 Change Carnation image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOL2BukndIVjerxnQBffIvDAzSxiNyW196fPWjdzMYO2uOFHZwbhWy2f1m&s=10',
+    colorImages: {
+      Red: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOL2BukndIVjerxnQBffIvDAzSxiNyW196fPWjdzMYO2uOFHZwbhWy2f1m&s=10',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFYzTClxcqq1AGTwQkgvxuHcbsm2uomlC_bwKfvLZIIx5bxPlbQR4Ba5xW&s=10',
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLX0whgrBLGqL26TNILAQ3C8MYw6aUN3yXHEg5JKucIfwx6Nys8mg8bcNi&s=10'
+    },
     description: 'Ruffled petal highland carnations from Hakgala. Very resilient cut flower.'
   },
   {
     id: 'F005',
-    name: 'Golden Chrysanthemum',
+    name: 'Chrysanthemum',
     category: 'Chrysanthemum',
     unitPrice: 240,
     color: 'White',
-    grade: 'B',
     stock: 140,
     reorderLevel: 50,
-    vaseLife: '12 days',
-    image: '/chrysanthemum.jpg', // 👈 Change Chrysanthemum image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlAxqqHuoF68upnZFu2PPk8x6ZvJCXoiFJ7xTEUc2YXREasfiD8D8LLxLW&s=10',
+    colorImages: {
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlAxqqHuoF68upnZFu2PPk8x6ZvJCXoiFJ7xTEUc2YXREasfiD8D8LLxLW&s=10',
+      Yellow: 'https://www.rigasziedi.lv/files/products/images/big/dzeltenas_krizantemas-3.jpg',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9uIAsfhK3MaHDQ0HsXPfEXXDffNQbSSLjz6kxDU9saStu8nZrNOY__2KX&s=10'
+    },
     description: 'Bright festival blooms popular for Vesak, temple ceremonies, and cultural events.'
   },
   {
@@ -95,11 +111,9 @@ const INITIAL_FLOWERS = [
     category: 'Gerbera',
     unitPrice: 200,
     color: 'Red',
-    grade: 'B',
     stock: 45, // low stock alert
     reorderLevel: 50,
-    vaseLife: '9 days',
-    image: '/daisies.jpg', // 👈 Change Gerbera image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10',
     description: 'Vibrant large cut gerberas from Bandarawela. Bright commercial filler for boutique floral arrangements.'
   },
   {
@@ -108,11 +122,9 @@ const INITIAL_FLOWERS = [
     category: 'Lisianthus',
     unitPrice: 510,
     color: 'White',
-    grade: 'A',
     stock: 130,
     reorderLevel: 50,
-    vaseLife: '14 days',
-    image: '/lisianthus.jpg', // 👈 Change Lisianthus image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4wl-OmkBCXuQ0UEvSwByBgPAEO_Z7ejGCre1PJtqqaX_MEatY9qNqfwo&s=10',
     description: 'Double-petaled eustoma grandiflorum with extended vase life. High demand for modern wedding styling.'
   },
   {
@@ -121,11 +133,9 @@ const INITIAL_FLOWERS = [
     category: 'Lavender',
     unitPrice: 975,
     color: 'Purple',
-    grade: 'A',
     stock: 160,
     reorderLevel: 50,
-    vaseLife: '18 days',
-    image: '/sea_lavenders.jpg', // 👈 Change Lavender image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-nzRRZzeoX2c4HXFB6JFZ0vwWPIPzMUpiCUYYVEigXZULRzJLSWak-jbb&s=10',
     description: 'Everlasting aromatic lavender with papery violet florets. Retains color and fragrance when dried.'
   },
   {
@@ -134,11 +144,9 @@ const INITIAL_FLOWERS = [
     category: "Baby's Breath",
     unitPrice: 1500,
     color: 'White',
-    grade: 'A',
     stock: 250,
     reorderLevel: 70,
-    vaseLife: '10 days',
-    image: '/baby_breath.jpg', // 👈 Change Baby's Breath image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKIkjS2xPZj96SP_2idOSlVs98i-v3dyRggjNFySSzbCoQfSDxWm8lmgGu&s=10',
     description: "Delicate clouds of tiny white flowers (Gypsophila). Essential wedding bouquet filler."
   },
   {
@@ -147,11 +155,9 @@ const INITIAL_FLOWERS = [
     category: 'Sunflower',
     unitPrice: 270,
     color: 'Yellow',
-    grade: 'A',
     stock: 90,
     reorderLevel: 30,
-    vaseLife: '10 days',
-    image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?auto=format&fit=crop&w=600&q=80', // 👈 Change Sunflower image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvZYqnWOFk3qQGCBg9vWpXyBVS5nOQoN9Y1vc8jc0BMI--BieVhlvRgvbt&s=10',
     description: 'Golden yellow cut sunflowers harvested from Pedro Highlands. Cheerful decorative stems.'
   },
   {
@@ -160,11 +166,9 @@ const INITIAL_FLOWERS = [
     category: 'Tulip',
     unitPrice: 710,
     color: 'Red',
-    grade: 'A+',
     stock: 75,
     reorderLevel: 35,
-    vaseLife: '8 days',
-    image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?auto=format&fit=crop&w=600&q=80', // 👈 Change Tulip image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKRzETOSu44v07ceKy8SB1A37lzrbn1vsbpxrS6RUm8LxdNRw7qYuergow&s=10',
     description: 'Imported Grade-A elegant Dutch tulips for luxury VIP dining tables and bridal parties.'
   },
   {
@@ -173,11 +177,9 @@ const INITIAL_FLOWERS = [
     category: 'Hydrangea',
     unitPrice: 1000,
     color: 'White',
-    grade: 'A+',
     stock: 50,
     reorderLevel: 25,
-    vaseLife: '9 days',
-    image: 'https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=600&q=80', // 👈 Change Hydrangea image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRehG9NIkBW-Mi9U3Tf7l3VBrODUtdc8mu-iqQdMoKAwHu1DUnTsCh0Wm4&s=10',
     description: 'Massive lush round floral heads grown in Hakgala temperate climate. Premium event showpiece.'
   },
   {
@@ -186,11 +188,9 @@ const INITIAL_FLOWERS = [
     category: 'Peony',
     unitPrice: 1760,
     color: 'Pink',
-    grade: 'A+',
     stock: 35,
     reorderLevel: 20,
-    vaseLife: '7 days',
-    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80', // 👈 Change Peony image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK284b9Wj96yHD-8a1dMkU9RVF7yKBsBiXnX52GSBu_s_bcYkM-qDlKHXy&s=10',
     description: 'Full opulent blooms in soft blush and coral. The pinnacle luxury flower for high-end wedding arches.'
   },
   {
@@ -199,11 +199,9 @@ const INITIAL_FLOWERS = [
     category: 'Freesia',
     unitPrice: 420,
     color: 'White',
-    grade: 'A',
     stock: 80,
     reorderLevel: 35,
-    vaseLife: '12 days',
-    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80', // 👈 Change Freesia image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrRmutoRtCK1O1ZG34UTNwDecCprzyEemTzmNL2doI8Wk3f2h-Gw5yf10Q&s=10',
     description: 'Sweetly scented funnel-shaped flowers popular in bridal bouquets and perfumed arrangements.'
   },
   {
@@ -212,11 +210,9 @@ const INITIAL_FLOWERS = [
     category: 'Bird of Paradise',
     unitPrice: 800,
     color: 'Orange',
-    grade: 'A+',
     stock: 65,
     reorderLevel: 30,
-    vaseLife: '16 days',
-    image: 'https://images.unsplash.com/photo-1508615070457-7baeba4003ab?auto=format&fit=crop&w=600&q=80', // 👈 Change Bird of Paradise image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRlgOeGnEHAFtrnItaMWudRItsdmYgbRd7qAy9bpPp2jikU8n_I4y5IZM&s=10',
     description: 'Stately exotic crane flower with vivid orange and blue plumage. Architectural focal bloom.'
   },
   {
@@ -225,11 +221,9 @@ const INITIAL_FLOWERS = [
     category: 'Ranunculus',
     unitPrice: 995,
     color: 'Orange',
-    grade: 'A',
     stock: 55,
     reorderLevel: 25,
-    vaseLife: '11 days',
-    image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=600&q=80', // 👈 Change Ranunculus image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGJxZf8HeJkEIjdPYpUCJJ3SKEnQfWmHNTWqIDpHcRaUxWDMgzJMIyQSc&s=10',
     description: 'Layered papery petals resembling tiny roses. Favorite among boutique florists in Colombo.'
   },
   {
@@ -238,11 +232,9 @@ const INITIAL_FLOWERS = [
     category: 'Tuberose',
     unitPrice: 265,
     color: 'White',
-    grade: 'A',
     stock: 120,
     reorderLevel: 45,
-    vaseLife: '10 days',
-    image: 'https://images.unsplash.com/photo-1533616688419-b7a585564566?auto=format&fit=crop&w=600&q=80', // 👈 Change Tuberose image here
+    image: 'https://www.dutchgrown.com/cdn/shop/articles/Tuberose_789x_crop_center.jpg?v=1671195538',
     description: 'Intensely fragrant white floral spikes used extensively for garlands and evening banquets.'
   },
   {
@@ -251,11 +243,9 @@ const INITIAL_FLOWERS = [
     category: 'Eucalyptus',
     unitPrice: 250,
     color: 'Green',
-    grade: 'A',
     stock: 175,
     reorderLevel: 50,
-    vaseLife: '20 days',
-    image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=600&q=80', // 👈 Change Eucalyptus image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiDQYrVEtnLKPOpvCTVq0uC3laB5YpDyul0vb9q9nHBPjOCZwJPd8zyM3y&s=10',
     description: 'Aromatic silver-green rounded foliage. Indispensable filler greenery for contemporary floral styling.'
   },
   {
@@ -264,11 +254,9 @@ const INITIAL_FLOWERS = [
     category: 'Alstroemeria',
     unitPrice: 280,
     color: 'Pink',
-    grade: 'A',
     stock: 140,
     reorderLevel: 45,
-    vaseLife: '15 days',
-    image: 'https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=600&q=80', // 👈 Change Alstroemeria image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKwKVN94UCsBokXKaWZ5aKjcgG8mYR8zOehmCmlIsWHTrUxd6Efkwje9Q&s=10',
     description: 'Lily of the Incas with multiple miniature blooms per stem. Long vase life with striped throat petals.'
   }
 ];
@@ -293,8 +281,246 @@ const CATEGORIES = [
   'Ranunculus',
   'Tuberose',
   'Eucalyptus',
-  'Alstroemeria'
+  'Alstroemeria',
+  'Other'
 ];
+
+// ─── Color palette map for flower dots ────────────────────────────────────────
+const FLOWER_COLOR_HEX = {
+  Red: '#E11D48',
+  White: '#F8FAFC',
+  Yellow: '#FBBF24',
+  Pink: '#F472B6',
+  Purple: '#A855F7',
+  Orange: '#FB923C',
+  Green: '#4ADE80',
+  Blue: '#38BDF8',
+  Crimson: '#BE123C'
+};
+
+// ─── Single Flower Card with Interactive Color Selector ───────────────────────
+function FlowerCard({ flower, onEdit, onDelete }) {
+  const [activeColor, setActiveColor] = useState(flower.color || 'Default');
+  const isLow = flower.stock <= flower.reorderLevel;
+
+  // Determine which image to show based on selected color
+  const displayedImage =
+    (flower.colorImages && flower.colorImages[activeColor]) ||
+    flower.image ||
+    '/rose.jpg';
+
+  const availableColors = flower.colorImages
+    ? Object.keys(flower.colorImages)
+    : [flower.color || 'Default'];
+
+  return (
+    <div
+      style={{
+        background: 'var(--pb-surface)',
+        borderRadius: '14px',
+        border: isLow ? '1.5px solid #FCA5A5' : '1px solid var(--pb-border)',
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+      }}
+    >
+      {/* Flower Image with Badges */}
+      <div style={{ position: 'relative', width: '100%', height: '175px', overflow: 'hidden' }}>
+        <img
+          src={displayedImage}
+          alt={`${flower.name} (${activeColor})`}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.2s ease' }}
+          onError={(e) => {
+            e.target.src = '/rose.jpg';
+          }}
+        />
+
+        {/* ID Tag */}
+        <span
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            background: 'rgba(0,0,0,0.65)',
+            color: '#fff',
+            fontSize: '0.68rem',
+            fontWeight: 700,
+            padding: '2px 7px',
+            borderRadius: '5px'
+          }}
+        >
+          {flower.id}
+        </span>
+
+        {/* Stock Status Badge */}
+        <span
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            background: isLow ? '#FEE2E2' : '#DCFCE7',
+            color: isLow ? '#DC2626' : '#15803D',
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            padding: '3px 8px',
+            borderRadius: '6px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+          }}
+        >
+          {isLow ? '⚠️ Low Stock' : '✓ In Stock'}
+        </span>
+
+        {/* Category Pill */}
+        <span
+          style={{
+            position: 'absolute',
+            bottom: '10px',
+            left: '10px',
+            background: 'rgba(255,255,255,0.92)',
+            color: 'var(--pb-plum)',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            padding: '2px 8px',
+            borderRadius: '12px'
+          }}
+        >
+          {flower.category}
+        </span>
+      </div>
+
+      {/* Card Body */}
+      <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--pb-plum)', margin: 0 }}>
+            {flower.name}
+          </h3>
+        </div>
+
+        {/* Color Switcher Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0.3rem 0 0.75rem 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '0.74rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Color:</span>
+            {availableColors.map((clr) => {
+              const bg = FLOWER_COLOR_HEX[clr] || '#CBD5E1';
+              const isSelected = activeColor === clr;
+              return (
+                <button
+                  key={clr}
+                  type="button"
+                  title={`${clr} variety - Click to preview`}
+                  onClick={() => setActiveColor(clr)}
+                  style={{
+                    width: isSelected ? '18px' : '15px',
+                    height: isSelected ? '18px' : '15px',
+                    borderRadius: '50%',
+                    background: bg,
+                    border: isSelected ? '2px solid var(--pb-rose)' : '1px solid rgba(0,0,0,0.2)',
+                    cursor: 'pointer',
+                    boxShadow: isSelected ? '0 0 0 2px rgba(225,29,72,0.25)' : 'none',
+                    padding: 0,
+                    transition: 'all 0.15s ease'
+                  }}
+                />
+              );
+            })}
+            <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--pb-plum)', marginLeft: '2px' }}>
+              {activeColor}
+            </span>
+          </div>
+
+          <span style={{ fontSize: '0.74rem', color: 'var(--pb-text-muted)' }}>
+            Category: <strong style={{ color: 'var(--pb-plum)' }}>{flower.category}</strong>
+          </span>
+        </div>
+
+        {/* Price & Stock Stats */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: 'var(--pb-blush)',
+            padding: '0.65rem 0.85rem',
+            borderRadius: '8px',
+            marginBottom: '0.75rem'
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--pb-text-muted)' }}>Wholesale Price</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--pb-rose)' }}>
+              Rs. {flower.unitPrice} <span style={{ fontSize: '0.7rem', fontWeight: 500 }}>/ stem</span>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--pb-text-muted)' }}>Inventory Stock</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: isLow ? '#DC2626' : '#15803D' }}>
+              {flower.stock} <span style={{ fontSize: '0.7rem', fontWeight: 500 }}>stems</span>
+            </div>
+          </div>
+        </div>
+
+        <p
+          style={{
+            fontSize: '0.76rem',
+            color: 'var(--pb-text-body)',
+            lineHeight: 1.4,
+            margin: '0 0 1rem 0',
+            flex: 1
+          }}
+        >
+          {flower.description}
+        </p>
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--pb-border)' }}>
+          <button
+            type="button"
+            onClick={() => onEdit(flower)}
+            style={{
+              flex: 1,
+              padding: '0.5rem',
+              background: 'var(--pb-blush)',
+              border: '1px solid var(--pb-border)',
+              borderRadius: '8px',
+              fontSize: '0.76rem',
+              fontWeight: 700,
+              color: 'var(--pb-plum)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
+          >
+            <Edit2 size={13} /> Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(flower)}
+            style={{
+              padding: '0.5rem 0.75rem',
+              background: '#FEE2E2',
+              border: '1px solid #FECACA',
+              borderRadius: '8px',
+              fontSize: '0.76rem',
+              fontWeight: 700,
+              color: '#DC2626',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function FlowerCatalogue() {
   const [flowers, setFlowers] = useState(INITIAL_FLOWERS);
@@ -307,15 +533,15 @@ export default function FlowerCatalogue() {
   // Form Modal States (Add & Edit)
   const [modalMode, setModalMode] = useState(null); // 'add' | 'edit' | null
   const [activeFlower, setActiveFlower] = useState(null);
+  const [customCategory, setCustomCategory] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     category: 'Rose',
     unitPrice: 300,
     color: '',
-    grade: 'A+',
     stock: 100,
     reorderLevel: 50,
-    vaseLife: '12 days',
+    image: '',
     description: ''
   });
 
@@ -346,11 +572,9 @@ export default function FlowerCatalogue() {
               category: dbF.category || 'Rose',
               unitPrice: parseFloat(dbF.unit_price) || 300,
               color: dbF.color || fallback?.color || 'Multicolor',
-              grade: fallback?.grade || 'A',
               stock: dbF.inventory?.stock_quantity ?? fallback?.stock ?? 100,
               reorderLevel: dbF.inventory?.reorder_level ?? fallback?.reorderLevel ?? 50,
-              vaseLife: fallback?.vaseLife || '12 days',
-              image: fallback?.image || '/rose.jpg',
+              image: dbF.image_url || fallback?.image || '/rose.jpg',
               description: dbF.description || fallback?.description || 'Fresh highland cut flower.'
             };
           });
@@ -413,15 +637,15 @@ export default function FlowerCatalogue() {
   // ── Open Add Modal ──────────────────────────────────────────────────────────
   const handleOpenAdd = () => {
     setActiveFlower(null);
+    setCustomCategory('');
     setFormData({
       name: '',
       category: 'Rose',
       unitPrice: 320,
       color: 'Crimson Red',
-      grade: 'A+',
       stock: 150,
       reorderLevel: 50,
-      vaseLife: '12 days',
+      image: '',
       description: 'Cultivated in Nuwara Eliya highland greenhouses.'
     });
     setModalMode('add');
@@ -430,15 +654,16 @@ export default function FlowerCatalogue() {
   // ── Open Edit Modal ─────────────────────────────────────────────────────────
   const handleOpenEdit = (flower) => {
     setActiveFlower(flower);
+    const isStandardCat = CATEGORIES.includes(flower.category);
+    setCustomCategory(isStandardCat ? '' : flower.category);
     setFormData({
       name: flower.name,
-      category: flower.category,
+      category: isStandardCat ? flower.category : 'Other',
       unitPrice: flower.unitPrice,
       color: flower.color,
-      grade: flower.grade || 'A+',
       stock: flower.stock,
       reorderLevel: flower.reorderLevel,
-      vaseLife: flower.vaseLife || '12 days',
+      image: flower.image || '',
       description: flower.description || ''
     });
     setModalMode('edit');
@@ -449,7 +674,13 @@ export default function FlowerCatalogue() {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
-    // Pick photo by category
+    // Resolve final category: if 'Other', use customCategory input
+    const finalCategory =
+      formData.category === 'Other' && customCategory.trim()
+        ? customCategory.trim()
+        : formData.category;
+
+    // Pick photo by user input or category fallback
     const catImages = {
       Rose: '/rose.jpg',
       Orchid: '/orchid.jpg',
@@ -462,20 +693,18 @@ export default function FlowerCatalogue() {
       'Sea Lavenders': '/sea_lavenders.jpg',
       'Baby Breath': '/baby_breath.jpg'
     };
-    const chosenImage = catImages[formData.category] || '/rose.jpg';
+    const chosenImage = formData.image.trim() ? formData.image.trim() : (catImages[formData.category] || '/rose.jpg');
 
     if (modalMode === 'add') {
       const newId = `F${String(flowers.length + 1).padStart(3, '0')}`;
       const newFlower = {
         id: newId,
         name: formData.name,
-        category: formData.category,
+        category: finalCategory,
         unitPrice: parseFloat(formData.unitPrice) || 300,
         color: formData.color,
-        grade: formData.grade,
         stock: parseInt(formData.stock) || 100,
         reorderLevel: parseInt(formData.reorderLevel) || 50,
-        vaseLife: formData.vaseLife,
         image: chosenImage,
         description: formData.description
       };
@@ -483,9 +712,10 @@ export default function FlowerCatalogue() {
       try {
         const res = await api.createFlower({
           name: formData.name,
-          category: formData.category,
+          category: finalCategory,
           unit_price: parseFloat(formData.unitPrice) || 300,
           color: formData.color,
+          image_url: chosenImage,
           description: formData.description,
           initial_stock: parseInt(formData.stock) || 100,
           reorder_level: parseInt(formData.reorderLevel) || 50
@@ -505,13 +735,12 @@ export default function FlowerCatalogue() {
     } else if (modalMode === 'edit' && activeFlower) {
       const updatedFields = {
         name: formData.name,
-        category: formData.category,
+        category: finalCategory,
         unitPrice: parseFloat(formData.unitPrice) || activeFlower.unitPrice,
         color: formData.color,
-        grade: formData.grade,
         stock: parseInt(formData.stock) || activeFlower.stock,
         reorderLevel: parseInt(formData.reorderLevel) || activeFlower.reorderLevel,
-        vaseLife: formData.vaseLife,
+        image: formData.image.trim() || activeFlower.image,
         description: formData.description
       };
 
@@ -519,9 +748,10 @@ export default function FlowerCatalogue() {
         if (activeFlower.flower_id) {
           await api.updateFlower(activeFlower.flower_id, {
             name: formData.name,
-            category: formData.category,
+            category: finalCategory,
             unit_price: parseFloat(formData.unitPrice),
             color: formData.color,
+            image_url: formData.image.trim() || activeFlower.image,
             description: formData.description
           });
           showToast(`🌸 "${formData.name}" updated in MySQL Database!`);
@@ -591,35 +821,9 @@ export default function FlowerCatalogue() {
         title="Flower Catalogue"
         subtitle="Manage commercial flower varieties, stock levels, and wholesale prices"
         actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span
-              style={{
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                padding: '0.35rem 0.75rem',
-                borderRadius: '20px',
-                background: isLiveConnected ? '#DCFCE7' : '#FEF3C7',
-                color: isLiveConnected ? '#15803D' : '#B45309',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <span
-                style={{
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  background: isLiveConnected ? '#22C55E' : '#F59E0B'
-                }}
-              />
-              {isLiveConnected ? 'MySQL Connected' : 'Offline Mode'}
-            </span>
-
-            <Button variant="primary" size="sm" onClick={handleOpenAdd}>
-              <Plus size={15} /> Add New Flower
-            </Button>
-          </div>
+          <Button variant="primary" size="sm" onClick={handleOpenAdd}>
+            <Plus size={15} /> Add New Flower
+          </Button>
         }
       />
 
@@ -887,185 +1091,14 @@ export default function FlowerCatalogue() {
             gap: '1.25rem'
           }}
         >
-          {filteredFlowers.map((flower) => {
-            const isLow = flower.stock <= flower.reorderLevel;
-            return (
-              <div
-                key={flower.id}
-                style={{
-                  background: 'var(--pb-surface)',
-                  borderRadius: '14px',
-                  border: isLow ? '1.5px solid #FCA5A5' : '1px solid var(--pb-border)',
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-                }}
-              >
-                {/* Flower Image with Badges */}
-                <div style={{ position: 'relative', width: '100%', height: '170px', overflow: 'hidden' }}>
-                  <img
-                    src={flower.image}
-                    alt={flower.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => {
-                      e.target.src = '/rose.jpg';
-                    }}
-                  />
-
-                  {/* ID Tag */}
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '10px',
-                      background: 'rgba(0,0,0,0.65)',
-                      color: '#fff',
-                      fontSize: '0.68rem',
-                      fontWeight: 700,
-                      padding: '2px 7px',
-                      borderRadius: '5px'
-                    }}
-                  >
-                    {flower.id}
-                  </span>
-
-                  {/* Stock Status Badge */}
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      background: isLow ? '#FEE2E2' : '#DCFCE7',
-                      color: isLow ? '#DC2626' : '#15803D',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      padding: '3px 8px',
-                      borderRadius: '6px',
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-                    }}
-                  >
-                    {isLow ? '⚠️ Low Stock' : '✓ In Stock'}
-                  </span>
-
-                  {/* Category Pill */}
-                  <span
-                    style={{
-                      position: 'absolute',
-                      bottom: '10px',
-                      left: '10px',
-                      background: 'rgba(255,255,255,0.92)',
-                      color: 'var(--pb-plum)',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '12px'
-                    }}
-                  >
-                    {flower.category}
-                  </span>
-                </div>
-
-                {/* Card Body */}
-                <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--pb-plum)', margin: 0 }}>
-                      {flower.name}
-                    </h3>
-                  </div>
-
-                  <div style={{ fontSize: '0.76rem', color: 'var(--pb-text-muted)', marginBottom: '0.75rem' }}>
-                    Color: <strong style={{ color: 'var(--pb-plum)' }}>{flower.color}</strong> · Grade: <strong style={{ color: 'var(--pb-plum)' }}>{flower.grade || 'A'}</strong>
-                  </div>
-
-                  {/* Price & Stock Stats */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      background: 'var(--pb-blush)',
-                      padding: '0.65rem 0.85rem',
-                      borderRadius: '8px',
-                      marginBottom: '0.75rem'
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--pb-text-muted)' }}>Wholesale Price</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--pb-rose)' }}>
-                        Rs. {flower.unitPrice} <span style={{ fontSize: '0.7rem', fontWeight: 500 }}>/ stem</span>
-                      </div>
-                    </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--pb-text-muted)' }}>Inventory Stock</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: 800, color: isLow ? '#DC2626' : '#15803D' }}>
-                        {flower.stock} <span style={{ fontSize: '0.7rem', fontWeight: 500 }}>stems</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p
-                    style={{
-                      fontSize: '0.76rem',
-                      color: 'var(--pb-text-body)',
-                      lineHeight: 1.4,
-                      margin: '0 0 1rem 0',
-                      flex: 1
-                    }}
-                  >
-                    {flower.description}
-                  </p>
-
-                  {/* Action Buttons */}
-                  <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--pb-border)' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(flower)}
-                      style={{
-                        flex: 1,
-                        padding: '0.5rem',
-                        background: 'var(--pb-blush)',
-                        border: '1px solid var(--pb-border)',
-                        borderRadius: '8px',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        color: 'var(--pb-plum)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '5px'
-                      }}
-                    >
-                      <Edit2 size={13} color="var(--pb-rose)" /> Edit
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget(flower)}
-                      style={{
-                        padding: '0.5rem 0.85rem',
-                        background: '#FEE2E2',
-                        border: '1px solid #FECACA',
-                        borderRadius: '8px',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        color: '#DC2626',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px'
-                      }}
-                    >
-                      <Trash2 size={13} /> Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {filteredFlowers.map((flower) => (
+            <FlowerCard
+              key={flower.id}
+              flower={flower}
+              onEdit={handleOpenEdit}
+              onDelete={setDeleteTarget}
+            />
+          ))}
         </div>
       )}
 
@@ -1128,7 +1161,7 @@ export default function FlowerCatalogue() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: formData.category === 'Other' ? '1fr 1fr' : '1fr 1fr', gap: '0.75rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
                     Category *
@@ -1138,16 +1171,9 @@ export default function FlowerCatalogue() {
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                   >
-                    <option value="Rose">Rose</option>
-                    <option value="Orchid">Orchid</option>
-                    <option value="Lily">Lily</option>
-                    <option value="Anthurium">Anthurium</option>
-                    <option value="Carnation">Carnation</option>
-                    <option value="Chrysanthemum">Chrysanthemum</option>
-                    <option value="Daisies">Daisies</option>
-                    <option value="Lisianthus">Lisianthus</option>
-                    <option value="Sea Lavenders">Sea Lavenders</option>
-                    <option value="Baby Breath">Baby's Breath</option>
+                    {CATEGORIES.filter((c) => c !== 'All').map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -1167,35 +1193,34 @@ export default function FlowerCatalogue() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              {formData.category === 'Other' && (
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Petal Color *
+                    Specify Custom Category Name *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Deep Red"
-                    value={formData.color}
-                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                    placeholder="e.g. Jasmine, Marigold, Lotus"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1.5px solid var(--pb-rose)', fontSize: '0.85rem' }}
                   />
                 </div>
+              )}
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Quality Grade
-                  </label>
-                  <select
-                    value={formData.grade}
-                    onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  >
-                    <option value="A+">Grade A+ (Export)</option>
-                    <option value="A">Grade A (Premium)</option>
-                    <option value="B">Grade B (Standard)</option>
-                  </select>
-                </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
+                  Petal Color *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Deep Red, Pure White, Pastel Pink"
+                  value={formData.color}
+                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
@@ -1224,6 +1249,30 @@ export default function FlowerCatalogue() {
                     style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                   />
                 </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
+                  Image URL / Link (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. https://images.unsplash.com/... or /rose.jpg"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                />
+                {formData.image && (
+                  <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img
+                      src={formData.image}
+                      alt="Preview"
+                      style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--pb-border)' }}
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <span style={{ fontSize: '0.72rem', color: 'var(--pb-text-muted)' }}>Image preview</span>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1333,3 +1382,4 @@ export default function FlowerCatalogue() {
     </div>
   );
 }
+
