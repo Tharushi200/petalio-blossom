@@ -240,24 +240,14 @@ export default function OfficerDashboard() {
         title="Dashboard"
         subtitle="Track customer orders, flower stock levels, and deliveries."
         actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Button
-              variant="outline"
-              size="sm"
-              icon={Download}
-              onClick={() => showToast('Stock report exported to CSV.')}
-            >
-              Export
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              icon={Plus}
-              onClick={() => showToast('New flower order initialized.')}
-            >
-              Order Flowers
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Plus}
+            onClick={() => showToast('New flower order initialized.')}
+          >
+            Order Flowers
+          </Button>
         }
       />
 

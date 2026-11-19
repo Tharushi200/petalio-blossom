@@ -386,31 +386,6 @@ export default function Inventory() {
       <PageHeader
         title="Inventory Management"
         subtitle="Track floriculture warehouse stock levels, reorder thresholds, and valuations"
-        actions={
-          <span
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              padding: '0.35rem 0.75rem',
-              borderRadius: '20px',
-              background: isLiveConnected ? '#DCFCE7' : '#FEF3C7',
-              color: isLiveConnected ? '#15803D' : '#B45309',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px'
-            }}
-          >
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: isLiveConnected ? '#22C55E' : '#F59E0B'
-              }}
-            />
-            {isLiveConnected ? 'MySQL Connected' : 'Offline Mode'}
-          </span>
-        }
       />
 
       {/* ── 4 Simple KPI Cards ──────────────────────────────────── */}

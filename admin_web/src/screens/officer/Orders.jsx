@@ -337,35 +337,9 @@ export default function Orders() {
         title="Commercial Orders"
         subtitle="Manage wholesale cut-flower orders for hotels, florists, and wedding banquet events"
         actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span
-              style={{
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                padding: '0.35rem 0.75rem',
-                borderRadius: '20px',
-                background: isLiveConnected ? '#DCFCE7' : '#FEF3C7',
-                color: isLiveConnected ? '#15803D' : '#B45309',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <span
-                style={{
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  background: isLiveConnected ? '#22C55E' : '#F59E0B'
-                }}
-              />
-              {isLiveConnected ? 'MySQL Connected' : 'Offline Mode'}
-            </span>
-
-            <Button variant="primary" size="sm" onClick={() => setShowCreateModal(true)}>
-              <Plus size={15} /> Add New Order
-            </Button>
-          </div>
+          <Button variant="primary" size="sm" onClick={() => setShowCreateModal(true)}>
+            <Plus size={15} /> Add New Order
+          </Button>
         }
       />
 
