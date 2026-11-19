@@ -4,97 +4,79 @@ import {
   Search,
   Plus,
   Phone,
-  Mail,
   MapPin,
   CheckCircle2,
   Package,
   X,
   Building,
-  Award,
-  Flower2
+  ShieldCheck
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
 import Button from '../../components/common/Button';
 
-// ─── Clean Highland Farm Suppliers Dataset ────────────────────────────────────
+// ─── Suppliers Dataset Aligned with Database Schema ──────────────────────────
+// DB Columns: supplier_id, supplier_name, contact_number, city, address, monthly_capacity, is_approved
 const INITIAL_SUPPLIERS = [
   {
     id: 'SUP-101',
-    name: 'Hakgala Highland Flora',
-    owner: 'Manjula Rajapaksha',
-    region: 'Nuwara Eliya',
-    phone: '+94 71 234 5678',
-    email: 'manjula@hakgalaflora.lk',
-    flowers: 'Red Naomi Rose, Casablanca Lily',
+    supplierName: 'Hakgala Highland Flora',
+    contactNumber: '+94 71 234 5678',
+    city: 'Nuwara Eliya',
+    address: 'Passara Road, Hakgala',
     monthlyCapacity: 22000,
-    status: 'ACTIVE',
-    rating: 4.9
+    isApproved: true
   },
   {
     id: 'SUP-102',
-    name: 'Welimada Mist Orchid Nurseries',
-    owner: 'Gamini Disanayake',
-    region: 'Welimada',
-    phone: '+94 77 345 6789',
-    email: 'orchids@welimadaflora.lk',
-    flowers: 'Dendrobium Orchid, Tropical Anthurium',
+    supplierName: 'Welimada Mist Orchid Nurseries',
+    contactNumber: '+94 77 345 6789',
+    city: 'Welimada',
+    address: 'Green Valley, Boralanda',
     monthlyCapacity: 14000,
-    status: 'ACTIVE',
-    rating: 4.8
+    isApproved: false
   },
   {
     id: 'SUP-103',
-    name: 'Ella Mountain Carnations',
-    owner: 'Sunethra Wickramasinghe',
-    region: 'Ella / Bandarawela',
-    phone: '+94 76 456 7890',
-    email: 'sunethra@ellaflowers.lk',
-    flowers: 'Standard Pink Carnation, Gerbera Daisies',
+    supplierName: 'Ella Mountain Carnations',
+    contactNumber: '+94 76 456 7890',
+    city: 'Bandarawela',
+    address: 'Ravana Heights, Ella',
     monthlyCapacity: 18000,
-    status: 'ACTIVE',
-    rating: 4.7
+    isApproved: true
   },
   {
     id: 'SUP-104',
-    name: 'Bandarawela Cut Flower Estate',
-    owner: 'Priyantha Bandara',
-    region: 'Bandarawela',
-    phone: '+94 71 567 8901',
-    email: 'priyantha@bandarawelaflora.lk',
-    flowers: 'Golden Chrysanthemum, Lavender Lisianthus',
+    supplierName: 'Bandarawela Cut Flower Estate',
+    contactNumber: '+94 71 567 8901',
+    city: 'Bandarawela',
+    address: 'Poonagala Road, Bandarawela',
     monthlyCapacity: 16000,
-    status: 'ACTIVE',
-    rating: 4.9
+    isApproved: true
   },
   {
     id: 'SUP-105',
-    name: 'Horton Plains Valley Statice & Fillers',
-    owner: 'Ranjith Silva',
-    region: 'Ohiya / Nuwara Eliya',
-    phone: '+94 77 678 9012',
-    email: 'ranjith@hortonflora.lk',
-    flowers: 'Blue Sea Lavender, Bridal Baby Breath',
+    supplierName: 'Horton Plains Valley Flora',
+    contactNumber: '+94 77 678 9012',
+    city: 'Nuwara Eliya',
+    address: 'Ohiya Road, Nuwara Eliya',
     monthlyCapacity: 25000,
-    status: 'ACTIVE',
-    rating: 4.8
+    isApproved: true
   }
 ];
 
 export default function Suppliers() {
   const [suppliers, setSuppliers] = useState(INITIAL_SUPPLIERS);
   const [search, setSearch] = useState('');
-  const [regionFilter, setRegionFilter] = useState('ALL');
+  const [cityFilter, setCityFilter] = useState('ALL');
   const [toastMessage, setToastMessage] = useState(null);
 
   // New Supplier Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newForm, setNewForm] = useState({
-    name: '',
-    owner: '',
-    region: 'Nuwara Eliya',
-    phone: '',
-    email: '',
-    flowers: 'Roses, Lilies',
+    supplierName: '',
+    contactNumber: '',
+    city: 'Nuwara Eliya',
+    address: '',
     monthlyCapacity: 15000
   });
 
@@ -105,8 +87,9 @@ export default function Suppliers() {
 
   // ── KPI Summary Calculations ────────────────────────────────────────────────
   const totalSuppliers = suppliers.length;
+  const approvedCount = suppliers.filter((s) => s.isApproved).length;
+  const pendingCount = suppliers.filter((s) => !s.isApproved).length;
   const totalCapacity = suppliers.reduce((acc, s) => acc + s.monthlyCapacity, 0);
-  const avgRating = (suppliers.reduce((acc, s) => acc + s.rating, 0) / suppliers.length).toFixed(1);
 
   // ── Search & Filter ─────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -116,37 +99,36 @@ export default function Suppliers() {
       const q = search.toLowerCase();
       list = list.filter(
         (s) =>
-          s.name.toLowerCase().includes(q) ||
-          s.owner.toLowerCase().includes(q) ||
-          s.region.toLowerCase().includes(q) ||
-          s.flowers.toLowerCase().includes(q)
+          s.supplierName.toLowerCase().includes(q) ||
+          s.city.toLowerCase().includes(q) ||
+          s.address.toLowerCase().includes(q) ||
+          s.contactNumber.includes(q)
       );
     }
 
-    if (regionFilter !== 'ALL') {
-      list = list.filter((s) => s.region.toLowerCase().includes(regionFilter.toLowerCase()));
+    if (cityFilter !== 'ALL') {
+      list = list.filter((s) => s.city.toLowerCase() === cityFilter.toLowerCase());
     }
 
     return list;
-  }, [suppliers, search, regionFilter]);
+  }, [suppliers, search, cityFilter]);
 
   // ── Submit New Supplier ─────────────────────────────────────────────────────
   const handleAddSupplier = (e) => {
     e.preventDefault();
-    if (!newForm.name.trim()) return;
+    if (!newForm.supplierName.trim()) return;
 
     const newId = `SUP-${100 + suppliers.length + 1}`;
     const item = {
       id: newId,
       ...newForm,
       monthlyCapacity: parseInt(newForm.monthlyCapacity) || 12000,
-      status: 'ACTIVE',
-      rating: 4.8
+      isApproved: true
     };
 
     setSuppliers([item, ...suppliers]);
     setShowAddModal(false);
-    showToast(`🌸 Supplier "${newForm.name}" registered successfully!`);
+    showToast(`🌸 Supplier "${newForm.supplierName}" registered successfully!`);
   };
 
   return (
@@ -178,8 +160,8 @@ export default function Suppliers() {
 
       {/* ── Page Header ─────────────────────────────────────────── */}
       <PageHeader
-        title="Highland Flower Suppliers"
-        subtitle="Manage contracted cut-flower farm growers from Nuwara Eliya, Welimada, and Bandarawela"
+        title="Flower Farm Suppliers"
+        subtitle="Manage contracted farm growers from Nuwara Eliya, Welimada, and Bandarawela"
         actions={
           <Button variant="primary" size="sm" onClick={() => setShowAddModal(true)}>
             <Plus size={15} /> Register Supplier
@@ -222,7 +204,7 @@ export default function Suppliers() {
             <Users size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Contracted Farm Suppliers</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Total Farm Suppliers</div>
             <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--pb-plum)' }}>{totalSuppliers} Growers</div>
           </div>
         </div>
@@ -250,11 +232,11 @@ export default function Suppliers() {
               justifyContent: 'center'
             }}
           >
-            <Package size={22} />
+            <ShieldCheck size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Monthly Supply Capacity</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#15803D' }}>{totalCapacity.toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>stems</span></div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Approved Growers</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#15803D' }}>{approvedCount} Active</div>
           </div>
         </div>
 
@@ -281,11 +263,11 @@ export default function Suppliers() {
               justifyContent: 'center'
             }}
           >
-            <Award size={22} />
+            <Building size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Average Quality Rating</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--pb-plum)' }}>{avgRating} ★</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Pending Approval</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#B45309' }}>{pendingCount} Growers</div>
           </div>
         </div>
 
@@ -312,11 +294,11 @@ export default function Suppliers() {
               justifyContent: 'center'
             }}
           >
-            <MapPin size={22} />
+            <Package size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Cultivation Zones</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--pb-plum)' }}>3 Highland Zones</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Monthly Supply Capacity</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563EB' }}>{totalCapacity.toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>stems</span></div>
           </div>
         </div>
       </div>
@@ -340,7 +322,7 @@ export default function Suppliers() {
           <Search size={16} color="var(--pb-text-muted)" />
           <input
             type="text"
-            placeholder="Search farm name, owner, flowers..."
+            placeholder="Search supplier, city, address..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '100%', color: 'var(--pb-plum)' }}
@@ -353,19 +335,19 @@ export default function Suppliers() {
             <button
               key={reg}
               type="button"
-              onClick={() => setRegionFilter(reg)}
+              onClick={() => setCityFilter(reg)}
               style={{
                 padding: '0.4rem 0.75rem',
                 borderRadius: '8px',
-                border: regionFilter === reg ? '1.5px solid var(--pb-rose)' : '1px solid var(--pb-border)',
-                background: regionFilter === reg ? 'var(--pb-blush)' : 'var(--pb-surface)',
-                color: regionFilter === reg ? 'var(--pb-rose)' : 'var(--pb-text-body)',
+                border: cityFilter === reg ? '1.5px solid var(--pb-rose)' : '1px solid var(--pb-border)',
+                background: cityFilter === reg ? 'var(--pb-blush)' : 'var(--pb-surface)',
+                color: cityFilter === reg ? 'var(--pb-rose)' : 'var(--pb-text-body)',
                 fontSize: '0.78rem',
                 fontWeight: 700,
                 cursor: 'pointer'
               }}
             >
-              {reg === 'ALL' ? 'All Regions' : reg}
+              {reg === 'ALL' ? 'All Cities' : reg}
             </button>
           ))}
         </div>
@@ -376,12 +358,11 @@ export default function Suppliers() {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
           <thead>
             <tr style={{ background: 'var(--pb-blush)', borderBottom: '1px solid var(--pb-border)', color: 'var(--pb-plum)' }}>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Supplier & Farm</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Contact Person</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Cultivation Region</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Supplied Flower Varieties</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Monthly Stems</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Rating</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Supplier Name</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Contact Number</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>City</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Address</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Monthly Capacity</th>
               <th style={{ padding: '0.85rem 1rem', fontWeight: 800, textAlign: 'right' }}>Status</th>
             </tr>
           </thead>
@@ -389,35 +370,36 @@ export default function Suppliers() {
             {filtered.map((sup) => (
               <tr key={sup.id} style={{ borderBottom: '1px solid var(--pb-border)' }}>
                 <td style={{ padding: '0.85rem 1rem' }}>
-                  <div style={{ fontWeight: 800, color: 'var(--pb-plum)' }}>{sup.name}</div>
+                  <div style={{ fontWeight: 800, color: 'var(--pb-plum)' }}>{sup.supplierName}</div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--pb-text-muted)' }}>ID: {sup.id}</div>
                 </td>
 
                 <td style={{ padding: '0.85rem 1rem' }}>
-                  <div style={{ fontWeight: 700, color: 'var(--pb-text-body)' }}>{sup.owner}</div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--pb-text-muted)' }}>📞 {sup.phone}</div>
+                  <div style={{ fontWeight: 700, color: 'var(--pb-text-body)' }}>📞 {sup.contactNumber}</div>
                 </td>
 
                 <td style={{ padding: '0.85rem 1rem', color: 'var(--pb-plum)', fontWeight: 600 }}>
-                  📍 {sup.region}
+                  📍 {sup.city}
                 </td>
 
                 <td style={{ padding: '0.85rem 1rem', fontSize: '0.82rem', color: 'var(--pb-text-body)' }}>
-                  🌸 {sup.flowers}
+                  {sup.address}
                 </td>
 
                 <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: 'var(--pb-rose)' }}>
                   {sup.monthlyCapacity.toLocaleString()} stems
                 </td>
 
-                <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: '#D97706' }}>
-                  {sup.rating} ★
-                </td>
-
                 <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: '#DCFCE7', color: '#15803D' }}>
-                    ✓ Active Supplier
-                  </span>
+                  {sup.isApproved ? (
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: '#DCFCE7', color: '#15803D' }}>
+                      ✓ Approved
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: '#FEF3C7', color: '#B45309' }}>
+                      ⏳ Pending Approval
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -457,7 +439,7 @@ export default function Suppliers() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Building size={22} color="var(--pb-rose)" />
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--pb-plum)', margin: 0 }}>
-                  Register Flower Supplier
+                  Register Supplier
                 </h3>
               </div>
               <button
@@ -472,14 +454,14 @@ export default function Suppliers() {
             <form onSubmit={handleAddSupplier} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                  Farm / Business Name *
+                  Supplier / Farm Name *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Hakgala Flora Nursery"
-                  value={newForm.name}
-                  onChange={(e) => setNewForm({ ...newForm, name: e.target.value })}
+                  placeholder="e.g. Hakgala Highland Flora"
+                  value={newForm.supplierName}
+                  onChange={(e) => setNewForm({ ...newForm, supplierName: e.target.value })}
                   style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                 />
               </div>
@@ -487,76 +469,60 @@ export default function Suppliers() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Grower Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Manjula Rajapaksha"
-                    value={newForm.owner}
-                    onChange={(e) => setNewForm({ ...newForm, owner: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Cultivation Region *
-                  </label>
-                  <select
-                    value={newForm.region}
-                    onChange={(e) => setNewForm({ ...newForm, region: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  >
-                    <option value="Nuwara Eliya">Nuwara Eliya</option>
-                    <option value="Welimada">Welimada</option>
-                    <option value="Bandarawela">Bandarawela</option>
-                    <option value="Hakgala">Hakgala</option>
-                    <option value="Ella">Ella</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Phone Number *
+                    Contact Number *
                   </label>
                   <input
                     type="text"
                     required
                     placeholder="+94 77 123 4567"
-                    value={newForm.phone}
-                    onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })}
+                    value={newForm.contactNumber}
+                    onChange={(e) => setNewForm({ ...newForm, contactNumber: e.target.value })}
                     style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                   />
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Monthly Capacity *
+                    City *
                   </label>
-                  <input
-                    type="number"
-                    required
-                    min="1000"
-                    placeholder="15000"
-                    value={newForm.monthlyCapacity}
-                    onChange={(e) => setNewForm({ ...newForm, monthlyCapacity: e.target.value })}
+                  <select
+                    value={newForm.city}
+                    onChange={(e) => setNewForm({ ...newForm, city: e.target.value })}
                     style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  />
+                  >
+                    <option value="Nuwara Eliya">Nuwara Eliya</option>
+                    <option value="Welimada">Welimada</option>
+                    <option value="Bandarawela">Bandarawela</option>
+                    <option value="Ella">Ella</option>
+                  </select>
                 </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                  Supplied Flower Varieties *
+                  Address *
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Roses, Lilies, Carnations"
-                  value={newForm.flowers}
-                  onChange={(e) => setNewForm({ ...newForm, flowers: e.target.value })}
+                  required
+                  placeholder="e.g. Passara Road, Hakgala"
+                  value={newForm.address}
+                  onChange={(e) => setNewForm({ ...newForm, address: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
+                  Monthly Capacity (Stems) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1000"
+                  placeholder="15000"
+                  value={newForm.monthlyCapacity}
+                  onChange={(e) => setNewForm({ ...newForm, monthlyCapacity: e.target.value })}
                   style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
                 />
               </div>
@@ -566,7 +532,7 @@ export default function Suppliers() {
                   Cancel
                 </Button>
                 <Button variant="primary" size="sm" type="submit" style={{ flex: 1 }}>
-                  Register Grower
+                  Register Supplier
                 </Button>
               </div>
             </form>

@@ -47,7 +47,7 @@ const INITIAL_PENDING_GROWERS = [
     id: 'APP-201',
     farmName: 'Hakgala Mist Rose Estate',
     owner: 'Ranjith Karunaratne',
-    region: 'Nuwara Eliya',
+    city: 'Nuwara Eliya',
     primaryCrop: 'Highland Roses',
     cropEmoji: '🌹',
     capacity: '15,000 stems/mo',
@@ -57,7 +57,7 @@ const INITIAL_PENDING_GROWERS = [
     id: 'APP-202',
     farmName: 'Welimada Lily Greenhouses',
     owner: 'Chamari Gunasekara',
-    region: 'Welimada',
+    city: 'Welimada',
     primaryCrop: 'Oriental Lilies',
     cropEmoji: '🌷',
     capacity: '8,500 stems/mo',
@@ -67,7 +67,7 @@ const INITIAL_PENDING_GROWERS = [
     id: 'APP-203',
     farmName: 'Ella Shaded Orchid Blooms',
     owner: 'Dhammika Bandara',
-    region: 'Badulla / Ella',
+    city: 'Ella',
     primaryCrop: 'Dendrobium Orchids',
     cropEmoji: '🪷',
     capacity: '6,200 stems/mo',
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
       {
         id: `LOG-${Date.now()}`,
         user: 'Tharusha (Admin)',
-        action: `Approved farm partner account for ${grower.farmName} (${grower.region})`,
+        action: `Approved farm partner account for ${grower.farmName} (${grower.city})`,
         time: 'Just now',
         tag: 'Accreditation'
       },
@@ -558,7 +558,7 @@ export default function AdminDashboard() {
                       </strong>
                     </div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--pb-text-muted)', marginTop: '2px' }}>
-                      {grower.owner} · {grower.region} · {grower.capacity}
+                      {grower.owner} · {grower.city} · {grower.capacity}
                     </div>
                   </div>
 

@@ -15,24 +15,24 @@ import {
 // ── Static data ───────────────────────────────────────────────────────────────
 
 const INITIAL_PENDING = [
-  { id: 'APP-201', farm: 'Hakgala Mist Rose Estate',  owner: 'Ranjith Karunaratne', region: 'Nuwara Eliya', crop: '🌹 Red Roses',          capacity: '18,000 stems/mo', days: 3  },
-  { id: 'APP-202', farm: 'Welimada Orchid Gardens',   owner: 'Priya Senaratne',     region: 'Welimada',     crop: '🌸 Orchids',             capacity: '12,500 stems/mo', days: 5  },
-  { id: 'APP-203', farm: 'Bandarawela Lily Farm',     owner: 'Chaminda Alwis',      region: 'Bandarawela',  crop: '🌷 Asiatic Lilies',      capacity: '9,800 stems/mo',  days: 7  },
-  { id: 'APP-204', farm: 'Pussellawa Rose Hill',      owner: 'Kumari Jayasinghe',   region: 'Kandy',        crop: '🌹 White Roses',          capacity: '14,200 stems/mo', days: 8  },
-  { id: 'APP-205', farm: 'Nanu Oya Flora',            owner: 'Suresh Bandara',      region: 'Nuwara Eliya', crop: '💐 Mixed Cut Flowers',   capacity: '22,000 stems/mo', days: 10 },
-  { id: 'APP-206', farm: 'Horton Plains Nursery',     owner: 'Dilshan Perera',      region: 'Nuwara Eliya', crop: '🌺 Anthuriums',           capacity: '7,600 stems/mo',  days: 12 },
-  { id: 'APP-207', farm: 'Ragala Green House',        owner: 'Sanduni Rathnayake',  region: 'Welimada',     crop: '🌼 Chrysanthemums',       capacity: '11,400 stems/mo', days: 14 },
+  { id: 'APP-201', farm: 'Hakgala Mist Rose Estate',  owner: 'Ranjith Karunaratne', city: 'Nuwara Eliya', crop: '🌹 Red Roses',          capacity: '18,000 stems/mo', days: 3  },
+  { id: 'APP-202', farm: 'Welimada Orchid Gardens',   owner: 'Priya Senaratne',     city: 'Welimada',     crop: '🌸 Orchids',             capacity: '12,500 stems/mo', days: 5  },
+  { id: 'APP-203', farm: 'Bandarawela Lily Farm',     owner: 'Chaminda Alwis',      city: 'Bandarawela',  crop: '🌷 Asiatic Lilies',      capacity: '9,800 stems/mo',  days: 7  },
+  { id: 'APP-204', farm: 'Pussellawa Rose Hill',      owner: 'Kumari Jayasinghe',   city: 'Kandy',        crop: '🌹 White Roses',          capacity: '14,200 stems/mo', days: 8  },
+  { id: 'APP-205', farm: 'Nanu Oya Flora',            owner: 'Suresh Bandara',      city: 'Nuwara Eliya', crop: '💐 Mixed Cut Flowers',   capacity: '22,000 stems/mo', days: 10 },
+  { id: 'APP-206', farm: 'Horton Plains Nursery',     owner: 'Dilshan Perera',      city: 'Nuwara Eliya', crop: '🌺 Anthuriums',           capacity: '7,600 stems/mo',  days: 12 },
+  { id: 'APP-207', farm: 'Ragala Green House',        owner: 'Sanduni Rathnayake',  city: 'Welimada',     crop: '🌼 Chrysanthemums',       capacity: '11,400 stems/mo', days: 14 },
 ];
 
 const INITIAL_APPROVED = [
-  { id: 'APP-101', farm: 'Ceylon Rose Gardens',       owner: 'Nimal Fernando',      region: 'Kandy',        crop: '🌹 Hybrid Roses',         capacity: '25,000 stems/mo' },
-  { id: 'APP-102', farm: 'Dimbula Flower Valley',     owner: 'Anoma Wickramasinghe',region: 'Nuwara Eliya', crop: '🌷 Tulips & Lilies',      capacity: '16,500 stems/mo' },
-  { id: 'APP-103', farm: 'Ella Bloom Collective',     owner: 'Ruwan Dissanayake',   region: 'Badulla',      crop: '💐 Seasonal Bouquets',    capacity: '19,000 stems/mo' },
+  { id: 'APP-101', farm: 'Ceylon Rose Gardens',       owner: 'Nimal Fernando',      city: 'Kandy',        crop: '🌹 Hybrid Roses',         capacity: '25,000 stems/mo' },
+  { id: 'APP-102', farm: 'Dimbula Flower Valley',     owner: 'Anoma Wickramasinghe',city: 'Nuwara Eliya', crop: '🌷 Tulips & Lilies',      capacity: '16,500 stems/mo' },
+  { id: 'APP-103', farm: 'Ella Bloom Collective',     owner: 'Ruwan Dissanayake',   city: 'Badulla',      crop: '💐 Seasonal Bouquets',    capacity: '19,000 stems/mo' },
 ];
 
 const INITIAL_DECLINED = [
-  { id: 'APP-098', farm: 'Ratnapura Tropical Flora',  owner: 'Kasun Liyanage',      region: 'Ratnapura',    crop: '🌺 Heliconias',           capacity: '5,200 stems/mo'  },
-  { id: 'APP-099', farm: 'Galle Coastal Orchids',     owner: 'Thilini Mendis',      region: 'Galle',        crop: '🌸 Orchids',              capacity: '4,800 stems/mo'  },
+  { id: 'APP-098', farm: 'Ratnapura Tropical Flora',  owner: 'Kasun Liyanage',      city: 'Ratnapura',    crop: '🌺 Heliconias',           capacity: '5,200 stems/mo'  },
+  { id: 'APP-099', farm: 'Galle Coastal Orchids',     owner: 'Thilini Mendis',      city: 'Galle',        crop: '🌸 Orchids',              capacity: '4,800 stems/mo'  },
 ];
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -348,7 +348,7 @@ function PendingCard({ grower, onApprove, onDecline }) {
         </div>
         <div style={s.metaRow}>
           <MapPin size={14} color="var(--pb-rose)" />
-          <span>{grower.region}</span>
+          <span>{grower.city}</span>
         </div>
       </div>
 
@@ -396,7 +396,7 @@ function ApprovedCard({ grower }) {
         <div style={s.listCardFarm}>{grower.farm}</div>
         <div style={s.listCardMeta}>
           {grower.owner} &nbsp;·&nbsp;
-          <MapPin size={11} style={{ verticalAlign: 'middle' }} /> {grower.region} &nbsp;·&nbsp;
+          <MapPin size={11} style={{ verticalAlign: 'middle' }} /> {grower.city} &nbsp;·&nbsp;
           {grower.crop} &nbsp;·&nbsp; {grower.capacity}
         </div>
       </div>
@@ -416,7 +416,7 @@ function DeclinedCard({ grower }) {
         <div style={s.listCardFarm}>{grower.farm}</div>
         <div style={s.listCardMeta}>
           {grower.owner} &nbsp;·&nbsp;
-          <MapPin size={11} style={{ verticalAlign: 'middle' }} /> {grower.region} &nbsp;·&nbsp;
+          <MapPin size={11} style={{ verticalAlign: 'middle' }} /> {grower.city} &nbsp;·&nbsp;
           {grower.crop} &nbsp;·&nbsp; {grower.capacity}
         </div>
       </div>
