@@ -16,12 +16,20 @@ import {
 import PageHeader from '../../components/common/PageHeader';
 import Button from '../../components/common/Button';
 
+// ─── Color palette map for flower dots ────────────────────────────────────────
+const FLOWER_COLOR_HEX = {
+  Red: '#E11D48',
+  White: '#F8FAFC',
+  Yellow: '#FBBF24',
+  Pink: '#F472B6',
+  Purple: '#A855F7',
+  Orange: '#FB923C',
+  Green: '#4ADE80',
+  Blue: '#38BDF8',
+  Crimson: '#BE123C'
+};
+
 // ─── Clean Preset Inventory Items (Cohesive with Catalogue F001–F019) ─────────
-/* =========================================================================
-   💡 NOTE FOR IMAGE CUSTOMIZATION:
-   To change the image for any inventory item, edit the `image:` property below.
-   You can point to `/image_name.jpg` inside `admin_web/public/` or use an online URL.
-   ========================================================================= */
 const INITIAL_INVENTORY = [
   {
     id: 1,
@@ -29,6 +37,13 @@ const INITIAL_INVENTORY = [
     name: 'Red Naomi Rose',
     category: 'Rose',
     unitPrice: 350,
+    color: 'Red',
+    colorImages: {
+      Red: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb_tvdU2RR7rFV9ocrmcpiq_vWvZi4YghL6L5H_Tw6p39WwvwkUaxhyow&s=10',
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9WplrCjweskxgoi8O7DP--3rRenFdyHiNgbqI1wSKV1PrLDtdW5w2xaM&s=10',
+      Yellow: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfuWNvNc0Dna8j1PQVqLW2ergG9Mg9igFr-KvfDUKU4tnYJ42p4DfFD4Kj&s=10',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF8PFDR5srBBId2__xrwx7X0LGBkfiMttenTFZIq6xD9MnOnPu-pzPYFE&s=10'
+    },
     stock: 185,
     reorderLevel: 50,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb_tvdU2RR7rFV9ocrmcpiq_vWvZi4YghL6L5H_Tw6p39WwvwkUaxhyow&s=10',
@@ -40,6 +55,12 @@ const INITIAL_INVENTORY = [
     name: 'Dendrobium Orchid',
     category: 'Orchid',
     unitPrice: 420,
+    color: 'White',
+    colorImages: {
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA1OMi69MtnnAVjiMaBEUBZrljQ5k8eszw6kwKcteJlecE0t9UgnR0uBvD&s=10',
+      Purple: 'https://georgewood.com/cdn/shop/products/rouge-0000.jpg?v=1772724232',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtr6jvL_B3Z9b4KtQkVHIib7kru_nlPn3UNaRZ6gpB7J0wB56XvyWeeSU&s=10'
+    },
     stock: 95,
     reorderLevel: 40,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA1OMi69MtnnAVjiMaBEUBZrljQ5k8eszw6kwKcteJlecE0t9UgnR0uBvD&s=10',
@@ -51,6 +72,12 @@ const INITIAL_INVENTORY = [
     name: 'Casablanca White Lily',
     category: 'Lily',
     unitPrice: 830,
+    color: 'White',
+    colorImages: {
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsybGsp0VZnLWS3RLEba1KLQDJaPKo9zFVH9xpdeXvBJMBplAIgqJngoQ&s=10',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQw1LlpVG8v3iKwdHx5X4nHwgZjrlo-rZmOxfDpdGhSdhpK980mi1uII74&s=10',
+      Yellow: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTOPH384Y96czcSsc-4VYnZptTBGJmjicGBfbSpAIS5WLPP-ZE5OqoXKLc&s=10'
+    },
     stock: 60,
     reorderLevel: 40,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsybGsp0VZnLWS3RLEba1KLQDJaPKo9zFVH9xpdeXvBJMBplAIgqJngoQ&s=10',
@@ -62,6 +89,12 @@ const INITIAL_INVENTORY = [
     name: 'Standard Pink Carnation',
     category: 'Carnation',
     unitPrice: 300,
+    color: 'Red',
+    colorImages: {
+      Red: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOL2BukndIVjerxnQBffIvDAzSxiNyW196fPWjdzMYO2uOFHZwbhWy2f1m&s=10',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFYzTClxcqq1AGTwQkgvxuHcbsm2uomlC_bwKfvLZIIx5bxPlbQR4Ba5xW&s=10',
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLX0whgrBLGqL26TNILAQ3C8MYw6aUN3yXHEg5JKucIfwx6Nys8mg8bcNi&s=10'
+    },
     stock: 220,
     reorderLevel: 60,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOL2BukndIVjerxnQBffIvDAzSxiNyW196fPWjdzMYO2uOFHZwbhWy2f1m&s=10',
@@ -73,6 +106,12 @@ const INITIAL_INVENTORY = [
     name: 'Golden Chrysanthemum',
     category: 'Chrysanthemum',
     unitPrice: 240,
+    color: 'White',
+    colorImages: {
+      White: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlAxqqHuoF68upnZFu2PPk8x6ZvJCXoiFJ7xTEUc2YXREasfiD8D8LLxLW&s=10',
+      Yellow: 'https://www.rigasziedi.lv/files/products/images/big/dzeltenas_krizantemas-3.jpg',
+      Pink: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9uIAsfhK3MaHDQ0HsXPfEXXDffNQbSSLjz6kxDU9saStu8nZrNOY__2KX&s=10'
+    },
     stock: 140,
     reorderLevel: 50,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlAxqqHuoF68upnZFu2PPk8x6ZvJCXoiFJ7xTEUc2YXREasfiD8D8LLxLW&s=10',
@@ -84,6 +123,7 @@ const INITIAL_INVENTORY = [
     name: 'Sunshine Gerbera',
     category: 'Gerbera',
     unitPrice: 200,
+    color: 'Red',
     stock: 45, // Low Stock alert
     reorderLevel: 50,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10',
@@ -95,6 +135,7 @@ const INITIAL_INVENTORY = [
     name: 'Lavender Lisianthus',
     category: 'Lisianthus',
     unitPrice: 510,
+    color: 'White',
     stock: 130,
     reorderLevel: 50,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4wl-OmkBCXuQ0UEvSwByBgPAEO_Z7ejGCre1PJtqqaX_MEatY9qNqfwo&s=10',
@@ -106,6 +147,7 @@ const INITIAL_INVENTORY = [
     name: 'English Blue Lavender',
     category: 'Lavender',
     unitPrice: 975,
+    color: 'Purple',
     stock: 160,
     reorderLevel: 50,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-nzRRZzeoX2c4HXFB6JFZ0vwWPIPzMUpiCUYYVEigXZULRzJLSWak-jbb&s=10',
@@ -117,6 +159,7 @@ const INITIAL_INVENTORY = [
     name: "Bridal Baby's Breath",
     category: "Baby's Breath",
     unitPrice: 1500,
+    color: 'White',
     stock: 250,
     reorderLevel: 70,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKIkjS2xPZj96SP_2idOSlVs98i-v3dyRggjNFySSzbCoQfSDxWm8lmgGu&s=10',
@@ -128,6 +171,7 @@ const INITIAL_INVENTORY = [
     name: 'Ceylon Sunflower',
     category: 'Sunflower',
     unitPrice: 270,
+    color: 'Yellow',
     stock: 90,
     reorderLevel: 30,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvZYqnWOFk3qQGCBg9vWpXyBVS5nOQoN9Y1vc8jc0BMI--BieVhlvRgvbt&s=10',
@@ -139,6 +183,7 @@ const INITIAL_INVENTORY = [
     name: 'Dutch Garden Tulip',
     category: 'Tulip',
     unitPrice: 710,
+    color: 'Red',
     stock: 75,
     reorderLevel: 35,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKRzETOSu44v07ceKy8SB1A37lzrbn1vsbpxrS6RUm8LxdNRw7qYuergow&s=10',
@@ -150,6 +195,7 @@ const INITIAL_INVENTORY = [
     name: 'Highland Hydrangea',
     category: 'Hydrangea',
     unitPrice: 1000,
+    color: 'White',
     stock: 50,
     reorderLevel: 25,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRehG9NIkBW-Mi9U3Tf7l3VBrODUtdc8mu-iqQdMoKAwHu1DUnTsCh0Wm4&s=10',
@@ -161,6 +207,7 @@ const INITIAL_INVENTORY = [
     name: 'Royal Peony',
     category: 'Peony',
     unitPrice: 1760,
+    color: 'Pink',
     stock: 35,
     reorderLevel: 20,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK284b9Wj96yHD-8a1dMkU9RVF7yKBsBiXnX52GSBu_s_bcYkM-qDlKHXy&s=10',
@@ -172,6 +219,7 @@ const INITIAL_INVENTORY = [
     name: 'Standard Freesia',
     category: 'Freesia',
     unitPrice: 420,
+    color: 'White',
     stock: 80,
     reorderLevel: 35,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrRmutoRtCK1O1ZG34UTNwDecCprzyEemTzmNL2doI8Wk3f2h-Gw5yf10Q&s=10',
@@ -183,6 +231,7 @@ const INITIAL_INVENTORY = [
     name: 'Bird of Paradise',
     category: 'Bird of Paradise',
     unitPrice: 800,
+    color: 'Orange',
     stock: 65,
     reorderLevel: 30,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRlgOeGnEHAFtrnItaMWudRItsdmYgbRd7qAy9bpPp2jikU8n_I4y5IZM&s=10',
@@ -194,6 +243,7 @@ const INITIAL_INVENTORY = [
     name: 'Ranunculus Buttercup',
     category: 'Ranunculus',
     unitPrice: 995,
+    color: 'Orange',
     stock: 55,
     reorderLevel: 25,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGJxZf8HeJkEIjdPYpUCJJ3SKEnQfWmHNTWqIDpHcRaUxWDMgzJMIyQSc&s=10',
@@ -205,6 +255,7 @@ const INITIAL_INVENTORY = [
     name: 'Fragrant Tuberose',
     category: 'Tuberose',
     unitPrice: 265,
+    color: 'White',
     stock: 120,
     reorderLevel: 45,
     image: 'https://www.dutchgrown.com/cdn/shop/articles/Tuberose_789x_crop_center.jpg?v=1671195538',
@@ -216,6 +267,7 @@ const INITIAL_INVENTORY = [
     name: 'Baby Blue Eucalyptus',
     category: 'Eucalyptus',
     unitPrice: 250,
+    color: 'Green',
     stock: 175,
     reorderLevel: 50,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiDQYrVEtnLKPOpvCTVq0uC3laB5YpDyul0vb9q9nHBPjOCZwJPd8zyM3y&s=10',
@@ -227,6 +279,7 @@ const INITIAL_INVENTORY = [
     name: 'Peruvian Alstroemeria',
     category: 'Alstroemeria',
     unitPrice: 280,
+    color: 'Pink',
     stock: 140,
     reorderLevel: 45,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKwKVN94UCsBokXKaWZ5aKjcgG8mYR8zOehmCmlIsWHTrUxd6Efkwje9Q&s=10',
@@ -236,6 +289,7 @@ const INITIAL_INVENTORY = [
 
 export default function Inventory() {
   const [items, setItems] = useState(INITIAL_INVENTORY);
+  const [selectedColors, setSelectedColors] = useState({});
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'IN_STOCK' | 'LOW_STOCK'
@@ -662,6 +716,9 @@ export default function Inventory() {
           <tbody>
             {filteredItems.map((item) => {
               const isLow = item.stock <= item.reorderLevel;
+              const activeColor = selectedColors[item.id] || item.color || 'Default';
+              const displayImg = (item.colorImages && item.colorImages[activeColor]) || item.image;
+
               return (
                 <tr
                   key={item.id}
@@ -671,18 +728,51 @@ export default function Inventory() {
                     transition: 'background 0.15s ease'
                   }}
                 >
-                  {/* Flower Name with round thumbnail */}
+                  {/* Flower Name with round thumbnail & Interactive Color Dots */}
                   <td style={{ padding: '0.75rem 1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <img
-                        src={item.image}
-                        alt={item.name}
-                        style={{ width: '38px', height: '38px', borderRadius: '8px', objectFit: 'cover' }}
+                        src={displayImg}
+                        alt={`${item.name} (${activeColor})`}
+                        style={{ width: '42px', height: '42px', borderRadius: '8px', objectFit: 'cover', border: '1px solid var(--pb-border)', transition: 'opacity 0.2s ease' }}
                         onError={(e) => { e.target.src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb_tvdU2RR7rFV9ocrmcpiq_vWvZi4YghL6L5H_Tw6p39WwvwkUaxhyow&s=10'; }}
                       />
                       <div>
                         <div style={{ fontWeight: 800, color: 'var(--pb-plum)' }}>{item.name}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--pb-text-muted)' }}>Code: {item.code}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--pb-text-muted)' }}>Code: {item.code}</span>
+                          {item.colorImages ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px' }}>
+                              {Object.keys(item.colorImages).map((clr) => (
+                                <button
+                                  key={clr}
+                                  type="button"
+                                  title={`Switch to ${clr}`}
+                                  onClick={() => setSelectedColors((prev) => ({ ...prev, [item.id]: clr }))}
+                                  style={{
+                                    width: '13px',
+                                    height: '13px',
+                                    borderRadius: '50%',
+                                    backgroundColor: FLOWER_COLOR_HEX[clr] || '#ccc',
+                                    border: activeColor === clr ? '2px solid var(--pb-plum)' : '1px solid rgba(0,0,0,0.25)',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    boxShadow: activeColor === clr ? '0 0 0 1.5px var(--pb-rose)' : 'none',
+                                    transition: 'transform 0.15s ease'
+                                  }}
+                                />
+                              ))}
+                              <span style={{ fontSize: '0.68rem', color: 'var(--pb-rose)', fontWeight: 700 }}>
+                                {activeColor}
+                              </span>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.7rem', color: 'var(--pb-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '3px', marginLeft: '4px' }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: FLOWER_COLOR_HEX[item.color] || '#ccc', display: 'inline-block' }} />
+                              {item.color}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </td>
