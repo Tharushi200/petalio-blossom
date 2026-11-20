@@ -2,19 +2,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
-  Shield,
-  Briefcase,
   Settings,
   LogOut,
-  ChevronDown,
-  RefreshCw,
-  Sparkles
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmDialog from './ConfirmDialog';
 
 export default function UserProfileDropdown() {
-  const { user, logout, loginAsRole } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -34,16 +30,6 @@ export default function UserProfileDropdown() {
     setShowLogoutConfirm(false);
     logout();
     navigate('/login');
-  };
-
-  const handleSwitchRole = (newRole) => {
-    loginAsRole(newRole);
-    setIsOpen(false);
-    if (newRole === 'ADMIN') {
-      navigate('/admin/dashboard');
-    } else {
-      navigate('/officer/dashboard');
-    }
   };
 
   if (!user) return null;
@@ -103,60 +89,6 @@ export default function UserProfileDropdown() {
               <div style={{ fontSize: '0.74rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>
                 {user.department}
               </div>
-            </div>
-
-            <div className="dropdown-divider" />
-
-            {/* Quick Demo Role Switcher */}
-            <div style={{ padding: '0.4rem 0.85rem' }}>
-              <div
-                style={{
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  color: 'var(--color-dusty-rose)',
-                  letterSpacing: '0.06em',
-                  marginBottom: '0.35rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem'
-                }}
-              >
-                <Sparkles size={11} />
-                <span>Switch Demo Actor</span>
-              </div>
-
-              {isAdmin ? (
-                <button
-                  type="button"
-                  className="dropdown-item"
-                  style={{
-                    backgroundColor: 'var(--color-lavender-pink)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontWeight: 600,
-                    color: 'var(--color-primary)'
-                  }}
-                  onClick={() => handleSwitchRole('BUSINESS_OFFICER')}
-                >
-                  <Briefcase size={15} />
-                  <span>Switch to Business Officer</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="dropdown-item"
-                  style={{
-                    backgroundColor: 'var(--color-lavender-pink)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontWeight: 600,
-                    color: 'var(--color-primary)'
-                  }}
-                  onClick={() => handleSwitchRole('ADMIN')}
-                >
-                  <Shield size={15} />
-                  <span>Switch to System Admin</span>
-                </button>
-              )}
             </div>
 
             <div className="dropdown-divider" />
