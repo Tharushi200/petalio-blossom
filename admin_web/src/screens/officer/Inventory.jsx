@@ -31,7 +31,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 350,
     stock: 185,
     reorderLevel: 50,
-    image: '/rose.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb_tvdU2RR7rFV9ocrmcpiq_vWvZi4YghL6L5H_Tw6p39WwvwkUaxhyow&s=10',
     lastRestocked: '2026-11-04'
   },
   {
@@ -42,7 +42,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 420,
     stock: 95,
     reorderLevel: 40,
-    image: '/orchid.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA1OMi69MtnnAVjiMaBEUBZrljQ5k8eszw6kwKcteJlecE0t9UgnR0uBvD&s=10',
     lastRestocked: '2026-11-03'
   },
   {
@@ -53,7 +53,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 830,
     stock: 60,
     reorderLevel: 40,
-    image: '/lily.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsybGsp0VZnLWS3RLEba1KLQDJaPKo9zFVH9xpdeXvBJMBplAIgqJngoQ&s=10',
     lastRestocked: '2026-11-02'
   },
   {
@@ -64,7 +64,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 300,
     stock: 220,
     reorderLevel: 60,
-    image: '/carnation.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOL2BukndIVjerxnQBffIvDAzSxiNyW196fPWjdzMYO2uOFHZwbhWy2f1m&s=10',
     lastRestocked: '2026-11-03'
   },
   {
@@ -75,7 +75,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 240,
     stock: 140,
     reorderLevel: 50,
-    image: '/chrysanthemum.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlAxqqHuoF68upnZFu2PPk8x6ZvJCXoiFJ7xTEUc2YXREasfiD8D8LLxLW&s=10',
     lastRestocked: '2026-10-30'
   },
   {
@@ -86,7 +86,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 200,
     stock: 45, // Low Stock alert
     reorderLevel: 50,
-    image: '/daisies.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10',
     lastRestocked: '2026-10-28'
   },
   {
@@ -97,7 +97,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 510,
     stock: 130,
     reorderLevel: 50,
-    image: '/lisianthus.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4wl-OmkBCXuQ0UEvSwByBgPAEO_Z7ejGCre1PJtqqaX_MEatY9qNqfwo&s=10',
     lastRestocked: '2026-11-02'
   },
   {
@@ -108,7 +108,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 975,
     stock: 160,
     reorderLevel: 50,
-    image: '/sea_lavenders.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-nzRRZzeoX2c4HXFB6JFZ0vwWPIPzMUpiCUYYVEigXZULRzJLSWak-jbb&s=10',
     lastRestocked: '2026-11-01'
   },
   {
@@ -119,7 +119,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 1500,
     stock: 250,
     reorderLevel: 70,
-    image: '/baby_breath.jpg', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKIkjS2xPZj96SP_2idOSlVs98i-v3dyRggjNFySSzbCoQfSDxWm8lmgGu&s=10',
     lastRestocked: '2026-11-04'
   },
   {
@@ -130,7 +130,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 270,
     stock: 90,
     reorderLevel: 30,
-    image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvZYqnWOFk3qQGCBg9vWpXyBVS5nOQoN9Y1vc8jc0BMI--BieVhlvRgvbt&s=10',
     lastRestocked: '2026-11-05'
   },
   {
@@ -141,7 +141,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 710,
     stock: 75,
     reorderLevel: 35,
-    image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKRzETOSu44v07ceKy8SB1A37lzrbn1vsbpxrS6RUm8LxdNRw7qYuergow&s=10',
     lastRestocked: '2026-11-04'
   },
   {
@@ -152,7 +152,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 1000,
     stock: 50,
     reorderLevel: 25,
-    image: 'https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRehG9NIkBW-Mi9U3Tf7l3VBrODUtdc8mu-iqQdMoKAwHu1DUnTsCh0Wm4&s=10',
     lastRestocked: '2026-11-03'
   },
   {
@@ -163,7 +163,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 1760,
     stock: 35,
     reorderLevel: 20,
-    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK284b9Wj96yHD-8a1dMkU9RVF7yKBsBiXnX52GSBu_s_bcYkM-qDlKHXy&s=10',
     lastRestocked: '2026-11-02'
   },
   {
@@ -174,7 +174,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 420,
     stock: 80,
     reorderLevel: 35,
-    image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrRmutoRtCK1O1ZG34UTNwDecCprzyEemTzmNL2doI8Wk3f2h-Gw5yf10Q&s=10',
     lastRestocked: '2026-11-03'
   },
   {
@@ -185,7 +185,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 800,
     stock: 65,
     reorderLevel: 30,
-    image: 'https://images.unsplash.com/photo-1508615070457-7baeba4003ab?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRlgOeGnEHAFtrnItaMWudRItsdmYgbRd7qAy9bpPp2jikU8n_I4y5IZM&s=10',
     lastRestocked: '2026-11-01'
   },
   {
@@ -196,7 +196,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 995,
     stock: 55,
     reorderLevel: 25,
-    image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGJxZf8HeJkEIjdPYpUCJJ3SKEnQfWmHNTWqIDpHcRaUxWDMgzJMIyQSc&s=10',
     lastRestocked: '2026-11-04'
   },
   {
@@ -207,7 +207,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 265,
     stock: 120,
     reorderLevel: 45,
-    image: 'https://images.unsplash.com/photo-1533616688419-b7a585564566?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://www.dutchgrown.com/cdn/shop/articles/Tuberose_789x_crop_center.jpg?v=1671195538',
     lastRestocked: '2026-11-02'
   },
   {
@@ -218,7 +218,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 250,
     stock: 175,
     reorderLevel: 50,
-    image: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiDQYrVEtnLKPOpvCTVq0uC3laB5YpDyul0vb9q9nHBPjOCZwJPd8zyM3y&s=10',
     lastRestocked: '2026-11-05'
   },
   {
@@ -229,7 +229,7 @@ const INITIAL_INVENTORY = [
     unitPrice: 280,
     stock: 140,
     reorderLevel: 45,
-    image: 'https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=600&q=80', // 👈 Change image here
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKwKVN94UCsBokXKaWZ5aKjcgG8mYR8zOehmCmlIsWHTrUxd6Efkwje9Q&s=10',
     lastRestocked: '2026-11-03'
   }
 ];
@@ -678,7 +678,7 @@ export default function Inventory() {
                         src={item.image}
                         alt={item.name}
                         style={{ width: '38px', height: '38px', borderRadius: '8px', objectFit: 'cover' }}
-                        onError={(e) => { e.target.src = '/rose.jpg'; }}
+                        onError={(e) => { e.target.src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb_tvdU2RR7rFV9ocrmcpiq_vWvZi4YghL6L5H_Tw6p39WwvwkUaxhyow&s=10'; }}
                       />
                       <div>
                         <div style={{ fontWeight: 800, color: 'var(--pb-plum)' }}>{item.name}</div>
