@@ -106,6 +106,49 @@ export default function OfficerDashboard() {
     setSelectedOrderForAction(order);
   };
 
+  const handleExportReport = () => {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Build CSV content
+    let csvContent = 'data:text/csv;charset=utf-8,';
+    csvContent += 'PETALIO BLOSSOM - OPERATIONS & SALES REPORT\r\n';
+    csvContent += `Generated On: ${new Date().toLocaleString()}\r\n`;
+    csvContent += 'Portal: Commercial Floriculture Operations\r\n\r\n';
+
+    // 1. KPI Stats Summary
+    csvContent += '--- OPERATIONS KPI SUMMARY ---\r\n';
+    csvContent += 'Metric,Value,Benchmark\r\n';
+    OFFICER_STATS_DATA.forEach((stat) => {
+      csvContent += `"${stat.title}","${stat.value}","${stat.change} ${stat.subtext}"\r\n`;
+    });
+    csvContent += '\r\n';
+
+    // 2. Recent Commercial Orders
+    csvContent += '--- RECENT COMMERCIAL ORDERS ---\r\n';
+    csvContent += 'Order ID,Customer,Flower Variety,Quantity,Amount (LKR),Status\r\n';
+    orders.forEach((o) => {
+      csvContent += `"${o.id}","${o.customer}","${o.flower}","${o.quantity}","${o.amount}","${o.status}"\r\n`;
+    });
+    csvContent += '\r\n';
+
+    // 3. Low Stock Alerts
+    csvContent += '--- WAREHOUSE LOW STOCK ALERTS ---\r\n';
+    csvContent += 'Flower,Current Stock,Reorder Level,Deficit,Supplier\r\n';
+    lowStockList.forEach((s) => {
+      csvContent += `"${s.flower}","${s.currentStock}","${s.reorderThreshold}","${s.deficit}","${s.preferredSupplier}"\r\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Petalio_Operations_Report_${today}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast('📊 Operations report exported to CSV successfully.');
+  };
+
   const handleConfirmDispatch = () => {
     if (!selectedOrderForAction) return;
     setOrders((prev) =>
@@ -240,14 +283,24 @@ export default function OfficerDashboard() {
         title="Dashboard"
         subtitle="Track customer orders, flower stock levels, and deliveries."
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            icon={Plus}
-            onClick={() => showToast('New flower order initialized.')}
-          >
-            Order Flowers
-          </Button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={Download}
+              onClick={handleExportReport}
+            >
+              Export Report
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              icon={Plus}
+              onClick={() => showToast('New flower order initialized.')}
+            >
+              Order Flowers
+            </Button>
+          </div>
         }
       />
 
