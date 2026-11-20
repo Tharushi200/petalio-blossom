@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   AreaChart,
   Area,
@@ -107,46 +109,142 @@ export default function OfficerDashboard() {
   };
 
   const handleExportReport = () => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Build CSV content
-    let csvContent = 'data:text/csv;charset=utf-8,';
-    csvContent += 'PETALIO BLOSSOM - OPERATIONS & SALES REPORT\r\n';
-    csvContent += `Generated On: ${new Date().toLocaleString()}\r\n`;
-    csvContent += 'Portal: Commercial Floriculture Operations\r\n\r\n';
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-    // 1. KPI Stats Summary
-    csvContent += '--- OPERATIONS KPI SUMMARY ---\r\n';
-    csvContent += 'Metric,Value,Benchmark\r\n';
-    OFFICER_STATS_DATA.forEach((stat) => {
-      csvContent += `"${stat.title}","${stat.value}","${stat.change} ${stat.subtext}"\r\n`;
-    });
-    csvContent += '\r\n';
+      const today = new Date().toISOString().split('T')[0];
+      const formattedDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
 
-    // 2. Recent Commercial Orders
-    csvContent += '--- RECENT COMMERCIAL ORDERS ---\r\n';
-    csvContent += 'Order ID,Customer,Flower Variety,Quantity,Amount (LKR),Status\r\n';
-    orders.forEach((o) => {
-      csvContent += `"${o.id}","${o.customer}","${o.flower}","${o.quantity}","${o.amount}","${o.status}"\r\n`;
-    });
-    csvContent += '\r\n';
+      // 1. Header Banner & Branding (Deep Plum theme)
+      doc.setFillColor(77, 54, 94); // #4D365E (Deep Plum)
+      doc.rect(0, 0, 210, 28, 'F');
 
-    // 3. Low Stock Alerts
-    csvContent += '--- WAREHOUSE LOW STOCK ALERTS ---\r\n';
-    csvContent += 'Flower,Current Stock,Reorder Level,Deficit,Supplier\r\n';
-    lowStockList.forEach((s) => {
-      csvContent += `"${s.flower}","${s.currentStock}","${s.reorderThreshold}","${s.deficit}","${s.preferredSupplier}"\r\n`;
-    });
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(255, 255, 255);
+      doc.text('PETALIO BLOSSOM', 14, 12);
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Petalio_Operations_Report_${today}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(217, 141, 166); // #D98DA6 (Dusty Rose)
+      doc.text('Commercial Floriculture Farm Management System', 14, 18);
+      doc.setTextColor(240, 240, 240);
+      doc.text('Executive Operations & Sales Report', 14, 23);
 
-    showToast('📊 Operations report exported to CSV successfully.');
+      doc.setFontSize(8);
+      doc.setTextColor(230, 230, 230);
+      doc.text(`Generated: ${formattedDate}`, 196, 12, { align: 'right' });
+      doc.text('Portal: Commercial Operations', 196, 17, { align: 'right' });
+      doc.text('Officer: Anuki Perera', 196, 22, { align: 'right' });
+
+      // 2. Section 1: Operations KPI Summary
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(77, 54, 94);
+      doc.text('1. Operations KPI Summary', 14, 38);
+
+      const kpiData = OFFICER_STATS_DATA.map((stat) => [
+        stat.title,
+        stat.value,
+        `${stat.change} (${stat.subtext})`
+      ]);
+
+      autoTable(doc, {
+        startY: 42,
+        head: [['Performance Metric', 'Current Value', 'Benchmark / Trend']],
+        body: kpiData,
+        theme: 'grid',
+        headStyles: { fillColor: [118, 81, 143], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 8.5, cellPadding: 2.5 },
+        alternateRowStyles: { fillColor: [250, 245, 248] },
+        margin: { left: 14, right: 14 }
+      });
+
+      // 3. Section 2: Recent Commercial Orders
+      const currentYAfterKpi = (doc.lastAutoTable?.finalY || 80) + 10;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(77, 54, 94);
+      doc.text('2. Recent Commercial Orders', 14, currentYAfterKpi);
+
+      const ordersData = orders.map((o) => [
+        o.id,
+        o.customer,
+        o.flower,
+        `${o.quantity} stems`,
+        `Rs. ${Number(o.amount).toLocaleString()}`,
+        o.status
+      ]);
+
+      autoTable(doc, {
+        startY: currentYAfterKpi + 4,
+        head: [['Order Ref', 'Billed Client', 'Flower Variety', 'Quantity', 'Amount', 'Fulfillment Status']],
+        body: ordersData,
+        theme: 'grid',
+        headStyles: { fillColor: [77, 54, 94], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 8, cellPadding: 2.5 },
+        alternateRowStyles: { fillColor: [250, 245, 248] },
+        margin: { left: 14, right: 14 }
+      });
+
+      // 4. Section 3: Warehouse Low Stock Alerts
+      const currentYAfterOrders = (doc.lastAutoTable?.finalY || 150) + 10;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(77, 54, 94);
+      doc.text('3. Warehouse Low Stock Alerts & Procurement Queue', 14, currentYAfterOrders);
+
+      const stockData = lowStockList.map((s) => [
+        s.flower,
+        `${s.currentStock} stems`,
+        `${s.reorderThreshold} stems`,
+        `-${s.deficit} stems`,
+        s.preferredSupplier
+      ]);
+
+      autoTable(doc, {
+        startY: currentYAfterOrders + 4,
+        head: [['Flower Variety', 'Current Stock', 'Safety Threshold', 'Deficit', 'Allocated Highland Grower']],
+        body: stockData,
+        theme: 'grid',
+        headStyles: { fillColor: [180, 83, 9], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 8, cellPadding: 2.5 },
+        alternateRowStyles: { fillColor: [255, 251, 235] },
+        margin: { left: 14, right: 14 }
+      });
+
+      // 5. Footer with Page Numbers & Confidentiality Note
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(140, 140, 140);
+        doc.text(
+          'Petalio Blossom Floriculture LK | Nuwara Eliya & Colombo Operations | Confidential Internal Report',
+          14,
+          290
+        );
+        doc.text(`Page ${i} of ${pageCount}`, 196, 290, { align: 'right' });
+      }
+
+      // 6. Trigger Native Browser Download as .pdf
+      doc.save(`Petalio_Operations_Report_${today}.pdf`);
+      showToast('📄 Operations Report downloaded as PDF successfully.');
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      showToast('Error generating PDF report.');
+    }
   };
 
   const handleConfirmDispatch = () => {
@@ -290,7 +388,7 @@ export default function OfficerDashboard() {
               icon={Download}
               onClick={handleExportReport}
             >
-              Export Report
+              Export Report (PDF)
             </Button>
             <Button
               variant="primary"
