@@ -6,71 +6,55 @@ import {
   CheckCircle2,
   AlertCircle,
   DollarSign,
-  Download,
   X,
-  Printer,
   Calendar,
-  Building
+  Receipt
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
 import Button from '../../components/common/Button';
 
-// ─── Clean Invoices Dataset ───────────────────────────────────────────────────
+// ─── Clean Invoices Dataset Aligned with Database Schema ─────────────────────
+// DB Columns: invoice_id, order_id, total_amount, tax_amount, date, status
 const INITIAL_INVOICES = [
   {
-    id: 'INV-5501',
-    orderId: 'ORD-8841',
-    customer: 'Kingsbury Hotel Banquet Events',
-    flowers: 'Red Naomi Rose (300 stems)',
-    subtotal: 105000,
-    status: 'PAID',
-    invoiceDate: '2026-11-04',
-    dueDate: '2026-11-18',
-    paymentMethod: 'Bank Transfer (Commercial Bank)'
+    invoiceId: 1,
+    orderId: 1001,
+    totalAmount: 105000,
+    taxAmount: 5250,
+    date: '2026-11-04',
+    status: 'PAID'
   },
   {
-    id: 'INV-5500',
-    orderId: 'ORD-8840',
-    customer: 'Lassana Petals Floral Studio',
-    flowers: 'Dendrobium Orchid (200 stems)',
-    subtotal: 84000,
-    status: 'PAID',
-    invoiceDate: '2026-11-03',
-    dueDate: '2026-11-17',
-    paymentMethod: 'Corporate Credit (14-Day)'
+    invoiceId: 2,
+    orderId: 1002,
+    totalAmount: 84000,
+    taxAmount: 4200,
+    date: '2026-11-03',
+    status: 'PAID'
   },
   {
-    id: 'INV-5499',
-    orderId: 'ORD-8839',
-    customer: 'Shangri-La Colombo Florist',
-    flowers: 'Casablanca White Lily (150 stems)',
-    subtotal: 72000,
-    status: 'PAID',
-    invoiceDate: '2026-11-03',
-    dueDate: '2026-11-17',
-    paymentMethod: 'Direct Debit (HNB)'
+    invoiceId: 3,
+    orderId: 1003,
+    totalAmount: 72000,
+    taxAmount: 3600,
+    date: '2026-11-03',
+    status: 'PAID'
   },
   {
-    id: 'INV-5498',
-    orderId: 'ORD-8838',
-    customer: 'Cinnamon Grand Wedding Events',
-    flowers: 'Tropical Anthurium (300 stems)',
-    subtotal: 96000,
-    status: 'UNPAID',
-    invoiceDate: '2026-11-04',
-    dueDate: '2026-11-18',
-    paymentMethod: 'Pending Payment'
+    invoiceId: 4,
+    orderId: 1004,
+    totalAmount: 96000,
+    taxAmount: 4800,
+    date: '2026-11-04',
+    status: 'UNPAID'
   },
   {
-    id: 'INV-5497',
-    orderId: 'ORD-8837',
-    customer: 'Galle Face Hotel Ballroom',
-    flowers: 'Bridal Baby Breath (250 stems)',
-    subtotal: 57500,
-    status: 'PAID',
-    invoiceDate: '2026-11-02',
-    dueDate: '2026-11-16',
-    paymentMethod: 'Bank Transfer (BOC)'
+    invoiceId: 5,
+    orderId: 1005,
+    totalAmount: 57500,
+    taxAmount: 2875,
+    date: '2026-11-02',
+    status: 'PAID'
   }
 ];
 
@@ -83,11 +67,10 @@ export default function Invoices() {
   // New Invoice Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newForm, setNewForm] = useState({
-    orderId: 'ORD-8842',
-    customer: '',
-    flowers: 'Roses & Lilies',
-    subtotal: 75000,
-    dueDate: '2026-11-20'
+    orderId: '',
+    totalAmount: '',
+    taxAmount: '',
+    date: new Date().toISOString().split('T')[0]
   });
 
   const showToast = (msg) => {
@@ -96,12 +79,12 @@ export default function Invoices() {
   };
 
   // ── KPI Summary ─────────────────────────────────────────────────────────────
-  const totalInvoiced = invoices.reduce((acc, inv) => acc + inv.subtotal, 0);
+  const totalBilled = invoices.reduce((acc, inv) => acc + Number(inv.totalAmount), 0);
   const paidCount = invoices.filter((inv) => inv.status === 'PAID').length;
   const unpaidCount = invoices.filter((inv) => inv.status === 'UNPAID').length;
   const pendingReceivables = invoices
     .filter((inv) => inv.status === 'UNPAID')
-    .reduce((acc, inv) => acc + inv.subtotal, 0);
+    .reduce((acc, inv) => acc + Number(inv.totalAmount), 0);
 
   // ── Search & Filter ─────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -111,9 +94,9 @@ export default function Invoices() {
       const q = search.toLowerCase();
       list = list.filter(
         (inv) =>
-          inv.id.toLowerCase().includes(q) ||
-          inv.customer.toLowerCase().includes(q) ||
-          inv.orderId.toLowerCase().includes(q)
+          String(inv.invoiceId).includes(q) ||
+          String(inv.orderId).includes(q) ||
+          inv.date.includes(q)
       );
     }
 
@@ -128,29 +111,35 @@ export default function Invoices() {
   const handleMarkPaid = (inv) => {
     setInvoices((prev) =>
       prev.map((i) =>
-        i.id === inv.id ? { ...i, status: 'PAID', paymentMethod: 'Bank Transfer' } : i
+        i.invoiceId === inv.invoiceId ? { ...i, status: 'PAID' } : i
       )
     );
-    showToast(`Invoice #${inv.id} marked as Paid!`);
+    showToast(`Invoice #${inv.invoiceId} marked as Paid!`);
   };
 
   // ── Create Invoice ──────────────────────────────────────────────────────────
   const handleCreateInvoice = (e) => {
     e.preventDefault();
-    if (!newForm.customer.trim()) return;
+    if (!newForm.orderId || !newForm.totalAmount) return;
 
-    const newId = `INV-${5500 + invoices.length + 1}`;
+    const newId = Math.max(...invoices.map((i) => i.invoiceId), 0) + 1;
     const item = {
-      id: newId,
-      ...newForm,
-      subtotal: parseFloat(newForm.subtotal) || 50000,
-      status: 'UNPAID',
-      invoiceDate: new Date().toISOString().split('T')[0],
-      paymentMethod: 'Pending Payment'
+      invoiceId: newId,
+      orderId: Number(newForm.orderId),
+      totalAmount: parseFloat(newForm.totalAmount) || 0,
+      taxAmount: parseFloat(newForm.taxAmount) || 0,
+      date: newForm.date || new Date().toISOString().split('T')[0],
+      status: 'UNPAID'
     };
 
     setInvoices([item, ...invoices]);
     setShowAddModal(false);
+    setNewForm({
+      orderId: '',
+      totalAmount: '',
+      taxAmount: '',
+      date: new Date().toISOString().split('T')[0]
+    });
     showToast(`🧾 Invoice #${newId} generated successfully!`);
   };
 
@@ -176,15 +165,15 @@ export default function Invoices() {
             fontWeight: 600
           }}
         >
-          <CheckCircle2 size={18} color="var(--pb-leaf)" />
+          <CheckCircle2 size={18} color="#86EFAC" />
           {toastMessage}
         </div>
       )}
 
       {/* ── Page Header ─────────────────────────────────────────── */}
       <PageHeader
-        title="Commercial Invoices & Billing"
-        subtitle="Generate and track wholesale billing records for hotel and floral clients"
+        title="Commercial Invoices"
+        subtitle="Manage and track billing invoices generated for customer orders"
         actions={
           <Button variant="primary" size="sm" onClick={() => setShowAddModal(true)}>
             <Plus size={15} /> Create Invoice
@@ -192,7 +181,7 @@ export default function Invoices() {
         }
       />
 
-      {/* ── 4 Simple KPI Cards ──────────────────────────────────── */}
+      {/* ── 4 KPI Summary Cards ─────────────────────────────────── */}
       <div
         style={{
           display: 'grid',
@@ -227,7 +216,7 @@ export default function Invoices() {
             <FileText size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Total Invoices Issued</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Total Invoices</div>
             <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--pb-plum)' }}>{invoices.length}</div>
           </div>
         </div>
@@ -289,7 +278,7 @@ export default function Invoices() {
             <AlertCircle size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Outstanding Invoices</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Unpaid Invoices</div>
             <div style={{ fontSize: '1.4rem', fontWeight: 800, color: unpaidCount > 0 ? '#B45309' : '#15803D' }}>{unpaidCount} Pending</div>
           </div>
         </div>
@@ -320,9 +309,9 @@ export default function Invoices() {
             <DollarSign size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Total Billed Revenue</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>Total Billed</div>
             <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--pb-plum)' }}>
-              Rs. {(totalInvoiced / 1000).toFixed(0)}k
+              Rs. {(totalBilled / 1000).toFixed(0)}k
             </div>
           </div>
         </div>
@@ -343,11 +332,11 @@ export default function Invoices() {
           marginBottom: '1.25rem'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--pb-blush)', borderRadius: '8px', padding: '0.45rem 0.75rem', width: '320px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--pb-blush)', borderRadius: '8px', padding: '0.45rem 0.75rem', width: '300px' }}>
           <Search size={16} color="var(--pb-text-muted)" />
           <input
             type="text"
-            placeholder="Search invoice #, customer name..."
+            placeholder="Search invoice ID, order ID, date..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '100%', color: 'var(--pb-plum)' }}
@@ -372,7 +361,7 @@ export default function Invoices() {
                 cursor: 'pointer'
               }}
             >
-              {st === 'ALL' ? 'All Invoices' : st === 'PAID' ? 'Settled (Paid)' : 'Pending (Unpaid)'}
+              {st === 'ALL' ? 'All Invoices' : st === 'PAID' ? 'Paid' : 'Unpaid'}
             </button>
           ))}
         </div>
@@ -383,70 +372,90 @@ export default function Invoices() {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
           <thead>
             <tr style={{ background: 'var(--pb-blush)', borderBottom: '1px solid var(--pb-border)', color: 'var(--pb-plum)' }}>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Invoice Number</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Billed Client</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Billed Items</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Issue & Due Date</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Amount</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Payment Method</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800, textAlign: 'right' }}>Status</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Invoice ID</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Order ID</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Total Amount</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Tax Amount</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Invoice Date</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Status</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800, textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((inv) => (
-              <tr key={inv.id} style={{ borderBottom: '1px solid var(--pb-border)' }}>
-                <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: 'var(--pb-plum)' }}>
-                  {inv.id}
-                  <div style={{ fontSize: '0.72rem', color: 'var(--pb-text-muted)' }}>Order: {inv.orderId}</div>
-                </td>
-
-                <td style={{ padding: '0.85rem 1rem' }}>
-                  <div style={{ fontWeight: 800, color: 'var(--pb-plum)' }}>{inv.customer}</div>
-                </td>
-
-                <td style={{ padding: '0.85rem 1rem', fontSize: '0.82rem', color: 'var(--pb-text-body)' }}>
-                  🌸 {inv.flowers}
-                </td>
-
-                <td style={{ padding: '0.85rem 1rem', fontSize: '0.8rem', color: 'var(--pb-text-body)' }}>
-                  <div>Issued: {inv.invoiceDate}</div>
-                  <div style={{ color: 'var(--pb-text-muted)' }}>Due: {inv.dueDate}</div>
-                </td>
-
-                <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: 'var(--pb-rose)' }}>
-                  Rs. {inv.subtotal.toLocaleString()}
-                </td>
-
-                <td style={{ padding: '0.85rem 1rem', fontSize: '0.8rem', color: 'var(--pb-text-muted)' }}>
-                  {inv.paymentMethod}
-                </td>
-
-                <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
-                  {inv.status === 'PAID' ? (
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: '#DCFCE7', color: '#15803D' }}>
-                      ✓ Paid
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleMarkPaid(inv)}
-                      style={{
-                        padding: '0.4rem 0.75rem',
-                        background: '#FEF3C7',
-                        border: '1px solid #FDE68A',
-                        borderRadius: '8px',
-                        fontSize: '0.76rem',
-                        fontWeight: 700,
-                        color: '#B45309',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Mark as Paid
-                    </button>
-                  )}
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--pb-text-muted)', fontSize: '0.88rem' }}>
+                  No invoices found.
                 </td>
               </tr>
-            ))}
+            ) : (
+              filtered.map((inv) => (
+                <tr key={inv.invoiceId} style={{ borderBottom: '1px solid var(--pb-border)' }}>
+                  <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: 'var(--pb-plum)' }}>
+                    #{inv.invoiceId}
+                  </td>
+
+                  <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: 'var(--pb-rose)' }}>
+                    ORD-{inv.orderId}
+                  </td>
+
+                  <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: 'var(--pb-plum)' }}>
+                    Rs. {Number(inv.totalAmount).toLocaleString()}
+                  </td>
+
+                  <td style={{ padding: '0.85rem 1rem', color: 'var(--pb-text-muted)', fontSize: '0.82rem' }}>
+                    Rs. {Number(inv.taxAmount).toLocaleString()}
+                  </td>
+
+                  <td style={{ padding: '0.85rem 1rem', fontSize: '0.82rem', color: 'var(--pb-text-body)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Calendar size={13} color="var(--pb-text-muted)" />
+                      {inv.date}
+                    </div>
+                  </td>
+
+                  <td style={{ padding: '0.85rem 1rem' }}>
+                    <span
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        background: inv.status === 'PAID' ? '#DCFCE7' : '#FEF3C7',
+                        color: inv.status === 'PAID' ? '#15803D' : '#B45309'
+                      }}
+                    >
+                      {inv.status}
+                    </span>
+                  </td>
+
+                  <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
+                    {inv.status === 'PAID' ? (
+                      <span style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>
+                        ✓ Settled
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleMarkPaid(inv)}
+                        style={{
+                          padding: '0.4rem 0.75rem',
+                          background: '#FEF3C7',
+                          border: '1px solid #FDE68A',
+                          borderRadius: '8px',
+                          fontSize: '0.76rem',
+                          fontWeight: 700,
+                          color: '#B45309',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Mark as Paid
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -473,7 +482,7 @@ export default function Invoices() {
               background: 'var(--pb-surface)',
               borderRadius: '16px',
               width: '100%',
-              maxWidth: '440px',
+              maxWidth: '420px',
               padding: '1.5rem',
               boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
               border: '1.5px solid var(--pb-border)'
@@ -481,9 +490,9 @@ export default function Invoices() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileText size={22} color="var(--pb-rose)" />
+                <Receipt size={22} color="var(--pb-rose)" />
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--pb-plum)', margin: 0 }}>
-                  Generate New Invoice
+                  Generate Invoice
                 </h3>
               </div>
               <button
@@ -498,70 +507,65 @@ export default function Invoices() {
             <form onSubmit={handleCreateInvoice} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                  Billed Client / Hotel *
+                  Order ID *
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   required
-                  placeholder="e.g. Cinnamon Grand Colombo"
-                  value={newForm.customer}
-                  onChange={(e) => setNewForm({ ...newForm, customer: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                  placeholder="e.g. 1006"
+                  value={newForm.orderId}
+                  onChange={(e) => setNewForm({ ...newForm, orderId: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Order Reference *
+                    Total Amount (Rs.) *
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     required
-                    value={newForm.orderId}
-                    onChange={(e) => setNewForm({ ...newForm, orderId: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                    min="1"
+                    placeholder="75000"
+                    value={newForm.totalAmount}
+                    onChange={(e) => {
+                      const total = parseFloat(e.target.value) || 0;
+                      setNewForm({
+                        ...newForm,
+                        totalAmount: e.target.value,
+                        taxAmount: (total * 0.05).toFixed(2)
+                      });
+                    }}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem', boxSizing: 'border-box' }}
                   />
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Total Billed Amount (Rs.) *
+                    Tax Amount (Rs.)
                   </label>
                   <input
                     type="number"
-                    required
-                    min="1000"
-                    value={newForm.subtotal}
-                    onChange={(e) => setNewForm({ ...newForm, subtotal: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                    placeholder="3750"
+                    value={newForm.taxAmount}
+                    onChange={(e) => setNewForm({ ...newForm, taxAmount: e.target.value })}
+                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                  Items Billed *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Red Naomi Roses (300 stems)"
-                  value={newForm.flowers}
-                  onChange={(e) => setNewForm({ ...newForm, flowers: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                  Payment Due Date *
+                  Invoice Date *
                 </label>
                 <input
                   type="date"
                   required
-                  value={newForm.dueDate}
-                  onChange={(e) => setNewForm({ ...newForm, dueDate: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                  value={newForm.date}
+                  onChange={(e) => setNewForm({ ...newForm, date: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem', boxSizing: 'border-box' }}
                 />
               </div>
 
@@ -570,7 +574,7 @@ export default function Invoices() {
                   Cancel
                 </Button>
                 <Button variant="primary" size="sm" type="submit" style={{ flex: 1 }}>
-                  Issue Invoice
+                  Generate Invoice
                 </Button>
               </div>
             </form>

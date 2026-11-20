@@ -145,7 +145,7 @@ export default function NotificationDropdown() {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         gap: '0.5rem',
-                        marginBottom: '0.15rem'
+                        marginBottom: '0.2rem'
                       }}
                     >
                       <span
@@ -155,7 +155,7 @@ export default function NotificationDropdown() {
                           color: 'var(--color-deep-plum)'
                         }}
                       >
-                        {item.title}
+                        {item.message}
                       </span>
                       {!item.read && (
                         <span
@@ -169,16 +169,18 @@ export default function NotificationDropdown() {
                         />
                       )}
                     </div>
-                    <p
-                      style={{
-                        fontSize: '0.78rem',
-                        color: 'var(--color-text-secondary)',
-                        lineHeight: 1.35,
-                        margin: 0
-                      }}
-                    >
-                      {item.message}
-                    </p>
+                    {item.detail && (
+                      <p
+                        style={{
+                          fontSize: '0.78rem',
+                          color: 'var(--color-text-secondary)',
+                          lineHeight: 1.35,
+                          margin: 0
+                        }}
+                      >
+                        {item.detail}
+                      </p>
+                    )}
                     <span
                       style={{
                         display: 'flex',
