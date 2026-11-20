@@ -171,15 +171,6 @@ export default function App() {
                 />
               }
             />
-            <Route
-              path="settings"
-              element={
-                <PlaceholderPage
-                  title="Operations Settings"
-                  description="Reorder thresholds, stock alert bounds, and dispatch lead-time preferences."
-                />
-              }
-            />
           </Route>
 
           {/* Catch-all Wildcard Route */}

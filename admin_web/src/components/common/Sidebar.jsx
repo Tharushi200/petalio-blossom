@@ -9,7 +9,6 @@ import {
   Layers,
   FileText,
   Bell,
-  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -38,8 +37,7 @@ const ADMIN_NAV_ITEMS = [
   { path: '/admin/supplier-approvals', label: 'Supplier Approvals', icon: UserCheck, badge: '7', badgeType: 'alert' },
   { path: '/admin/staff', label: 'Staff Management', icon: ShieldCheck },
   { path: '/admin/flower-categories', label: 'Flower Categories', icon: Layers },
-  { path: '/admin/reports', label: 'Reports', icon: FileText },
-  { path: '/admin/settings', label: 'Settings', icon: Settings }
+  { path: '/admin/reports', label: 'Reports', icon: FileText }
 ];
 
 // Business Officer Navigation Items (Directly mapped to project scope & database tables)

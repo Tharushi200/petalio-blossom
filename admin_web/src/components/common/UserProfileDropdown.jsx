@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
-  Settings,
   LogOut,
   ChevronDown
 } from 'lucide-react';
@@ -92,18 +91,6 @@ export default function UserProfileDropdown() {
             </div>
 
             <div className="dropdown-divider" />
-
-            <button
-              type="button"
-              className="dropdown-item"
-              onClick={() => {
-                setIsOpen(false);
-                navigate(isAdmin ? '/admin/settings' : '/officer/settings');
-              }}
-            >
-              <Settings size={16} />
-              <span>System Settings</span>
-            </button>
 
             <button
               type="button"
