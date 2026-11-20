@@ -9,7 +9,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem('petalio_user');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.avatar && (parsed.avatar.includes('/') || parsed.avatar.includes('.'))) {
+          parsed.avatar = parsed.role === 'ADMIN' ? 'KW' : 'AP';
+        }
+        return parsed;
       }
     } catch (e) {
       console.warn('Failed to parse cached auth state:', e);
@@ -49,7 +53,7 @@ export const AuthProvider = ({ children }) => {
           name: res.user.name,
           email: res.user.email,
           role: res.user.role,
-          avatar: '/avatar.jpg'
+          avatar: res.user.role === 'ADMIN' ? 'KW' : 'AP'
         };
         setUser(liveUser);
         setLoading(false);

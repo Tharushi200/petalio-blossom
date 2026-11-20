@@ -50,6 +50,21 @@ export default function UserProfileDropdown() {
 
   const isAdmin = user.role === 'ADMIN';
 
+  // Get clean 2-letter initials for circular avatar badge
+  const getAvatarInitials = () => {
+    if (user.avatar && !user.avatar.includes('/') && !user.avatar.includes('.')) {
+      return user.avatar;
+    }
+    if (user.name) {
+      const parts = user.name.replace(/^Dr\.\s*/i, '').trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return user.name.substring(0, 2).toUpperCase();
+    }
+    return isAdmin ? 'KW' : 'AP';
+  };
+
   return (
     <>
       <div style={{ position: 'relative' }} ref={dropdownRef}>
@@ -59,7 +74,7 @@ export default function UserProfileDropdown() {
           role="button"
           tabIndex={0}
         >
-          <div className="user-avatar">{user.avatar || (isAdmin ? 'AD' : 'BO')}</div>
+          <div className="user-avatar">{getAvatarInitials()}</div>
           <div className="user-info-text">
             <span className="user-name">{user.name}</span>
             <span className="user-role-badge">
