@@ -7,13 +7,13 @@ const Notification = sequelize.define('Notification', {
     autoIncrement: true,
     primaryKey: true,
   },
+  order_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
   user_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-  },
-  title: {
-    type: DataTypes.STRING(100),
-    defaultValue: 'Alert',
   },
   message: {
     type: DataTypes.TEXT,

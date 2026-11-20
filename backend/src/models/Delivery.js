@@ -17,23 +17,11 @@ const Delivery = sequelize.define('Delivery', {
     allowNull: false,
     unique: true,
   },
-  vehicle_number: {
-    type: DataTypes.STRING(50),
-    defaultValue: 'Van #PB-01',
+  business_officer_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
-  driver_name: {
-    type: DataTypes.STRING(100),
-    defaultValue: 'Kamal Bandara',
-  },
-  driver_phone: {
-    type: DataTypes.STRING(20),
-    defaultValue: '+94 77 123 4567',
-  },
-  destination_address: {
-    type: DataTypes.STRING(255),
-    allowNull: true,
-  },
-  scheduled_date: {
+  delivery_date: {
     type: DataTypes.DATEONLY,
     allowNull: true,
   },

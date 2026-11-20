@@ -4,47 +4,36 @@ import {
   Package,
   CheckCircle2,
   Clock,
-  MapPin,
   User,
   Plus,
   Search,
   X,
-  Calendar,
-  Phone
+  Calendar
 } from 'lucide-react';
 import PageHeader from '../../components/common/PageHeader';
 import Button from '../../components/common/Button';
 
 // ─── Deliveries Dataset Aligned with Database Schema ─────────────────────────
-// DB Columns: delivery_id, delivery_code, order_id, officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status
+// DB Columns: delivery_id, delivery_code, order_id, business_officer_id, delivery_date, status
 const INITIAL_DELIVERIES = [
   {
     id: 'DEL-101',
     orderCode: 'ORD-1001',
-    vehicleNumber: 'Van #PB-01',
-    driverName: 'Kamal Bandara',
-    driverPhone: '+94 77 123 4567',
-    destinationAddress: 'The Kingsbury Hotel, Colombo 01',
+    officerId: 'OFF-01',
     deliveryDate: '2026-11-20',
     status: 'SCHEDULED'
   },
   {
     id: 'DEL-102',
     orderCode: 'ORD-1003',
-    vehicleNumber: 'Van #PB-04',
-    driverName: 'Sunil Fonseka',
-    driverPhone: '+94 71 876 5432',
-    destinationAddress: 'The Kingsbury Hotel, Colombo 01',
+    officerId: 'OFF-01',
     deliveryDate: '2026-11-19',
     status: 'IN_TRANSIT'
   },
   {
     id: 'DEL-103',
     orderCode: 'ORD-1004',
-    vehicleNumber: 'Van #PB-02',
-    driverName: 'Dinesh Silva',
-    driverPhone: '+94 76 999 8877',
-    destinationAddress: 'Shangri-La Hotel, Colombo 02',
+    officerId: 'OFF-02',
     deliveryDate: '2026-11-18',
     status: 'DELIVERED'
   }
@@ -59,11 +48,8 @@ export default function Deliveries() {
   // New Delivery Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newForm, setNewForm] = useState({
-    orderCode: 'ORD-1002',
-    vehicleNumber: 'Van #PB-01',
-    driverName: 'Kamal Bandara',
-    driverPhone: '+94 77 123 4567',
-    destinationAddress: 'Colombo 03',
+    orderCode: '',
+    officerId: 'OFF-01',
     deliveryDate: new Date().toISOString().split('T')[0]
   });
 
@@ -88,9 +74,7 @@ export default function Deliveries() {
         (d) =>
           d.id.toLowerCase().includes(q) ||
           d.orderCode.toLowerCase().includes(q) ||
-          d.driverName.toLowerCase().includes(q) ||
-          d.destinationAddress.toLowerCase().includes(q) ||
-          d.vehicleNumber.toLowerCase().includes(q)
+          d.officerId.toLowerCase().includes(q)
       );
     }
 
@@ -121,6 +105,7 @@ export default function Deliveries() {
 
     setDeliveries([item, ...deliveries]);
     setShowAddModal(false);
+    setNewForm({ orderCode: '', officerId: 'OFF-01', deliveryDate: new Date().toISOString().split('T')[0] });
     showToast(`🚚 Delivery trip #${newId} scheduled successfully!`);
   };
 
@@ -146,7 +131,7 @@ export default function Deliveries() {
             fontWeight: 600
           }}
         >
-          <CheckCircle2 size={18} color="var(--pb-leaf)" />
+          <CheckCircle2 size={18} color="#86EFAC" />
           {toastMessage}
         </div>
       )}
@@ -311,11 +296,11 @@ export default function Deliveries() {
           marginBottom: '1.25rem'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--pb-blush)', borderRadius: '8px', padding: '0.45rem 0.75rem', width: '320px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--pb-blush)', borderRadius: '8px', padding: '0.45rem 0.75rem', width: '280px' }}>
           <Search size={16} color="var(--pb-text-muted)" />
           <input
             type="text"
-            placeholder="Search driver, vehicle, address..."
+            placeholder="Search delivery code, order..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.85rem', width: '100%', color: 'var(--pb-plum)' }}
@@ -353,83 +338,86 @@ export default function Deliveries() {
             <tr style={{ background: 'var(--pb-blush)', borderBottom: '1px solid var(--pb-border)', color: 'var(--pb-plum)' }}>
               <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Delivery Code</th>
               <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Order Code</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Vehicle</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Driver Details</th>
-              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Destination Address</th>
+              <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Business Officer ID</th>
               <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Delivery Date</th>
               <th style={{ padding: '0.85rem 1rem', fontWeight: 800 }}>Status</th>
               <th style={{ padding: '0.85rem 1rem', fontWeight: 800, textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((del) => {
-              const statusColors = {
-                SCHEDULED: { bg: '#FEF3C7', color: '#B45309', label: 'Scheduled' },
-                IN_TRANSIT: { bg: '#EFF6FF', color: '#1D4ED8', label: 'In Transit' },
-                DELIVERED: { bg: '#DCFCE7', color: '#15803D', label: 'Delivered' }
-              };
-              const badge = statusColors[del.status] || statusColors.SCHEDULED;
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--pb-text-muted)', fontSize: '0.88rem' }}>
+                  No deliveries found.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((del) => {
+                const statusColors = {
+                  SCHEDULED: { bg: '#FEF3C7', color: '#B45309', label: 'Scheduled' },
+                  IN_TRANSIT: { bg: '#EFF6FF', color: '#1D4ED8', label: 'In Transit' },
+                  DELIVERED: { bg: '#DCFCE7', color: '#15803D', label: 'Delivered' }
+                };
+                const badge = statusColors[del.status] || statusColors.SCHEDULED;
 
-              return (
-                <tr key={del.id} style={{ borderBottom: '1px solid var(--pb-border)' }}>
-                  <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: 'var(--pb-plum)' }}>
-                    {del.id}
-                  </td>
+                return (
+                  <tr key={del.id} style={{ borderBottom: '1px solid var(--pb-border)' }}>
+                    <td style={{ padding: '0.85rem 1rem', fontWeight: 800, color: 'var(--pb-plum)' }}>
+                      {del.id}
+                    </td>
 
-                  <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: 'var(--pb-rose)' }}>
-                    {del.orderCode}
-                  </td>
+                    <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: 'var(--pb-rose)' }}>
+                      {del.orderCode}
+                    </td>
 
-                  <td style={{ padding: '0.85rem 1rem', color: 'var(--pb-text-body)' }}>
-                    {del.vehicleNumber}
-                  </td>
+                    <td style={{ padding: '0.85rem 1rem', color: 'var(--pb-text-body)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <User size={14} color="var(--pb-text-muted)" />
+                        {del.officerId}
+                      </div>
+                    </td>
 
-                  <td style={{ padding: '0.85rem 1rem' }}>
-                    <div style={{ fontWeight: 800, color: 'var(--pb-plum)' }}>{del.driverName}</div>
-                    <div style={{ fontSize: '0.74rem', color: 'var(--pb-text-muted)' }}>📞 {del.driverPhone}</div>
-                  </td>
+                    <td style={{ padding: '0.85rem 1rem', fontSize: '0.82rem', color: 'var(--pb-text-body)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Calendar size={13} color="var(--pb-text-muted)" />
+                        {del.deliveryDate}
+                      </div>
+                    </td>
 
-                  <td style={{ padding: '0.85rem 1rem', color: 'var(--pb-text-body)' }}>
-                    📍 {del.destinationAddress}
-                  </td>
-
-                  <td style={{ padding: '0.85rem 1rem', fontSize: '0.82rem', color: 'var(--pb-text-body)' }}>
-                    📅 {del.deliveryDate}
-                  </td>
-
-                  <td style={{ padding: '0.85rem 1rem' }}>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: badge.bg, color: badge.color }}>
-                      {badge.label}
-                    </span>
-                  </td>
-
-                  <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
-                    {del.status === 'IN_TRANSIT' ? (
-                      <button
-                        type="button"
-                        onClick={() => handleMarkComplete(del)}
-                        style={{
-                          padding: '0.4rem 0.75rem',
-                          background: '#DCFCE7',
-                          border: '1px solid #BBF7D0',
-                          borderRadius: '8px',
-                          fontSize: '0.76rem',
-                          fontWeight: 700,
-                          color: '#15803D',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        ✓ Mark Delivered
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>
-                        {del.status === 'DELIVERED' ? '✓ Completed' : 'Pending Transit'}
+                    <td style={{ padding: '0.85rem 1rem' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: badge.bg, color: badge.color }}>
+                        {badge.label}
                       </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+                    </td>
+
+                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
+                      {del.status === 'IN_TRANSIT' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleMarkComplete(del)}
+                          style={{
+                            padding: '0.4rem 0.75rem',
+                            background: '#DCFCE7',
+                            border: '1px solid #BBF7D0',
+                            borderRadius: '8px',
+                            fontSize: '0.76rem',
+                            fontWeight: 700,
+                            color: '#15803D',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ✓ Mark Delivered
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--pb-text-muted)', fontWeight: 600 }}>
+                          {del.status === 'DELIVERED' ? '✓ Completed' : 'Pending Transit'}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -456,7 +444,7 @@ export default function Deliveries() {
               background: 'var(--pb-surface)',
               borderRadius: '16px',
               width: '100%',
-              maxWidth: '440px',
+              maxWidth: '420px',
               padding: '1.5rem',
               boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
               border: '1.5px solid var(--pb-border)'
@@ -489,80 +477,34 @@ export default function Deliveries() {
                   placeholder="e.g. ORD-1002"
                   value={newForm.orderCode}
                   onChange={(e) => setNewForm({ ...newForm, orderCode: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem', boxSizing: 'border-box' }}
                 />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Vehicle Number *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Van #PB-01"
-                    value={newForm.vehicleNumber}
-                    onChange={(e) => setNewForm({ ...newForm, vehicleNumber: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Delivery Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={newForm.deliveryDate}
-                    onChange={(e) => setNewForm({ ...newForm, deliveryDate: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Driver Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Kamal Bandara"
-                    value={newForm.driverName}
-                    onChange={(e) => setNewForm({ ...newForm, driverName: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                    Driver Phone *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="+94 77 123 4567"
-                    value={newForm.driverPhone}
-                    onChange={(e) => setNewForm({ ...newForm, driverPhone: e.target.value })}
-                    style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
-                  />
-                </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
-                  Destination Address *
+                  Business Officer ID *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 48 Janadhipathi Mawatha, Colombo 01"
-                  value={newForm.destinationAddress}
-                  onChange={(e) => setNewForm({ ...newForm, destinationAddress: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem' }}
+                  placeholder="e.g. OFF-01"
+                  value={newForm.officerId}
+                  onChange={(e) => setNewForm({ ...newForm, officerId: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--pb-plum)', marginBottom: '4px' }}>
+                  Delivery Date *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={newForm.deliveryDate}
+                  onChange={(e) => setNewForm({ ...newForm, deliveryDate: e.target.value })}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--pb-border)', fontSize: '0.85rem', boxSizing: 'border-box' }}
                 />
               </div>
 

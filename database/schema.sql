@@ -162,41 +162,34 @@ CREATE TABLE IF NOT EXISTS place_orders (
 
 -- ------------------------------------------------------------
 -- 11. Deliveries (Order Dispatch & Transport)
--- Renamed: scheduled_date → delivery_date
--- Added: order_id (FK), officer_id (FK)
--- Kept: driver_name, driver_phone, vehicle_number, destination_address
+-- Added: business_officer_id (FK)
+-- Removed: driver_name, driver_phone, vehicle_number, destination_address
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS deliveries (
     delivery_id INT AUTO_INCREMENT PRIMARY KEY,
     delivery_code VARCHAR(30) UNIQUE NULL,
     order_id INT NOT NULL UNIQUE,
-    officer_id INT NULL,
-    vehicle_number VARCHAR(50) NULL,
-    driver_name VARCHAR(100) NULL,
-    driver_phone VARCHAR(20) NULL,
-    destination_address VARCHAR(255) NULL,
+    business_officer_id INT NOT NULL,
     delivery_date DATE NULL,
     status ENUM('SCHEDULED', 'IN_TRANSIT', 'DELIVERED', 'FAILED') DEFAULT 'SCHEDULED',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(order_id),
-    FOREIGN KEY (officer_id) REFERENCES users(user_id)
+    FOREIGN KEY (business_officer_id) REFERENCES users(user_id)
 );
 
 -- ------------------------------------------------------------
 -- 12. Customer Invoices
--- Kept: invoice_number, customer_name, issue_date, due_date
--- Added: date (created_date)
+-- Removed: invoice_number, customer_name, issue_date, due_date
+-- Added: tax_amount, date
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS invoices (
     invoice_id INT AUTO_INCREMENT PRIMARY KEY,
-    invoice_number VARCHAR(30) UNIQUE NOT NULL,
     order_id INT NOT NULL UNIQUE,
-    customer_name VARCHAR(120) NULL,
     total_amount DECIMAL(10, 2) NOT NULL,
-    issue_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    due_date DATE NULL,
+    tax_amount DECIMAL(10, 2) DEFAULT 0.00,
     date DATE NULL,
     status ENUM('UNPAID', 'PAID', 'CANCELLED') DEFAULT 'UNPAID',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
 
@@ -241,31 +234,26 @@ CREATE TABLE IF NOT EXISTS expenses (
 
 -- ------------------------------------------------------------
 -- 16. Customer Ratings & Reviews
--- Added: order_id, customer_id, flower_id
+-- Removed: customer_id, flower_id
+-- Kept: order_id
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS rating_reviews (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
-    customer_id INT NOT NULL,
-    flower_id INT NOT NULL,
     rating INT CHECK (rating BETWEEN 1 AND 5),
     comment TEXT,
     review_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (order_id) REFERENCES orders(order_id),
-    FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    FOREIGN KEY (flower_id) REFERENCES flowers(flower_id)
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
 
 -- ------------------------------------------------------------
 -- 17. Notifications
--- Changed: user_id → order_id (FK)
--- Added: title
+-- Removed: title
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS notifications (
     notification_id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NULL,
     user_id INT NOT NULL,
-    title VARCHAR(100) NOT NULL,
     message TEXT NOT NULL,
     status ENUM('UNREAD', 'READ') DEFAULT 'UNREAD',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -384,20 +372,20 @@ INSERT INTO order_items (order_item_id, order_id, flower_id, inventory_id, quant
 (8, 4, 14, 14, 10, 385.00)
 ON DUPLICATE KEY UPDATE quantity=VALUES(quantity), price=VALUES(price);
 
--- I. Deliveries (delivery_date, officer_id added)
-INSERT INTO deliveries (delivery_id, delivery_code, order_id, officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status) VALUES
-(1, 'DEL-101', 1, 2, 'Van #PB-01', 'Kamal Bandara', '+94 77 123 4567', 'The Kingsbury Hotel, Colombo 01', CURDATE(), 'SCHEDULED'),
-(2, 'DEL-102', 3, 2, 'Van #PB-04', 'Sunil Fonseka', '+94 71 876 5432', 'The Kingsbury Hotel, Colombo 01', CURDATE(), 'IN_TRANSIT'),
-(3, 'DEL-103', 4, 2, 'Van #PB-02', 'Dinesh Silva',  '+94 76 999 8877', 'Shangri-La Hotel, Colombo 02',    CURDATE(), 'DELIVERED')
+-- I. Deliveries (business_officer_id added, driver/vehicle removed)
+INSERT INTO deliveries (delivery_id, delivery_code, order_id, business_officer_id, delivery_date, status) VALUES
+(1, 'DEL-101', 1, 2, CURDATE(), 'SCHEDULED'),
+(2, 'DEL-102', 3, 2, CURDATE(), 'IN_TRANSIT'),
+(3, 'DEL-103', 4, 2, CURDATE(), 'DELIVERED')
 ON DUPLICATE KEY UPDATE delivery_code=VALUES(delivery_code), status=VALUES(status);
 
--- J. Invoices
-INSERT INTO invoices (invoice_id, invoice_number, order_id, customer_name, total_amount, due_date, status) VALUES
-(1, 'INV-2026-001', 1, 'The Kingsbury Hotel Colombo', 14400.00, DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'PAID'),
-(2, 'INV-2026-002', 2, 'Shangri-La Banquets',         34135.00, DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'UNPAID'),
-(3, 'INV-2026-003', 3, 'The Kingsbury Hotel Colombo', 52145.00, DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'PAID'),
-(4, 'INV-2026-004', 4, 'Shangri-La Banquets',         22050.00, DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'PAID')
-ON DUPLICATE KEY UPDATE invoice_number=VALUES(invoice_number), status=VALUES(status);
+-- J. Invoices (invoice_number, customer_name, issue_date, due_date removed)
+INSERT INTO invoices (invoice_id, order_id, total_amount, tax_amount, date, status) VALUES
+(1, 1, 14400.00, 0.00, CURDATE(), 'PAID'),
+(2, 2, 34135.00, 0.00, CURDATE(), 'UNPAID'),
+(3, 3, 52145.00, 0.00, CURDATE(), 'PAID'),
+(4, 4, 22050.00, 0.00, CURDATE(), 'PAID')
+ON DUPLICATE KEY UPDATE total_amount=VALUES(total_amount), status=VALUES(status);
 
 -- K. Customer Payments
 INSERT INTO payments (payment_id, invoice_id, amount_paid, payment_method, status) VALUES
@@ -424,18 +412,18 @@ INSERT INTO expenses (expense_id, officer_id, description, amount) VALUES
 (2, 2, 'Packaging corrugated boxes & hydration sheets',     32000.00)
 ON DUPLICATE KEY UPDATE amount=VALUES(amount);
 
--- O. Rating & Reviews
-INSERT INTO rating_reviews (review_id, order_id, customer_id, flower_id, rating, comment) VALUES
-(1, 1, 5, 4, 5, 'Beautiful fresh carnations, delivered on time!'),
-(2, 4, 6, 1, 4, 'Lovely roses, slightly late delivery but quality was great.')
+-- O. Rating & Reviews (customer_id, flower_id removed)
+INSERT INTO rating_reviews (review_id, order_id, rating, comment) VALUES
+(1, 1, 5, 'Beautiful fresh carnations, delivered on time!'),
+(2, 4, 4, 'Lovely roses, slightly late delivery but quality was great.')
 ON DUPLICATE KEY UPDATE rating=VALUES(rating);
 
--- P. Notifications (order_id + user_id)
-INSERT INTO notifications (notification_id, order_id, user_id, title, message, status) VALUES
-(1, NULL, 2, 'Low Stock Alert',   'Gerbera stock is currently at 45 stems, below reorder level (50).', 'UNREAD'),
-(2, NULL, 1, 'Supplier Approval', 'Gamini Disanayake (Welimada) registered as a new supplier.',        'UNREAD'),
-(3, 3,    2, 'New Order Placed',  'The Kingsbury Hotel placed order ORD-1003 (Wedding Season).',       'READ')
-ON DUPLICATE KEY UPDATE title=VALUES(title);
+-- P. Notifications (title removed)
+INSERT INTO notifications (notification_id, order_id, user_id, message, status) VALUES
+(1, NULL, 2, 'Gerbera stock is currently at 45 stems, below reorder level (50).', 'UNREAD'),
+(2, NULL, 1, 'Gamini Disanayake (Welimada) registered as a new supplier.',        'UNREAD'),
+(3, 3,    2, 'The Kingsbury Hotel placed order ORD-1003 (Wedding Season).',       'READ')
+ON DUPLICATE KEY UPDATE message=VALUES(message);
 
 -- Q. Demand Forecast Seeds
 INSERT INTO demand_forecasts (forecast_id, flower_id, season_event, predicted_demand, unit_price, forecast_date) VALUES

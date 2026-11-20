@@ -7,36 +7,30 @@ const Invoice = sequelize.define('Invoice', {
     autoIncrement: true,
     primaryKey: true,
   },
-  invoice_number: {
-    type: DataTypes.STRING(30),
-    unique: true,
-    allowNull: false,
-    defaultValue: 'INV-2026-001',
-  },
   order_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
     unique: true,
   },
-  customer_name: {
-    type: DataTypes.STRING(120),
-    allowNull: true,
-  },
   total_amount: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
-  issue_date: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+  tax_amount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00,
   },
-  due_date: {
+  date: {
     type: DataTypes.DATEONLY,
     allowNull: true,
   },
   status: {
     type: DataTypes.ENUM('UNPAID', 'PAID', 'CANCELLED'),
     defaultValue: 'UNPAID',
+  },
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
   },
 }, {
   tableName: 'invoices',
