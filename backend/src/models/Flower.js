@@ -28,8 +28,8 @@ const Flower = sequelize.define('Flower', {
     allowNull: false,
   },
   image_url: {
-    type: DataTypes.STRING(255),
-    defaultValue: '/rose.jpg',
+    type: DataTypes.TEXT,
+    allowNull: true,
   },
   description: {
     type: DataTypes.TEXT,

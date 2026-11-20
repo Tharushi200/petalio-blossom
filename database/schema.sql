@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS flowers (
     category VARCHAR(50) NOT NULL,
     color VARCHAR(30) DEFAULT 'White',
     unit_price DECIMAL(10, 2) NOT NULL,
-    image_url VARCHAR(255) DEFAULT '/rose.jpg',
+    image_url TEXT,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -306,28 +306,28 @@ INSERT INTO customers (customer_id, customer_name, contact_number, address, city
 (6, 'Shangri-La Banquets',         '+94 76 555 6677', '1 Galle Face',            'Colombo 02')
 ON DUPLICATE KEY UPDATE customer_name=VALUES(customer_name), address=VALUES(address);
 
--- E. Flower Catalogue (19 Varieties — variety removed from table)
+-- E. Flower Catalogue (19 Commercial Varieties with Verified Images)
 INSERT INTO flowers (flower_id, name, category, color, unit_price, image_url, description) VALUES
-(1,  'Rose',             'Rose',             'Red',     350.00, '/rose.jpg',          'Grade A long-stem luxury roses cultivated in Nuwara Eliya misty hills.'),
-(2,  'Orchid',           'Orchid',           'White',   420.00, '/orchid.jpg',        'Upscale tropical highland shaded orchid sprays for corporate & wedding styling.'),
-(3,  'Lily',             'Lily',             'White',   830.00, '/lily.jpg',          'Fragrant Oriental white lilies with stately stems grown in Ambewela alpine fields.'),
-(4,  'Carnation',        'Carnation',        'Red',     300.00, '/carnation.jpg',     'Long-lasting ruffled cut carnations from Hakgala terraced estates.'),
-(5,  'Chrysanthemum',    'Chrysanthemum',    'White',   240.00, '/chrysanthemum.jpg', 'Traditional festival bloom harvested across Welimada plateau.'),
-(6,  'Gerbera',          'Gerbera',          'Red',     200.00, '/daisies.jpg',       'Large daisy-like blooms from Bandarawela, bright commercial bouquet filler.'),
-(7,  'Lisianthus',       'Lisianthus',       'White',   510.00, '/lisianthus.jpg',    'Double-petaled eustoma grandiflorum with extended 14-day vase life.'),
-(8,  'Lavender',         'Lavender',         'Purple',  975.00, '/sea_lavenders.jpg', 'Aromatic English lavender with papery violet florets, dried & fresh styling.'),
-(9,  "Baby's Breath",    "Baby's Breath",    'White',  1500.00, '/baby_breath.jpg',   'Airy cloud gypsophila bunches, essential bridal bouquet foundation.'),
-(10, 'Sunflower',        'Sunflower',        'Yellow',  270.00, '/sunflower.jpg',     'Golden yellow cut sunflowers harvested from Pedro Highlands.'),
-(11, 'Tulip',            'Tulip',            'Red',     710.00, '/tulip.jpg',         'Imported Grade-A elegant Dutch tulips for luxury VIP banquets.'),
-(12, 'Hydrangea',        'Hydrangea',        'White',  1000.00, '/hydrangea.jpg',     'Massive lush round floral heads grown in Hakgala temperate climate.'),
-(13, 'Peony',            'Peony',            'Pink',   1760.00, '/peony.jpg',         'Opulent luxury blooms in soft blush, premier flower for bridal arches.'),
-(14, 'Freesia',          'Freesia',          'White',   420.00, '/freesia.jpg',       'Sweetly scented funnel-shaped flowers popular in bridal perfumed decor.'),
-(15, 'Bird of Paradise', 'Bird of Paradise', 'Orange',  800.00, '/bird_paradise.jpg', 'Stately exotic crane flower with vivid plumage, architectural focal bloom.'),
-(16, 'Ranunculus',       'Ranunculus',       'Orange',  995.00, '/ranunculus.jpg',    'Layered papery petals resembling mini roses, favorite among Colombo florists.'),
-(17, 'Tuberose',         'Tuberose',         'White',   265.00, '/tuberose.jpg',      'Intensely fragrant white floral spikes used extensively for garlands & banquets.'),
-(18, 'Eucalyptus',       'Eucalyptus',       'Green',   250.00, '/eucalyptus.jpg',    'Aromatic silver-green rounded foliage, indispensable filler greenery.'),
-(19, 'Alstroemeria',     'Alstroemeria',     'Pink',    280.00, '/alstroemeria.jpg',  'Lily of the Incas with multiple miniature blooms per stem, long vase life.')
-ON DUPLICATE KEY UPDATE name=VALUES(name), category=VALUES(category), unit_price=VALUES(unit_price);
+(1,  'Rose',             'Rose',             'Red',     350.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb_tvdU2RR7rFV9ocrmcpiq_vWvZi4YghL6L5H_Tw6p39WwvwkUaxhyow&s=10', 'Grade A long-stem luxury roses cultivated in Nuwara Eliya misty hills.'),
+(2,  'Orchid',           'Orchid',           'White',   420.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA1OMi69MtnnAVjiMaBEUBZrljQ5k8eszw6kwKcteJlecE0t9UgnR0uBvD&s=10', 'Upscale tropical highland shaded orchid sprays for corporate & wedding styling.'),
+(3,  'Lily',             'Lily',             'White',   830.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsybGsp0VZnLWS3RLEba1KLQDJaPKo9zFVH9xpdeXvBJMBplAIgqJngoQ&s=10', 'Fragrant Oriental white lilies with stately stems grown in Ambewela alpine fields.'),
+(4,  'Carnation',        'Carnation',        'Red',     300.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOL2BukndIVjerxnQBffIvDAzSxiNyW196fPWjdzMYO2uOFHZwbhWy2f1m&s=10', 'Long-lasting ruffled cut carnations from Hakgala terraced estates.'),
+(5,  'Chrysanthemum',    'Chrysanthemum',    'White',   240.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlAxqqHuoF68upnZFu2PPk8x6ZvJCXoiFJ7xTEUc2YXREasfiD8D8LLxLW&s=10', 'Traditional festival bloom harvested across Welimada plateau.'),
+(6,  'Gerbera',          'Gerbera',          'Red',     200.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10', 'Large daisy-like blooms from Bandarawela, bright commercial bouquet filler.'),
+(7,  'Lisianthus',       'Lisianthus',       'White',   510.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4wl-OmkBCXuQ0UEvSwByBgPAEO_Z7ejGCre1PJtqqaX_MEatY9qNqfwo&s=10', 'Double-petaled eustoma grandiflorum with extended 14-day vase life.'),
+(8,  'Lavender',         'Lavender',         'Purple',  975.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-nzRRZzeoX2c4HXFB6JFZ0vwWPIPzMUpiCUYYVEigXZULRzJLSWak-jbb&s=10', 'Aromatic English lavender with papery violet florets, dried & fresh styling.'),
+(9,  "Baby's Breath",    "Baby's Breath",    'White',  1500.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKIkjS2xPZj96SP_2idOSlVs98i-v3dyRggjNFySSzbCoQfSDxWm8lmgGu&s=10', 'Airy cloud gypsophila bunches, essential bridal bouquet foundation.'),
+(10, 'Sunflower',        'Sunflower',        'Yellow',  270.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvZYqnWOFk3qQGCBg9vWpXyBVS5nOQoN9Y1vc8jc0BMI--BieVhlvRgvbt&s=10', 'Golden yellow cut sunflowers harvested from Pedro Highlands.'),
+(11, 'Tulip',            'Tulip',            'Red',     710.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKRzETOSu44v07ceKy8SB1A37lzrbn1vsbpxrS6RUm8LxdNRw7qYuergow&s=10', 'Imported Grade-A elegant Dutch tulips for luxury VIP banquets.'),
+(12, 'Hydrangea',        'Hydrangea',        'White',  1000.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRehG9NIkBW-Mi9U3Tf7l3VBrODUtdc8mu-iqQdMoKAwHu1DUnTsCh0Wm4&s=10', 'Massive lush round floral heads grown in Hakgala temperate climate.'),
+(13, 'Peony',            'Peony',            'Pink',   1760.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK284b9Wj96yHD-8a1dMkU9RVF7yKBsBiXnX52GSBu_s_bcYkM-qDlKHXy&s=10', 'Opulent luxury blooms in soft blush, premier flower for bridal arches.'),
+(14, 'Freesia',          'Freesia',          'White',   420.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrRmutoRtCK1O1ZG34UTNwDecCprzyEemTzmNL2doI8Wk3f2h-Gw5yf10Q&s=10', 'Sweetly scented funnel-shaped flowers popular in bridal perfumed decor.'),
+(15, 'Bird of Paradise', 'Bird of Paradise', 'Orange',  800.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRlgOeGnEHAFtrnItaMWudRItsdmYgbRd7qAy9bpPp2jikU8n_I4y5IZM&s=10', 'Stately exotic crane flower with vivid plumage, architectural focal bloom.'),
+(16, 'Ranunculus',       'Ranunculus',       'Orange',  995.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGJxZf8HeJkEIjdPYpUCJJ3SKEnQfWmHNTWqIDpHcRaUxWDMgzJMIyQSc&s=10', 'Layered papery petals resembling mini roses, favorite among Colombo florists.'),
+(17, 'Tuberose',         'Tuberose',         'White',   265.00, 'https://www.dutchgrown.com/cdn/shop/articles/Tuberose_789x_crop_center.jpg?v=1671195538', 'Intensely fragrant white floral spikes used extensively for garlands & banquets.'),
+(18, 'Eucalyptus',       'Eucalyptus',       'Green',   250.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiDQYrVEtnLKPOpvCTVq0uC3laB5YpDyul0vb9q9nHBPjOCZwJPd8zyM3y&s=10', 'Aromatic silver-green rounded foliage, indispensable filler greenery.'),
+(19, 'Alstroemeria',     'Alstroemeria',     'Pink',    280.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKwKVN94UCsBokXKaWZ5aKjcgG8mYR8zOehmCmlIsWHTrUxd6Efkwje9Q&s=10', 'Lily of the Incas with multiple miniature blooms per stem, long vase life.')
+ON DUPLICATE KEY UPDATE name=VALUES(name), category=VALUES(category), unit_price=VALUES(unit_price), image_url=VALUES(image_url);
 
 -- F. Warehouse Inventory
 INSERT INTO inventory (inventory_id, flower_id, stock_quantity, reorder_level) VALUES
