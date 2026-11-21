@@ -1,15 +1,31 @@
-# 🌸 Petalio Blossom
-### Mobile & Web Floriculture Farm, Order & Inventory Management System
+# 🌸 Petalio Blossom — Floriculture Farm, Order & Inventory Management System
 
 > **Final Year Project — Higher National Diploma in Software Engineering (HNDSE)**  
-> **Developed by:** Tharushi (Web Portal & Management Suite)  
+> **Developed by:** Tharushi (Web Management Portal)  
 > **Repository:** [https://github.com/Tharushi200/petalio-blossom](https://github.com/Tharushi200/petalio-blossom)
 
 ---
 
 ## 📌 1. Project Overview
 
-**Petalio Blossom** is an enterprise-grade floriculture management system engineered to streamline cut-flower supply chains in Sri Lanka. It connects highland commercial flower growers (Nuwara Eliya, Welimada, Badulla) with wholesale cut-flower buyers (luxury hotels, banquet event planners, retail florists), supported by an automated warehouse inventory and Machine Learning demand forecasting engine.
+**Petalio Blossom** is an enterprise-grade cut-flower farm and supply chain management system engineered for Sri Lanka's commercial floriculture industry. It bridges highland flower growers (Nuwara Eliya, Welimada, Badulla) with wholesale cut-flower buyers (luxury hotels, banquet events, boutique florists), backed by real-time warehouse inventory, automated supplier matching, and a Machine Learning seasonal demand forecasting engine.
+
+---
+
+## 📦 Modules
+
+| Module | Status | Description |
+|---|---|---|
+| 🏠 **Dashboard** | ✅ Done | Executive KPIs, order distribution charts, live operations alerts |
+| 🌸 **Flower Catalogue** | ✅ Done | 19 commercial cut-flower varieties, multi-color interactive switcher & pricing |
+| 📦 **Inventory** | ✅ Done | Warehouse stock tracking, color-wise stock management & reorder alerts |
+| 🛍️ **Orders** | ✅ Done | Wholesale customer order matching, status tracking & confirmation |
+| 🚚 **Deliveries** | ✅ Done | Order dispatch scheduling, officer allocation & fulfillment tracking |
+| 🧾 **Invoices & Payments** | ✅ Done | Commercial invoice generation (PDF export) & payment settlement |
+| 👥 **Supplier Approvals** | ✅ Done | Highland grower onboarding, capacity inspection & verification |
+| 🛡️ **User & Staff Management** | ✅ Done | Role-based user accounts (Admin/Officer/Customer/Supplier) & staff roster |
+| 📊 **Reports** | ✅ Done | Instant executive PDF & CSV export for management audits |
+| 🤖 **Demand Forecasting** | ✅ Done | Machine Learning Random Forest model predicting seasonal flower demand |
 
 ---
 
@@ -50,7 +66,7 @@ The ecosystem separates operational management (Web) from external field interac
   * Commercial Wholesale Order Lifecycle Management
   * Real-time Warehouse Stock & Low-Stock Alerts
   * Delivery Dispatch & Logistics Tracking
-  * Automated CSV Operations & Sales Report Export
+  * Automated Executive PDF & CSV Report Export
   * Supplier Procurement Orders
 
 ### 📱 Mobile App Users (Field & External Clients)
@@ -69,11 +85,11 @@ The ecosystem separates operational management (Web) from external field interac
 
 | Layer | Technologies |
 |---|---|
-| **Frontend (Web)** | React 19, Vite, React Router 7, Recharts, Lucide Icons, CSS3 (Royal Orchid Theme) |
+| **Frontend (Web)** | React 19, Vite, React Router 7, Recharts, Lucide Icons, jsPDF, CSS3 (Royal Orchid Theme) |
 | **Backend API** | Node.js, Express, Sequelize ORM, JWT Authentication, Helmet, CORS |
 | **Database** | MySQL 8.0 / MariaDB (Strict Relational Constraints) |
 | **Machine Learning** | Python 3, Flask, Scikit-Learn (`RandomForestRegressor`), Pandas, NumPy |
-| **Version Control** | Git, GitHub (GitFlow Branching Model) |
+| **Version Control** | Git, GitHub |
 
 ---
 
@@ -182,28 +198,3 @@ Petalio Blossom/
    python app.py
    ```
    *Prediction API will run on **`http://127.0.0.1:5000`***
-
----
-
-## 🔑 6. Default Evaluation & Demo Credentials
-
-| Role | Email Address | Password | Permissions |
-|---|---|---|---|
-| **System Administrator** | `admin@petalio.lk` | `Admin@123` | Full Governance, Approvals, Staff, Reports |
-| **Business Officer** | `officer@petalio.lk` | `Officer@123` | Operations, Orders, Catalogue, Inventory, Dispatch |
-
----
-
-## 🌿 7. Git Branching Model
-
-This repository follows a strict GitFlow workflow:
-* **`main`**: Production-ready, verified milestone releases.
-* **`develop`**: Active integration branch for ongoing development.
-* **`feature/frontend`**: React UI components, screens, styling, and navigation.
-* **`feature/backend`**: Express API controllers, routing, and database schema updates.
-* **`feature/ml-service`**: Model training scripts and Flask prediction endpoints.
-
----
-
-## 📜 8. License & Academic Integrity
-This software was developed for academic submission as part of the **Higher National Diploma in Software Engineering (HNDSE)** Final Year Project. All rights reserved.
