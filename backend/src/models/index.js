@@ -12,6 +12,8 @@ const Flower = require('./Flower');
 const Inventory = require('./Inventory');
 const Order = require('./Order');
 const OrderItem = require('./OrderItem');
+const PlaceOrder = require('./PlaceOrder');
+const SupplierPlaceOrder = require('./SupplierPlaceOrder');
 const SupplierCapacity = require('./SupplierCapacity');
 const Delivery = require('./Delivery');
 const Invoice = require('./Invoice');
@@ -52,6 +54,22 @@ User.hasMany(SupplierCapacity, { foreignKey: 'supplier_id', as: 'capacities' });
 SupplierCapacity.belongsTo(User, { foreignKey: 'supplier_id', as: 'supplier' });
 SupplierCapacity.belongsTo(Flower, { foreignKey: 'flower_id', as: 'flower' });
 Flower.hasMany(SupplierCapacity, { foreignKey: 'flower_id', as: 'capacities' });
+
+// Supplier ↔ PlaceOrder Many-to-Many via SupplierPlaceOrder
+User.belongsToMany(PlaceOrder, {
+  through: SupplierPlaceOrder,
+  foreignKey: 'supplier_id',
+  otherKey: 'place_order_id',
+  as: 'procurementOrders'
+});
+PlaceOrder.belongsToMany(User, {
+  through: SupplierPlaceOrder,
+  foreignKey: 'place_order_id',
+  otherKey: 'supplier_id',
+  as: 'suppliers'
+});
+PlaceOrder.belongsTo(Inventory, { foreignKey: 'inventory_id', as: 'inventory' });
+Inventory.hasMany(PlaceOrder, { foreignKey: 'inventory_id', as: 'placeOrders' });
 
 // Order → Delivery (1:1)
 Order.hasOne(Delivery, { foreignKey: 'order_id', as: 'delivery' });
@@ -100,6 +118,8 @@ module.exports = {
   Inventory,
   Order,
   OrderItem,
+  PlaceOrder,
+  SupplierPlaceOrder,
   SupplierCapacity,
   Delivery,
   Invoice,

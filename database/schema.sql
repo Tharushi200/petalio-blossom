@@ -108,15 +108,13 @@ CREATE TABLE IF NOT EXISTS inventory (
 
 -- ------------------------------------------------------------
 -- 8. Customer Orders
--- Removed: flower_id, supplier_id, total_amount
--- Added: inventory_id
+-- Removed: flower_id, supplier_id, total_amount, inventory_id (redundant, handled in order_items)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     order_code VARCHAR(30) UNIQUE NOT NULL,
     customer_id INT NOT NULL,
     officer_id INT NULL,
-    inventory_id INT NULL,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     season_event VARCHAR(50) DEFAULT 'Normal',
     delivery_address VARCHAR(255) NULL,
@@ -124,8 +122,7 @@ CREATE TABLE IF NOT EXISTS orders (
     payment_status ENUM('UNPAID', 'PAID') DEFAULT 'UNPAID',
     status ENUM('PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED') DEFAULT 'PENDING',
     FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    FOREIGN KEY (officer_id) REFERENCES users(user_id),
-    FOREIGN KEY (inventory_id) REFERENCES inventory(inventory_id)
+    FOREIGN KEY (officer_id) REFERENCES users(user_id)
 );
 
 -- ------------------------------------------------------------
@@ -147,8 +144,6 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 -- ------------------------------------------------------------
 -- 10. Place Order (Farm Procurement from Suppliers)
--- Removed: flower_id, supplier_id, total_amount
--- Added: inventory_id
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS place_orders (
     place_order_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -158,6 +153,21 @@ CREATE TABLE IF NOT EXISTS place_orders (
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('PENDING', 'ACCEPTED', 'RECEIVED', 'REJECTED') DEFAULT 'PENDING',
     FOREIGN KEY (inventory_id) REFERENCES inventory(inventory_id)
+);
+
+-- ------------------------------------------------------------
+-- 10B. Supplier - Place Order Junction (Many-to-Many)
+-- Connects Suppliers with Procurement Place Orders
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS supplier_place_orders (
+    supplier_place_order_id INT AUTO_INCREMENT PRIMARY KEY,
+    supplier_id INT NOT NULL,
+    place_order_id INT NOT NULL,
+    status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'FULFILLED') DEFAULT 'PENDING',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_supplier_place_order (supplier_id, place_order_id),
+    FOREIGN KEY (supplier_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (place_order_id) REFERENCES place_orders(place_order_id) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
@@ -398,6 +408,14 @@ ON DUPLICATE KEY UPDATE status=VALUES(status);
 INSERT INTO place_orders (place_order_id, inventory_id, quantity, unit_price, status) VALUES
 (1, 1, 500, 280.00, 'ACCEPTED'),
 (2, 3, 200, 650.00, 'PENDING')
+ON DUPLICATE KEY UPDATE status=VALUES(status);
+
+-- L2. Supplier - Place Orders Junction (Many-to-Many Seed Data)
+-- Users with user_id 3 and 4 are registered suppliers
+INSERT INTO supplier_place_orders (supplier_place_order_id, supplier_id, place_order_id, status) VALUES
+(1, 3, 1, 'ACCEPTED'),
+(2, 4, 1, 'FULFILLED'),
+(3, 3, 2, 'PENDING')
 ON DUPLICATE KEY UPDATE status=VALUES(status);
 
 -- M. Supplier Payments (place_order_id FK)
