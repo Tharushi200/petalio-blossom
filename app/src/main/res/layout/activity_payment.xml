@@ -117,9 +117,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
+                            android:background="?android:attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
                             android:text="Delivery —"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
+                            android:textColor="@color/primary_brand"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <TextView

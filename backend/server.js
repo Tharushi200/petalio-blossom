@@ -206,6 +206,13 @@ async function initDatabaseTables() {
       await pool.query('ALTER TABLE invoices ADD COLUMN invoice_number VARCHAR(50) DEFAULT NULL');
     } catch (_) {}
     try {
+      await pool.query('ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_reference VARCHAR(100) NULL');
+    } catch (_) {
+      try {
+        await pool.query('ALTER TABLE payments ADD COLUMN payment_reference VARCHAR(100) NULL');
+      } catch (__) {}
+    }
+    try {
       await pool.query('ALTER TABLE deliveries ADD COLUMN destination_address VARCHAR(255) DEFAULT NULL');
     } catch (_) {}
     try {
@@ -2209,10 +2216,23 @@ app.delete(['/api/wishlist/:flowerId', '/api/wishlist'], async (req, res) => {
 
 // Place a new customer order (atomic MySQL transaction with stock locking & server pricing)
 app.post('/api/orders', async (req, res) => {
-  const { customer_id, delivery_address, delivery_city, payment_method, items, order_code } = req.body;
-  const custId = parseInt(customer_id, 10);
+  const {
+    customer_id,
+    user_id,
+    delivery_address,
+    delivery_city,
+    payment_method,
+    payment_reference,
+    reference_no,
+    items,
+    order_code,
+    delivery_date,
+    total_amount
+  } = req.body;
+
+  const custId = parseInt(customer_id || user_id, 10);
   if (isNaN(custId) || custId <= 0) {
-    return res.status(400).json({ success: false, message: 'Valid customer_id is required' });
+    return res.status(400).json({ success: false, message: 'Valid customer_id or user_id is required' });
   }
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ success: false, message: 'Order must include at least one flower item' });
@@ -2221,8 +2241,8 @@ app.post('/api/orders', async (req, res) => {
   // Consolidate & validate item quantities up-front
   const qtyByFlowerId = new Map();
   for (const item of items) {
-    const fId = parseInt(item && item.flower_id, 10);
-    const qty = parseInt(item && item.quantity, 10);
+    const fId = parseInt(item && (item.flower_id || item.id), 10);
+    const qty = parseInt(item && (item.quantity || item.qty), 10);
     if (isNaN(fId) || fId <= 0 || isNaN(qty) || qty <= 0) {
       return res.status(400).json({ success: false, message: 'Each item must have a valid flower_id and quantity >= 1' });
     }
@@ -2233,6 +2253,7 @@ app.post('/api/orders', async (req, res) => {
   }
 
   const payMethod = (payment_method && String(payment_method).trim()) ? String(payment_method).trim().toUpperCase() : 'CARD';
+  const payRef = (payment_reference || reference_no || (payMethod === 'CARD' ? `CARD-${Date.now()}` : 'BANK-TRANSFER')).trim();
   const conn = await pool.getConnection();
 
   try {
@@ -2266,7 +2287,7 @@ app.post('/api/orders', async (req, res) => {
     let resolvedOrderSupplierId = null;
     for (const [fId, qty] of qtyByFlowerId.entries()) {
       const [flRows] = await conn.query(
-        'SELECT flower_id, name, unit_price, stock_quantity, supplier_id FROM flowers WHERE flower_id = ? LIMIT 1 FOR UPDATE',
+        'SELECT flower_id, name, unit_price, stock_quantity, stock, supplier_id FROM flowers WHERE flower_id = ? LIMIT 1 FOR UPDATE',
         [fId]
       );
       if (flRows.length === 0) {
@@ -2336,30 +2357,59 @@ app.post('/api/orders', async (req, res) => {
     }
 
     const deliveryFee = 200.00;
-    const totalAmount = subtotal + deliveryFee;
+    const finalTotal = subtotal + deliveryFee;
 
     // 3. Create invoice
     const invoiceNum = `INV-${orderId}-${Date.now().toString().slice(-4)}`;
     const [invRes] = await conn.query(
       `INSERT INTO invoices (invoice_number, order_id, customer_name, total_amount, status)
        VALUES (?, ?, ?, ?, 'PAID')`,
-      [invoiceNum, orderId, customerName, totalAmount]
+      [invoiceNum, orderId, customerName, finalTotal]
     );
 
-    // 4. Record payment
-    await conn.query(
-      `INSERT INTO payments (invoice_id, amount_paid, payment_method, status)
-       VALUES (?, ?, ?, 'SUCCESS')`,
-      [invRes.insertId, totalAmount, payMethod]
-    );
+    // 4. Record payment with payment_reference
+    try {
+      await conn.query(
+        `INSERT INTO payments (invoice_id, amount_paid, payment_method, payment_reference, status)
+         VALUES (?, ?, ?, ?, 'SUCCESS')`,
+        [invRes.insertId, finalTotal, payMethod, payRef]
+      );
+    } catch (_) {
+      await conn.query(
+        `INSERT INTO payments (invoice_id, amount_paid, payment_method, status)
+         VALUES (?, ?, ?, 'SUCCESS')`,
+        [invRes.insertId, finalTotal, payMethod]
+      );
+    }
 
-    // 5. Schedule Delivery
+    // 5. Schedule Delivery with selected delivery date
+    let targetDeliveryDateSql = 'DATE_ADD(CURDATE(), INTERVAL 1 DAY)';
+    let targetDeliveryDateParam = null;
+    let deliveryDateStr = 'Tomorrow';
+    if (delivery_date && typeof delivery_date === 'string' && delivery_date.trim()) {
+      const rawD = delivery_date.replace(/delivery\s*/i, '').trim();
+      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawD)) {
+        const [d, m, y] = rawD.split('/');
+        targetDeliveryDateSql = '?';
+        targetDeliveryDateParam = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+        deliveryDateStr = rawD;
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(rawD)) {
+        targetDeliveryDateSql = '?';
+        targetDeliveryDateParam = rawD;
+        deliveryDateStr = rawD;
+      }
+    }
+
     const deliveryCode = `DEL-${orderId}-${Math.floor(100 + Math.random() * 900)}`;
-    await conn.query(
-      `INSERT INTO deliveries (delivery_code, order_id, business_officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
-       VALUES (?, ?, 2, 'WP CAD-4521', 'Sunil Shantha', '+94 77 123 4567', ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'SCHEDULED')`,
-      [deliveryCode, orderId, address]
-    );
+    const delQuery = targetDeliveryDateParam
+      ? `INSERT INTO deliveries (delivery_code, order_id, business_officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
+         VALUES (?, ?, 2, 'WP CAD-4521', 'Sunil Shantha', '+94 77 123 4567', ?, ?, 'SCHEDULED')`
+      : `INSERT INTO deliveries (delivery_code, order_id, business_officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
+         VALUES (?, ?, 2, 'WP CAD-4521', 'Sunil Shantha', '+94 77 123 4567', ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'SCHEDULED')`;
+    const delParams = targetDeliveryDateParam
+      ? [deliveryCode, orderId, address, targetDeliveryDateParam]
+      : [deliveryCode, orderId, address];
+    await conn.query(delQuery, delParams);
 
     await conn.commit();
     return res.status(201).json({
@@ -2367,9 +2417,17 @@ app.post('/api/orders', async (req, res) => {
       message: 'Order created successfully!',
       order_id: orderId,
       order_code: orderCode,
-      total_amount: totalAmount,
+      total_amount: finalTotal,
       delivery_address: address,
-      status: 'PENDING'
+      status: 'PENDING',
+      tracking: {
+        delivery_code: deliveryCode,
+        delivery_date: deliveryDateStr,
+        driver_name: 'Sunil Shantha',
+        driver_phone: '+94 77 123 4567',
+        vehicle_number: 'WP CAD-4521',
+        status: 'SCHEDULED'
+      }
     });
   } catch (error) {
     try { await conn.rollback(); } catch (_) {}

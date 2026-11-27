@@ -1,5 +1,6 @@
 package com.petalio.blossom;
 
+import android.app.DatePickerDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.google.gson.Gson;
 import com.petalio.blossom.network.ApiClient;
@@ -25,6 +27,7 @@ import com.petalio.blossom.network.OrderRequest;
 import com.petalio.blossom.network.OrderResponse;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import retrofit2.Call;
@@ -110,7 +113,7 @@ public class PaymentActivity extends AppCompatActivity {
         deliveryDate = cleanDate;
 
         tvPaymentOrderId.setText("Order " + orderId);
-        tvPaymentDeliveryDate.setText("Delivery " + deliveryDate);
+        tvPaymentDeliveryDate.setText("Delivery " + deliveryDate + "  •  Tap to change");
         tvPaymentSummaryAmount.setText("Rs. " + totalAmount);
         btnPayTotal.setText("Pay Rs. " + totalAmount);
 
@@ -131,6 +134,12 @@ public class PaymentActivity extends AppCompatActivity {
         }
 
         btnBackPayment.setOnClickListener(v -> supportFinishAfterTransition());
+
+        // Interactive delivery date picker in Signature Petalio Rose-Burgundy theme
+        if (tvPaymentDeliveryDate != null) {
+            AnimationUtilsHelper.applyPressScale(tvPaymentDeliveryDate);
+            tvPaymentDeliveryDate.setOnClickListener(v -> openDeliveryDatePicker());
+        }
 
         // 1-Tap Copy Account Number
         if (btnCopyAccountNo != null) {
@@ -289,6 +298,36 @@ public class PaymentActivity extends AppCompatActivity {
         }
     }
 
+    private void openDeliveryDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog dialog = new DatePickerDialog(this, R.style.PetalioDatePickerTheme, (view, y, m, d) -> {
+            deliveryDate = d + "/" + (m + 1) + "/" + y;
+            if (tvPaymentDeliveryDate != null) {
+                tvPaymentDeliveryDate.setText("Delivery " + deliveryDate + "  •  Tap to change");
+            }
+            Toast.makeText(this, "Delivery date set: " + deliveryDate, Toast.LENGTH_SHORT).show();
+        }, year, month, day);
+        dialog.getDatePicker().setMinDate(System.currentTimeMillis());
+        dialog.setOnShowListener(d -> {
+            Button positive = dialog.getButton(DatePickerDialog.BUTTON_POSITIVE);
+            Button negative = dialog.getButton(DatePickerDialog.BUTTON_NEGATIVE);
+            int burgundyColor = ContextCompat.getColor(this, R.color.petalio_burgundy);
+            if (positive != null) {
+                positive.setTextColor(burgundyColor);
+                positive.setTypeface(null, android.graphics.Typeface.BOLD);
+            }
+            if (negative != null) {
+                negative.setTextColor(burgundyColor);
+            }
+        });
+        dialog.show();
+    }
+
     private void promptForDeliveryAddress(int customerId, List<CartManager.CartItem> cartItems) {
         LinearLayout container = new LinearLayout(this);
         container.setOrientation(LinearLayout.VERTICAL);
@@ -347,8 +386,21 @@ public class PaymentActivity extends AppCompatActivity {
             ));
         }
 
+        String payRef = isBankTransferSelected
+                ? (etBankReference != null && etBankReference.getText() != null ? etBankReference.getText().toString().trim() : "")
+                : ("CARD-" + System.currentTimeMillis());
+
         OrderRequest orderReq = new OrderRequest(
-                customerId, address, city, payMethod, orderId, items
+                customerId,
+                customerId,
+                address,
+                city,
+                payMethod,
+                payRef,
+                deliveryDate,
+                (double) totalAmount,
+                orderId,
+                items
         );
 
         ApiClient.getApiService(PaymentActivity.this)
