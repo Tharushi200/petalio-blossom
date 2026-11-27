@@ -7,7 +7,7 @@ export const MOCK_USERS = {
   admin: {
     id: 1,
     name: 'Dr. K. Wickramasinghe',
-    email: 'admin@petalio.lk',
+    email: 'tharushidikkumbura727@gmail.com',
     role: 'ADMIN',
     roleLabel: 'System Administrator',
     avatar: 'KW',
@@ -17,7 +17,7 @@ export const MOCK_USERS = {
   officer: {
     id: 2,
     name: 'Anuki Perera',
-    email: 'officer@petalio.lk',
+    email: 'dikkumburatharushi@gmail.com',
     role: 'BUSINESS_OFFICER',
     roleLabel: 'Business Officer',
     avatar: 'AP',
