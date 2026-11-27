@@ -34,6 +34,25 @@
                 android:transitionName="flower_hero_transition"
                 android:src="@drawable/img_flower_rose" />
 
+            <!-- Top-Left Out of Stock Badge -->
+            <TextView
+                android:id="@+id/tvOutOfStockBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_badge_out_of_stock"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:text="Out of Stock"
+                android:textColor="@color/badge_dispatched_text"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
             <!-- Retained View ID for backward compatibility -->
             <View
                 android:id="@+id/tvFlowerBadge"

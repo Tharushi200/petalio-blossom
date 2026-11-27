@@ -12,6 +12,7 @@ public class FlowerDto {
     private String image_url;
     private String description;
     private int stock_quantity;
+    private int stock;
     private int reorder_level;
     private int sold_count;
     private double avg_rating;
@@ -26,7 +27,8 @@ public class FlowerDto {
     public double getUnitPrice() { return unit_price; }
     public String getImageUrl() { return image_url; }
     public String getDescription() { return description != null ? description : ""; }
-    public int getStockQuantity() { return stock_quantity; }
+    public int getStockQuantity() { return stock_quantity > 0 ? stock_quantity : (stock > 0 ? stock : 0); }
+    public int getStock() { return getStockQuantity(); }
     public int getReorderLevel() { return reorder_level > 0 ? reorder_level : 30; }
 
     public int getSoldCount() { return sold_count; }

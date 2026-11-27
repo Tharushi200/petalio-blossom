@@ -291,9 +291,13 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
         }
 
         // Sold count / Fresh Harvest / Out of Stock social-proof
+        if (holder.tvOutOfStockBadge != null) {
+            holder.tvOutOfStockBadge.setVisibility(flower.available <= 0 ? View.VISIBLE : View.GONE);
+        }
+
         if (holder.tvFlowerAvailable != null) {
             if (flower.available <= 0) {
-                holder.tvFlowerAvailable.setText("• Out of Stock");
+                holder.tvFlowerAvailable.setText("Out of Stock");
                 holder.tvFlowerAvailable.setTextColor(ContextCompat.getColor(context, R.color.badge_dispatched_text));
             } else {
                 holder.tvFlowerAvailable.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
@@ -310,6 +314,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
 
         // Cached, downsampled botanical flower photo with top focal crop for roses
         holder.ivFlowerImage.clearColorFilter();
+        holder.ivFlowerImage.setAlpha(flower.available <= 0 ? 0.65f : 1.0f);
         boolean isRose = flower.name != null
                 && flower.name.toLowerCase(Locale.US).contains("rose")
                 && !flower.name.toLowerCase(Locale.US).contains("tuberose");
@@ -370,7 +375,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
         if (holder.btnAddToCart != null) {
             if (flower.available <= 0) {
                 holder.btnAddToCart.setEnabled(false);
-                holder.btnAddToCart.setAlpha(0.45f);
+                holder.btnAddToCart.setAlpha(0.5f);
                 holder.btnAddToCart.setOnClickListener(null);
             } else {
                 holder.btnAddToCart.setEnabled(true);
@@ -379,10 +384,14 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
                 holder.btnAddToCart.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (flower.available <= 0) {
+                            Toast.makeText(context, flower.name + " is currently out of stock.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         CartManager cartManager = CartManager.getInstance(context);
                         int existing = cartManager.getQuantityForFlower(flower.id);
                         if (existing + 1 > flower.available) {
-                            Toast.makeText(context, "Only " + flower.available + " stems available for " + flower.name, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Stock limit reached", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         cartManager.addItem(new CartManager.CartItem(
@@ -435,7 +444,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
     static class FlowerViewHolder extends RecyclerView.ViewHolder {
         CardView cardFlowerRoot;
         ImageView ivFlowerImage, btnFlowerFav;
-        TextView tvFlowerName, tvFlowerRating, tvFlowerAvailable, tvFlowerPrice, btnAddToCart;
+        TextView tvFlowerName, tvFlowerRating, tvFlowerAvailable, tvFlowerPrice, btnAddToCart, tvOutOfStockBadge;
 
         FlowerViewHolder(View itemView) {
             super(itemView);
@@ -447,6 +456,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
             tvFlowerAvailable = itemView.findViewById(R.id.tvFlowerAvailable);
             tvFlowerPrice = itemView.findViewById(R.id.tvFlowerPrice);
             btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
+            tvOutOfStockBadge = itemView.findViewById(R.id.tvOutOfStockBadge);
         }
     }
 }

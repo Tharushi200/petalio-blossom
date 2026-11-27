@@ -106,6 +106,10 @@ async function initDatabaseTables() {
       await pool.query('ALTER TABLE flowers ADD COLUMN stock_quantity INT DEFAULT 100');
     } catch (_) {}
     try {
+      await pool.query('ALTER TABLE flowers ADD COLUMN stock INT DEFAULT 100');
+      await pool.query('UPDATE flowers SET stock = COALESCE(stock_quantity, 100) WHERE stock IS NULL');
+    } catch (_) {}
+    try {
       await pool.query('ALTER TABLE supplier_payments ADD COLUMN supplier_id INT DEFAULT NULL');
       await pool.query('UPDATE supplier_payments SET supplier_id = 3 WHERE supplier_id IS NULL');
     } catch (_) {
@@ -1834,7 +1838,15 @@ app.get('/api/flowers', async (req, res) => {
       ORDER BY f.flower_id ASC
     `;
     const [flowers] = await pool.query(query, queryParams);
-    return res.json({ success: true, count: flowers.length, flowers });
+    const flowersFormatted = flowers.map(f => {
+      const st = Math.max(0, parseInt(f.stock !== undefined ? f.stock : f.stock_quantity, 10) || 0);
+      return {
+        ...f,
+        stock_quantity: st,
+        stock: st
+      };
+    });
+    return res.json({ success: true, count: flowersFormatted.length, flowers: flowersFormatted });
   } catch (error) {
     console.error('Get Flowers Error:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch flowers', error: error.message });
@@ -1909,10 +1921,14 @@ app.get('/api/flowers/:id', async (req, res) => {
       LIMIT 10
     `, [req.params.id]);
 
+    const flRow = rows[0];
+    const st = Math.max(0, parseInt(flRow.stock !== undefined ? flRow.stock : flRow.stock_quantity, 10) || 0);
     return res.json({
       success: true,
       flower: {
-        ...rows[0],
+        ...flRow,
+        stock_quantity: st,
+        stock: st,
         reviews: reviewRows
       },
       reviews: reviewRows
@@ -2004,7 +2020,7 @@ app.post('/api/orders', async (req, res) => {
           resolvedOrderSupplierId = (sfOwner.length > 0 && sfOwner[0].sid) ? Number(sfOwner[0].sid) : 3;
         }
       }
-      let rawStock = fl.stock_quantity;
+      let rawStock = (fl.stock !== undefined && fl.stock !== null) ? fl.stock : fl.stock_quantity;
       if (rawStock === null || rawStock === undefined) {
         const [invRows] = await conn.query('SELECT MAX(stock_quantity) AS stock_quantity FROM inventory WHERE flower_id = ?', [fId]);
         rawStock = invRows.length > 0 ? invRows[0].stock_quantity : 0;
@@ -2014,7 +2030,7 @@ app.post('/api/orders', async (req, res) => {
         await conn.rollback();
         return res.status(409).json({
           success: false,
-          message: `Insufficient stock for ${fl.name} (${available} stems available, requested ${qty}).`
+          message: `Requested quantity for ${fl.name} (${qty}) exceeds available stock (${available}).`
         });
       }
       const itemPrice = parseFloat(fl.unit_price) || 0;
@@ -2046,6 +2062,12 @@ app.post('/api/orders', async (req, res) => {
         'UPDATE flowers SET stock_quantity = GREATEST(0, COALESCE(stock_quantity, 0) - ?) WHERE flower_id = ?',
         [vi.qty, vi.flower_id]
       );
+      try {
+        await conn.query(
+          'UPDATE flowers SET stock = GREATEST(0, COALESCE(stock, 0) - ?) WHERE flower_id = ?',
+          [vi.qty, vi.flower_id]
+        );
+      } catch (_) {}
     }
 
     const deliveryFee = 200.00;
