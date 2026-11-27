@@ -26,6 +26,9 @@ public interface ApiService {
     @POST("auth/register-supplier")
     Call<CommonResponse> registerSupplier(@Body SupplierRegisterRequest request);
 
+    @POST("auth/forgot-password")
+    Call<CommonResponse> forgotPassword(@Body ForgotPasswordRequest request);
+
     @POST("auth/reset-password")
     Call<CommonResponse> resetPassword(@Body ResetPasswordRequest request);
 

@@ -1,7 +1,11 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
-const path = require('path');
+const os = require('os');
 const pool = require('./db');
 
 const app = express();
@@ -126,6 +130,20 @@ async function initDatabaseTables() {
       await pool.query('ALTER TABLE users ADD COLUMN bonus_wallet DECIMAL(10,2) DEFAULT 0');
     } catch (_) {}
     try {
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255) NULL');
+    } catch (_) {
+      try {
+        await pool.query('ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) NULL');
+      } catch (__) {}
+    }
+    try {
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires DATETIME NULL');
+    } catch (_) {
+      try {
+        await pool.query('ALTER TABLE users ADD COLUMN reset_token_expires DATETIME NULL');
+      } catch (__) {}
+    }
+    try {
       await pool.query(`
         CREATE TABLE IF NOT EXISTS loyalty_redemptions (
           redemption_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -173,6 +191,320 @@ initDatabaseTables();
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
 const cleanPhoneDigits = (phone) => String(phone || '').replace(/[\s-]/g, '');
 const isValidPhone = (phone) => /^(\+94|0)[0-9]{9}$/.test(cleanPhoneDigits(phone));
+
+const escapeHtml = (val) => String(val || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+function createSmtpTransporter() {
+  const smtpUser = (process.env.SMTP_USER || '').trim();
+  // Strip spaces so 16-char Google App Passwords pasted with spaces work seamlessly
+  const smtpPass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
+  if (!smtpUser || !smtpPass) return null;
+
+  const smtpHost = (process.env.SMTP_HOST || '').trim();
+  if (smtpHost) {
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    return nodemailer.createTransport({
+      host: smtpHost,
+      port,
+      secure: port === 465,
+      auth: { user: smtpUser, pass: smtpPass }
+    });
+  }
+
+  return nodemailer.createTransport({
+    service: process.env.SMTP_SERVICE || 'gmail',
+    auth: { user: smtpUser, pass: smtpPass }
+  });
+}
+
+function resolveResetBaseUrl(req) {
+  const explicit = (process.env.RESET_BASE_URL || '').trim().replace(/\/+$/, '');
+  if (explicit) return explicit;
+
+  const reqHost = (req.get('host') || '').trim();
+  const isLoopbackHost = /^(localhost|127\.0\.0\.1|10\.0\.2\.2)(:\d+)?$/i.test(reqHost);
+  if (reqHost && !isLoopbackHost) {
+    return `${req.protocol}://${reqHost}`;
+  }
+  return `http://localhost:${PORT}`;
+}
+
+function buildResetEmailHtml({ name, resetLink }) {
+  const displayName = escapeHtml(name || 'Valued Guest');
+  const safeUrl = escapeHtml(resetLink);
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset Your Petalio Blossom Password</title>
+</head>
+<body style="margin:0;padding:0;background:#FAF7F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1E191B;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#FFFFFF;border-radius:18px;border:1px solid #F0DCE2;overflow:hidden;box-shadow:0 8px 24px rgba(139,30,63,0.08);">
+          <tr>
+            <td style="background:#FDF2F5;padding:28px 32px;text-align:center;border-bottom:1px solid #F0DCE2;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#8B1E3F;text-transform:uppercase;">PETALIO BLOSSOM</div>
+              <h1 style="margin:8px 0 0;font-size:22px;font-weight:700;color:#1E191B;">Password Reset Request</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">Hello <strong>${displayName}</strong>,</p>
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#6E6266;">
+                We received a request to reset your Petalio Blossom account password. Tap the button below to choose a new password. This link will expire in <strong>15 minutes</strong>.
+              </p>
+              <div style="text-align:center;margin:28px 0;">
+                <a href="${safeUrl}" style="display:inline-block;background:#8B1E3F;color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:700;padding:14px 32px;border-radius:12px;">
+                  Reset My Password
+                </a>
+              </div>
+              <p style="margin:24px 0 8px;font-size:12px;color:#6E6266;">If the button doesn't open automatically, copy and paste this URL into your browser:</p>
+              <p style="margin:0 0 20px;font-size:12px;word-break:break-all;color:#8B1E3F;">${safeUrl}</p>
+              <hr style="border:none;border-top:1px solid #F0DCE2;margin:20px 0;" />
+              <p style="margin:0;font-size:12px;color:#A89DA1;">If you did not request a password reset, you can safely ignore this email.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildResetPageHtml({ valid, email, token, errorMessage }) {
+  const safeEmail = escapeHtml(email || '');
+  const safeToken = JSON.stringify(String(token || ''));
+  const safeErr = escapeHtml(errorMessage || 'This password reset link is invalid or has expired.');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Petalio Blossom — Reset Password</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #FDF2F5 0%, #FAF7F6 60%, #F7EBEE 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #1E191B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      border-radius: 22px;
+      border: 1px solid #F0DCE2;
+      box-shadow: 0 18px 40px rgba(139, 30, 63, 0.10);
+      overflow: hidden;
+    }
+    .header {
+      background: #8B1E3F;
+      color: #FFFFFF;
+      padding: 28px 28px 24px;
+      text-align: center;
+    }
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.88;
+    }
+    .header h1 {
+      margin: 8px 0 4px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .header p {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    .body {
+      padding: 28px;
+    }
+    .account-pill {
+      background: #FDF2F5;
+      border: 1px solid #F0DCE2;
+      color: #8B1E3F;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      word-break: break-all;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1E191B;
+      margin-bottom: 6px;
+    }
+    input[type="password"] {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1.5px solid #E2CBD2;
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input[type="password"]:focus {
+      border-color: #8B1E3F;
+      box-shadow: 0 0 0 3px rgba(139, 30, 63, 0.12);
+    }
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      background: #8B1E3F;
+      color: #FFFFFF;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .btn:hover { background: #731733; }
+    .btn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .alert {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+    .alert.error {
+      display: block;
+      background: #FEF2F2;
+      color: #B91C1C;
+      border: 1px solid #FECACA;
+    }
+    .state-box {
+      text-align: center;
+      padding: 10px 4px;
+    }
+    .badge-icon {
+      width: 56px;
+      height: 56px;
+      line-height: 56px;
+      border-radius: 50%;
+      margin: 0 auto 14px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .badge-success { background: #DCFCE7; color: #15803D; }
+    .badge-error { background: #FEF2F2; color: #DC2626; }
+    .state-box h2 { margin: 0 0 8px; font-size: 20px; color: #1E191B; }
+    .state-box p { margin: 0; font-size: 14px; color: #6E6266; line-height: 1.55; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="eyebrow">Petalio Blossom</div>
+      <h1>Reset Your Password</h1>
+      <p>Luxury Floriculture Account Security</p>
+    </div>
+    <div class="body">
+      ${valid ? `
+      <div id="formContainer">
+        <div class="account-pill">Account: ${safeEmail}</div>
+        <div id="errorBanner" class="alert"></div>
+        <form id="resetForm">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" name="new_password" placeholder="At least 6 characters" minlength="6" required autocomplete="new-password" />
+
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" name="confirm_password" placeholder="Re-enter your new password" minlength="6" required autocomplete="new-password" />
+
+          <button type="submit" id="submitBtn" class="btn">Update Password</button>
+        </form>
+      </div>
+      <div id="successContainer" class="state-box" style="display:none;">
+        <div class="badge-icon badge-success">&#10003;</div>
+        <h2>Password Updated</h2>
+        <p>Your Petalio Blossom password has been reset successfully. You can now close this page and sign in from the mobile app.</p>
+      </div>
+      <script>
+        (function() {
+          var token = ${safeToken};
+          var form = document.getElementById('resetForm');
+          var errEl = document.getElementById('errorBanner');
+          var btn = document.getElementById('submitBtn');
+          function showError(msg) {
+            errEl.textContent = msg;
+            errEl.className = 'alert error';
+          }
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            errEl.className = 'alert';
+            var p1 = document.getElementById('newPassword').value.trim();
+            var p2 = document.getElementById('confirmPassword').value.trim();
+            if (p1.length < 6) {
+              showError('New password must be at least 6 characters.');
+              return;
+            }
+            if (p1 !== p2) {
+              showError('Passwords do not match. Please check and try again.');
+              return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'Updating Password...';
+            try {
+              var res = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token, new_password: p1 })
+              });
+              var data = await res.json();
+              if (!res.ok || !data.success) {
+                showError((data && data.message) || 'Could not reset password. The link may have expired.');
+                btn.disabled = false;
+                btn.textContent = 'Update Password';
+                return;
+              }
+              document.getElementById('formContainer').style.display = 'none';
+              document.getElementById('successContainer').style.display = 'block';
+            } catch (err) {
+              showError('Network error while contacting server. Please try again.');
+              btn.disabled = false;
+              btn.textContent = 'Update Password';
+            }
+          });
+        })();
+      </script>
+      ` : `
+      <div class="state-box">
+        <div class="badge-icon badge-error">&#10005;</div>
+        <h2>Invalid or Expired Link</h2>
+        <p>${safeErr} Please return to the Petalio Blossom app and request a fresh password reset email.</p>
+      </div>
+      `}
+    </div>
+  </div>
+</body>
+</html>`;
+}
 
 // Unified Login (Customer or Supplier)
 app.post('/api/auth/login', async (req, res) => {
@@ -443,25 +775,179 @@ app.post('/api/auth/register-supplier', async (req, res) => {
   }
 });
 
-// Reset Password (Forgot Password)
-app.post('/api/auth/reset-password', async (req, res) => {
-  const { email, phone, new_password } = req.body;
-  const inputEmail = (email || '').trim().toLowerCase();
-  const inputPhone = (phone || '').trim();
-  const newPass = (new_password || '').trim();
+// Forgot Password (Generate 32-byte token, 15m expiry, send Nodemailer reset email or console fallback)
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const inputEmail = String(req.body?.email || '').trim().toLowerCase();
 
+  if (!inputEmail || !isValidEmail(inputEmail)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please enter a valid registered email address.'
+    });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT user_id, name, email FROM users WHERE LOWER(email) = ? LIMIT 1',
+      [inputEmail]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No account found for "${inputEmail}". Please check your email or register.`
+      });
+    }
+
+    const user = rows[0];
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    await pool.query(
+      'UPDATE users SET reset_token = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE user_id = ?',
+      [resetToken, user.user_id]
+    );
+
+    const resetLink = `${resolveResetBaseUrl(req)}/reset-password?token=${resetToken}`;
+    const transporter = createSmtpTransporter();
+
+    if (!transporter) {
+      console.log('===================================================');
+      console.log('📧 [SMTP NOT CONFIGURED] Password Reset Email Fallback');
+      console.log(`   To:        ${user.email} (${user.name})`);
+      console.log(`   Reset URL: ${resetLink}`);
+      console.log('   Expires:   15 minutes');
+      console.log('===================================================');
+      return res.json({
+        success: true,
+        message: `Reset link sent to ${user.email}. Check your inbox and open the link to set a new password.`
+      });
+    }
+
+    const fromAddress = process.env.SMTP_FROM || `"Petalio Blossom" <${process.env.SMTP_USER}>`;
+    try {
+      await transporter.sendMail({
+        from: fromAddress,
+        to: user.email,
+        subject: 'Reset Your Petalio Blossom Password',
+        text: `Hello ${user.name || ''},\n\nOpen this link to reset your Petalio Blossom password (valid for 15 minutes):\n${resetLink}\n\nIf you did not request this, please ignore this email.`,
+        html: buildResetEmailHtml({ name: user.name, resetLink })
+      });
+      console.log(`📧 Password reset email sent via SMTP to ${user.email}`);
+      return res.json({
+        success: true,
+        message: `Reset link sent to ${user.email}. Check your inbox and open the link to set a new password.`
+      });
+    } catch (mailError) {
+      console.error('⚠️ SMTP delivery failed, logging fallback URL:', mailError.message);
+      console.log(`📧 [SMTP FALLBACK] Reset URL for ${user.email}: ${resetLink}`);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send reset email via SMTP. Please check server SMTP configuration.'
+      });
+    }
+  } catch (error) {
+    console.error('Forgot Password Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to process forgot password request', error: error.message });
+  }
+});
+
+// Hosted HTML Reset Password Form Page
+app.get('/reset-password', async (req, res) => {
+  const token = String(req.query.token || '').trim();
+  if (!token) {
+    return res.type('html').send(buildResetPageHtml({
+      valid: false,
+      errorMessage: 'Reset token is missing from the URL.'
+    }));
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT user_id, name, email FROM users WHERE reset_token = ? AND reset_token_expires IS NOT NULL AND reset_token_expires > NOW() LIMIT 1',
+      [token]
+    );
+
+    if (rows.length === 0) {
+      return res.type('html').send(buildResetPageHtml({
+        valid: false,
+        errorMessage: 'This password reset link is invalid or has expired (links expire after 15 minutes).'
+      }));
+    }
+
+    return res.type('html').send(buildResetPageHtml({
+      valid: true,
+      email: rows[0].email,
+      token
+    }));
+  } catch (error) {
+    console.error('GET /reset-password Error:', error);
+    return res.status(500).type('html').send(buildResetPageHtml({
+      valid: false,
+      errorMessage: 'A server error occurred while validating your reset link.'
+    }));
+  }
+});
+
+// Reset Password (Token-based email link flow, plus legacy email+phone compatibility)
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, new_password, email, phone } = req.body || {};
+  const cleanToken = String(token || '').trim();
+  const newPass = String(new_password || '').trim();
+
+  if (!newPass || newPass.length < 6) {
+    return res.status(400).json({ success: false, message: 'New password must be at least 6 characters.' });
+  }
+
+  // Primary email-link token flow
+  if (token !== undefined || (!email && !phone)) {
+    if (!cleanToken) {
+      return res.status(400).json({ success: false, message: 'Reset token is required.' });
+    }
+
+    try {
+      const [rows] = await pool.query(
+        'SELECT user_id, name, email FROM users WHERE reset_token = ? AND reset_token_expires IS NOT NULL AND reset_token_expires > NOW() LIMIT 1',
+        [cleanToken]
+      );
+
+      if (rows.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'This password reset link is invalid or has expired. Please request a new reset link.'
+        });
+      }
+
+      const user = rows[0];
+      const passwordHash = bcrypt.hashSync(newPass, 10);
+
+      await pool.query(
+        'UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE user_id = ?',
+        [passwordHash, user.user_id]
+      );
+
+      return res.json({
+        success: true,
+        message: 'Password reset successfully! You can now sign in with your new password.',
+        email: user.email,
+        name: user.name
+      });
+    } catch (error) {
+      console.error('Reset Password Error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to reset password', error: error.message });
+    }
+  }
+
+  // Legacy email + phone verification flow (e.g. SupplierLoginActivity dialog)
+  const inputEmail = String(email || '').trim().toLowerCase();
+  const inputPhone = String(phone || '').trim();
   if (!inputEmail) {
     return res.status(400).json({ success: false, message: 'Please enter your registered email address.' });
   }
   if (!inputPhone) {
     return res.status(400).json({ success: false, message: 'Please enter your registered phone number.' });
   }
-  if (!newPass || newPass.length < 6) {
-    return res.status(400).json({ success: false, message: 'New password must be at least 6 characters.' });
-  }
 
   try {
-    // Find user by email
     const [rows] = await pool.query(
       'SELECT user_id, name, email, phone FROM users WHERE LOWER(email) = ? LIMIT 1',
       [inputEmail]
@@ -478,7 +964,6 @@ app.post('/api/auth/reset-password', async (req, res) => {
     const registeredPhoneDigits = (user.phone || '').replace(/\D/g, '').slice(-9);
     const inputPhoneDigits = inputPhone.replace(/\D/g, '').slice(-9);
 
-    // Verify phone matches registered phone number (last 9 digits comparison handles +94 and leading 0)
     if (!registeredPhoneDigits || registeredPhoneDigits !== inputPhoneDigits) {
       return res.status(401).json({
         success: false,
@@ -486,11 +971,11 @@ app.post('/api/auth/reset-password', async (req, res) => {
       });
     }
 
-    // Hash the new password with bcrypt
     const passwordHash = bcrypt.hashSync(newPass, 10);
-
-    // Update password_hash in users table
-    await pool.query('UPDATE users SET password_hash = ? WHERE user_id = ?', [passwordHash, user.user_id]);
+    await pool.query(
+      'UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE user_id = ?',
+      [passwordHash, user.user_id]
+    );
 
     return res.json({
       success: true,
@@ -2970,10 +3455,21 @@ app.post('/api/reviews', async (req, res) => {
 
 // Start Server on all network interfaces (0.0.0.0) so physical Android phone can connect
 app.listen(PORT, '0.0.0.0', () => {
+  const ifaces = os.networkInterfaces();
+  const lanUrls = [];
+  for (const name of Object.keys(ifaces)) {
+    for (const addr of ifaces[name] || []) {
+      if (addr.family === 'IPv4' && !addr.internal && !addr.address.startsWith('169.254.')) {
+        lanUrls.push(`http://${addr.address}:${PORT} (${name})`);
+      }
+    }
+  }
   console.log(`===================================================`);
   console.log(`🌸 Petalio Blossom REST API Server is running!`);
   console.log(`🌐 Local:   http://localhost:${PORT}`);
-  console.log(`📱 Android: http://192.168.8.183:${PORT}`);
+  if (lanUrls.length > 0) {
+    lanUrls.forEach((u) => console.log(`📱 Android: ${u}`));
+  }
   console.log(`===================================================`);
 });
 
