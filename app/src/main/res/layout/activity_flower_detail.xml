@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_botanical_light">
+
+    <!-- Scrollable Detail Body with Edge-to-Edge Hero Image -->
+    <ScrollView
+        android:id="@+id/svFlowerDetail"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomCartBar"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Full-Bleed Hero Flower Image Container with Floating Buttons -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:background="#F7F1F3">
+
+                <!-- 100% Authentic Botanical Hero Photo -->
+                <ImageView
+                    android:id="@+id/tvDetailBigIcon"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:scaleType="centerCrop"
+                    android:background="#F7F1F3"
+                    android:padding="0dp"
+                    android:transitionName="flower_hero_transition"
+                    android:src="@drawable/img_flower_rose" />
+
+                <!-- Subtle Top Gradient Shadow for Floating Button Contrast (Hidden for clean bright photo) -->
+                <View
+                    android:id="@+id/topBarDetail"
+                    android:layout_width="0dp"
+                    android:layout_height="80dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:background="#12000000"
+                    android:visibility="gone" />
+
+                <!-- Floating Circular Back Button -->
+                <ImageView
+                    android:id="@+id/btnBackDetail"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:background="@drawable/bg_floating_circle_btn"
+                    android:clickable="true"
+                    android:elevation="4dp"
+                    android:focusable="true"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/text_primary" />
+
+                <!-- Floating Circular Wishlist Heart Button -->
+                <ImageView
+                    android:id="@+id/btnFavDetail"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:background="@drawable/bg_floating_circle_btn"
+                    android:clickable="true"
+                    android:elevation="4dp"
+                    android:focusable="true"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_heart_outline"
+                    app:tint="@color/accent_blossom_pink" />
+
+                <!-- Bottom Floating Badges on Hero Image -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- Highland Estate Badge (Hidden for clean commercial luxury look) -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_maroon_pill"
+                        android:letterSpacing="0.06"
+                        android:paddingStart="10dp"
+                        android:paddingTop="5dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="5dp"
+                        android:text="HIGHLAND ESTATE"
+                        android:textColor="@color/text_white"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <!-- Frosted Location Pill (Hidden) -->
+                    <TextView
+                        android:id="@+id/tvDetailLocationPill"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_location_pill"
+                        android:paddingStart="10dp"
+                        android:paddingTop="5dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="5dp"
+                        android:text=""
+                        android:textColor="@color/text_white"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Product Information Content Area -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingTop="18dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="24dp">
+
+                <!-- Slim Quality Trust Strip (Hidden to avoid redundancy with Safe Payments guarantee card below) -->
+                <LinearLayout
+                    android:id="@+id/stripFreshnessDelivery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_qa_strip"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingStart="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="8dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.03"
+                        android:text="✓ Cold-Chain Freshness  |  ✓ Same-Day Luxury Delivery"
+                        android:textColor="@color/primary_brand"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Flower Title -->
+                <TextView
+                    android:id="@+id/tvDetailTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="—"
+                    android:textColor="@color/text_primary"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <!-- Social-Proof Rating & Sold Count (Tappable to jump to reviews) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvDetailRatingSocial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:text="—"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Badges Row: Category & In Stock -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvDetailCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_chip_unselected"
+                        android:paddingStart="12dp"
+                        android:paddingTop="5dp"
+                        android:paddingEnd="12dp"
+                        android:paddingBottom="5dp"
+                        android:text="Category: —"
+                        android:textColor="@color/primary_brand"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_badge_in_stock"
+                        android:paddingStart="12dp"
+                        android:paddingTop="5dp"
+                        android:paddingEnd="12dp"
+                        android:paddingBottom="5dp"
+                        android:text="✓ In Stock &amp; Fresh"
+                        android:textColor="@color/badge_in_stock_text"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Compact Above-the-Fold Review Highlight Strip (Visible when reviews exist) -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardReviewHighlight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="#FFF6F8"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="14dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="14dp"
+                        android:paddingBottom="10dp">
+
+                        <TextView
+                            android:id="@+id/tvReviewHighlightText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text=""
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvReviewHighlightAction"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text=""
+                            android:textColor="@color/primary_brand"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Bold Price & Stems Available Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_card_container"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tvDetailPrice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Rs. 0 / stem"
+                            android:textColor="@color/primary_brand"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvDetailAvailable"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="— stems available"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Inline Quantity Stepper Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_card_container"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Select Stem Quantity"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <!-- Quantity Stepper Buttons [ - 1 + ] -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_stepper_pill"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <TextView
+                                android:id="@+id/btnQtyMinus"
+                                android:layout_width="34dp"
+                                android:layout_height="34dp"
+                                android:background="@drawable/bg_role_active"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:text="−"
+                                android:textColor="@color/text_white"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvQtyValue"
+                                android:layout_width="40dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="1"
+                                android:textColor="@color/text_primary"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/btnQtyPlus"
+                                android:layout_width="34dp"
+                                android:layout_height="34dp"
+                                android:background="@drawable/bg_role_active"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:text="+"
+                                android:textColor="@color/text_white"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Delivery Date Preference Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_card_container"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Preferred Delivery Date"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btnSelectDate"
+                            android:layout_width="match_parent"
+                            android:layout_height="46dp"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/bg_input_rounded"
+                            android:clickable="true"
+                            android:drawablePadding="10dp"
+                            android:focusable="true"
+                            android:gravity="center_vertical"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:text="Select delivery date"
+                            android:textColor="@color/text_hint"
+                            android:textSize="14sp"
+                            app:drawableStartCompat="@drawable/ic_calendar"
+                            app:drawableTint="@color/primary_brand" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Safe Payments & Fresh Delivery Guarantee Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_card_container"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Safe Payments &amp; Fresh Delivery Guarantee"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:lineSpacingExtra="3dp"
+                            android:text="🔒 256-Bit SSL Encrypted Safe Checkout\n🌸 7-Day Bloom Longevity &amp; Luxury Freshness Guarantee\n🚚 Temperature-Controlled Cold-Chain Courier Delivery"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Borderless Recent Customer Reviews Section -->
+                <LinearLayout
+                    android:id="@+id/sectionRecentReviewsHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Recent Customer Reviews"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvReviewsCountBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Verified Buyers"
+                        android:textColor="@color/primary_brand"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardRecentReviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    app:cardBackgroundColor="@color/card_surface"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:id="@+id/llFlowerReviewsContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tvEmptyFlowerReviews"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
+                            android:text="No reviews yet — be the first to review after delivery!"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Sticky Bottom Bar with Stepper & Wide Pill Action Button -->
+    <LinearLayout
+        android:id="@+id/bottomCartBar"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@color/card_surface"
+        android:elevation="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="10dp">
+
+        <!-- Sticky Stepper [ - 1 + ] (Hidden to use single clean stepper in detail body) -->
+        <LinearLayout
+            android:id="@+id/containerStickyStepper"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_stepper_pill"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/btnQtyMinusBottom"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:background="@drawable/bg_role_active"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="−"
+                android:textColor="@color/text_white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvQtyValueBottom"
+                android:layout_width="38dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnQtyPlusBottom"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:background="@drawable/bg_role_active"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="+"
+                android:textColor="@color/text_white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Wide Pill "Add to Cart" Action Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddToCartDetail"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="0dp"
+            android:background="@drawable/bg_btn_primary_blossom"
+            android:gravity="center"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:stateListAnimator="@null"
+            android:text="Add to Cart  •  Rs. 0"
+            android:textAllCaps="false"
+            android:textColor="@color/text_white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@null"
+            app:icon="@drawable/ic_nav_cart"
+            app:iconGravity="textEnd"
+            app:iconPadding="8dp"
+            app:iconSize="20dp"
+            app:iconTint="@color/text_white" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
