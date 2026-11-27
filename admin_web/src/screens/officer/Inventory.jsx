@@ -123,7 +123,13 @@ const INITIAL_INVENTORY = [
     name: 'Sunshine Gerbera',
     category: 'Gerbera',
     unitPrice: 200,
-    color: 'Red',
+    color: 'Yellow',
+    colorImages: {
+      Yellow: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10',
+      Red: 'https://images.unsplash.com/photo-1596726919634-62947475f4d3?w=500&auto=format&fit=crop&q=80',
+      Orange: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=500&auto=format&fit=crop&q=80',
+      Pink: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&auto=format&fit=crop&q=80'
+    },
     stock: 45, // Low Stock alert
     reorderLevel: 50,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10',
