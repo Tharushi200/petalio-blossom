@@ -38,7 +38,7 @@ public final class SupplierDemandUiHelper {
 
         if (alerts == null || alerts.isEmpty()) {
             TextView tvClean = new TextView(context);
-            tvClean.setText("✓ All harvest inventories are healthy above reorder levels.");
+            tvClean.setText("All harvest inventories are healthy above reorder levels.");
             tvClean.setTextColor(ContextCompat.getColor(context, R.color.primary_forest));
             tvClean.setTextSize(14);
             container.addView(tvClean);

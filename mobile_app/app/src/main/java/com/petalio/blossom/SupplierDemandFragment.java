@@ -200,7 +200,7 @@ public class SupplierDemandFragment extends Fragment {
                 SupplierDemandResponse.CompletedPaymentDto latest = payments.get(0);
                 String code = latest.getOrderCode();
                 if (!code.startsWith("#")) code = "#" + code;
-                tvHubPayoutsPreview.setText("Latest: " + code + " (" + latest.getAmountFormatted() + ") • Paid ✓");
+                tvHubPayoutsPreview.setText("Latest: " + code + " (" + latest.getAmountFormatted() + ") • Paid");
             }
         }
     }

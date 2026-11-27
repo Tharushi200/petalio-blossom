@@ -366,7 +366,7 @@ public class OrderRequestDetailsActivity extends AppCompatActivity {
                         btnReject.setEnabled(true);
 
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            Toast.makeText(OrderRequestDetailsActivity.this, "✓ Order accepted! Proceeding to harvest fulfilment...", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(OrderRequestDetailsActivity.this, "Order accepted! Proceeding to harvest fulfilment...", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(OrderRequestDetailsActivity.this, HarvestFulfilmentActivity.class);
                             intent.putExtra("order_id", String.valueOf(resolvedOrderId));
                             intent.putExtra("order_code", orderNumber);

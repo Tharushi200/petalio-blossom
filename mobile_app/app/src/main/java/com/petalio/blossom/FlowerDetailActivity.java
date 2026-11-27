@@ -176,7 +176,7 @@ public class FlowerDetailActivity extends AppCompatActivity {
         // Populate compact above-the-fold review highlight banner with latest review
         if (cardReviewHighlight != null && tvReviewHighlightText != null) {
             FlowerReviewDto latest = reviews.get(0);
-            String ratingPrefix = "★ " + String.format(Locale.US, "%.1f", (double) latest.getRating());
+            String ratingPrefix = String.format(Locale.US, "%.1f", (double) latest.getRating());
             String commentSnippet = latest.getComment();
             String bannerText = !commentSnippet.isEmpty()
                     ? (ratingPrefix + " \"" + commentSnippet + "\" — " + latest.getReviewerName())
@@ -308,7 +308,7 @@ public class FlowerDetailActivity extends AppCompatActivity {
             String soldText = sold > 0 ? (sold + " stems sold") : "Fresh Highland Harvest";
             if (reviews > 0 && rating > 0) {
                 String reviewLabel = reviews == 1 ? "1 review" : (reviews + " reviews");
-                tvDetailRatingSocial.setText("★ " + String.format(Locale.US, "%.1f", rating) + " (" + reviewLabel + ") ›  •  " + soldText);
+                tvDetailRatingSocial.setText(String.format(Locale.US, "%.1f", rating) + " (" + reviewLabel + ") ›  •  " + soldText);
             } else {
                 tvDetailRatingSocial.setText("No reviews yet  •  " + soldText);
             }

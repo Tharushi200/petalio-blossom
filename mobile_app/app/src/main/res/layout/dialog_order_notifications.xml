@@ -86,7 +86,7 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:text="✕"
+            android:text="Close"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
             android:textStyle="bold" />

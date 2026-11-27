@@ -207,7 +207,7 @@ public class SupplierLoginActivity extends AppCompatActivity {
                                 if (isFinishing() || isDestroyed()) return;
                                 btnSubmit.setEnabled(true);
                                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                                    Toast.makeText(SupplierLoginActivity.this, "✓ " + response.body().getMessage(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(SupplierLoginActivity.this, "" + response.body().getMessage(), Toast.LENGTH_LONG).show();
                                     if (etSupplierLoginEmail != null) etSupplierLoginEmail.setText(email);
                                     if (etSupplierLoginPassword != null) etSupplierLoginPassword.setText(newPass);
                                     dialog.dismiss();

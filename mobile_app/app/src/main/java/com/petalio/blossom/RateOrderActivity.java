@@ -107,7 +107,7 @@ public class RateOrderActivity extends AppCompatActivity {
                         public void onResponse(@NonNull Call<CommonResponse> call, @NonNull Response<CommonResponse> response) {
                             if (isFinishing() || isDestroyed()) return;
                             if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                                Toast.makeText(RateOrderActivity.this, "✓ Thank you! Your " + selectedRating + "-star review has been submitted.", Toast.LENGTH_LONG).show();
+                                Toast.makeText(RateOrderActivity.this, "Thank you! Your " + selectedRating + "-star review has been submitted.", Toast.LENGTH_LONG).show();
                                 finish();
                             } else {
                                 btnSubmitReviewAction.setEnabled(true);

@@ -260,7 +260,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                     String welcomeName = (user != null && user.getName() != null && !user.getName().trim().isEmpty())
                             ? (", " + user.getName().trim()) : "";
-                    Toast.makeText(LoginActivity.this, "✓ Welcome back" + welcomeName + "!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Welcome back" + welcomeName + "!", Toast.LENGTH_SHORT).show();
                     navigateNext(role);
                 } else {
                     String fallbackMsg = "Incorrect password! Please check your credentials.";

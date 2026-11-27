@@ -686,7 +686,7 @@ public class ProfileFragment extends Fragment {
                     btnSubmit.setText("Update Password");
 
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Toast.makeText(getContext(), "✓ Password changed successfully! Please use your new password next time.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "Password changed successfully! Please use your new password next time.", Toast.LENGTH_LONG).show();
                         dialog.dismiss();
                     } else {
                         String msg = (response.body() != null && response.body().getMessage() != null && !response.body().getMessage().trim().isEmpty())
@@ -793,7 +793,7 @@ public class ProfileFragment extends Fragment {
 
                     // Success dialog
                     new AlertDialog.Builder(requireContext())
-                            .setTitle("Redemption Successful! 🎉")
+                            .setTitle("Redemption Successful!")
                             .setMessage("Successfully redeemed 500 Bloom Points for Rs. 500 Wallet Credit!\n\nNew Points Balance: " + currentLoyaltyPoints + " Points\nNew Wallet Balance: Rs. " + String.format(Locale.US, "%,d", Math.round(currentWalletCredits)))
                             .setPositiveButton("Awesome", null)
                             .show();

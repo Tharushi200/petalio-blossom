@@ -370,7 +370,7 @@ public class SupplierProfileFragment extends Fragment {
                                             finalCap,
                                             true
                                     );
-                                    Toast.makeText(requireContext(), "✓ Estate profile updated!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(requireContext(), "Estate profile updated!", Toast.LENGTH_SHORT).show();
                                     dialog.dismiss();
                                     fetchLiveSupplierProfile();
                                 } else {

@@ -305,7 +305,7 @@ public class SupplierOrdersFragment extends Fragment {
                         if (!isAdded() || getContext() == null)
                             return;
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            Toast.makeText(requireContext(), "✓ Order updated to " + fulfilmentStatus,
+                            Toast.makeText(requireContext(), "Order updated to " + fulfilmentStatus,
                                     Toast.LENGTH_SHORT).show();
                             fetchLiveOrders();
                         } else {
@@ -417,7 +417,7 @@ public class SupplierOrdersFragment extends Fragment {
                         .setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.primary_brand));
                 holder.layoutPendingActions.setVisibility(View.GONE);
                 holder.btnUpdateFulfilment.setVisibility(View.VISIBLE);
-                holder.btnUpdateFulfilment.setText("Mark Delivered ✓");
+                holder.btnUpdateFulfilment.setText("Mark Delivered");
                 holder.btnUpdateFulfilment.setOnClickListener(v -> {
                     holder.btnUpdateFulfilment.setEnabled(false);
                     updateOrderStatusOnServer(order.getOrderId(), "DELIVERED", "Delivered");

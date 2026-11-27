@@ -208,7 +208,7 @@ public class SupplierStockFragment extends Fragment {
                         if (!isAdded() || getContext() == null) return;
                         btnSaveStockUpdates.setEnabled(true);
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            Toast.makeText(requireContext(), "✓ Live inventory quantities successfully updated!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(requireContext(), "Live inventory quantities successfully updated!", Toast.LENGTH_LONG).show();
                             fetchLiveFlowers();
                         } else {
                             String msg = (response.body() != null && response.body().getMessage() != null && !response.body().getMessage().trim().isEmpty())

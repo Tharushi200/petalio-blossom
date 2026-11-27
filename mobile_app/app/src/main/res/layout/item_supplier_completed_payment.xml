@@ -70,7 +70,7 @@
             android:paddingTop="2dp"
             android:paddingEnd="8dp"
             android:paddingBottom="2dp"
-            android:text="Paid ✓"
+            android:text="Paid"
             android:textColor="@color/badge_in_stock_text"
             android:textSize="11sp"
             android:textStyle="bold" />

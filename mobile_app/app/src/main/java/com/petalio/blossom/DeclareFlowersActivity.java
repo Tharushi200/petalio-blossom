@@ -304,7 +304,7 @@ public class DeclareFlowersActivity extends AppCompatActivity {
             removeParams.setMarginStart(dp4 / 2);
             btnRemove.setLayoutParams(removeParams);
             btnRemove.setGravity(Gravity.CENTER);
-            btnRemove.setText("✕");
+            btnRemove.setText("Remove");
             btnRemove.setTextSize(13);
             btnRemove.setTypeface(null, android.graphics.Typeface.BOLD);
             btnRemove.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
@@ -464,7 +464,7 @@ public class DeclareFlowersActivity extends AppCompatActivity {
                             etFlowerType.clearFocus();
                             etSupplyCapacity.clearFocus();
                             hideKeyboard();
-                            Toast.makeText(DeclareFlowersActivity.this, "✓ " + flowerName + " (" + finalCap + " stems) declared successfully!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(DeclareFlowersActivity.this, "" + flowerName + " (" + finalCap + " stems) declared successfully!", Toast.LENGTH_LONG).show();
                             fetchDeclaredFlowers();
                             fetchCatalogSuggestions();
                         } else {

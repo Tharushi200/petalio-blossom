@@ -98,6 +98,9 @@
                     android:id="@+id/tvFlowerRating"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_star_small"
+                    android:drawablePadding="3dp"
+                    android:gravity="center_vertical"
                     android:text=""
                     android:textColor="@color/gold_loyalty"
                     android:textSize="11sp"
@@ -133,7 +136,7 @@
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
-                <!-- Sleek Pill-Shaped Quick-Add Shopping Cart Icon Button (🛒+) -->
+                <!-- Sleek Pill-Shaped Quick-Add Shopping Cart Icon Button (Quick Add) -->
                 <TextView
                     android:id="@+id/btnAddToCart"
                     android:layout_width="48dp"

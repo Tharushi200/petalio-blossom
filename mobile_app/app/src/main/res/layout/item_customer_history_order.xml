@@ -103,7 +103,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="4dp"
-                android:text="★ Rate Order"
+                android:text="Rate Order"
                 android:textColor="@color/gold_loyalty"
                 android:textSize="13sp"
                 android:textStyle="bold" />

@@ -328,7 +328,7 @@ public class HarvestFulfilmentActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             Toast.makeText(
                                     HarvestFulfilmentActivity.this,
-                                    "✓ Order " + orderCode + " marked as " + selectedStatus + " (" + finalQty + (finalQty == 1 ? " stem" : " stems") + ")!",
+                                    "Order " + orderCode + " marked as " + selectedStatus + " (" + finalQty + (finalQty == 1 ? " stem" : " stems") + ")!",
                                     Toast.LENGTH_LONG
                             ).show();
                             finish();
