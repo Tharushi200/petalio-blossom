@@ -2049,8 +2049,8 @@ app.post('/api/orders', async (req, res) => {
     // 5. Schedule Delivery
     const deliveryCode = `DEL-${orderId}-${Math.floor(100 + Math.random() * 900)}`;
     await conn.query(
-      `INSERT INTO deliveries (delivery_code, order_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
-       VALUES (?, ?, NULL, NULL, NULL, ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'SCHEDULED')`,
+      `INSERT INTO deliveries (delivery_code, order_id, business_officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
+       VALUES (?, ?, 2, 'WP CAD-4521', 'Sunil Shantha', '+94 77 123 4567', ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'SCHEDULED')`,
       [deliveryCode, orderId, address]
     );
 
