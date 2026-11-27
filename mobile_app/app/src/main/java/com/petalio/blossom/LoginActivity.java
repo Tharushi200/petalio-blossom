@@ -26,7 +26,6 @@ import com.petalio.blossom.network.ApiClient;
 import com.petalio.blossom.network.CommonResponse;
 import com.petalio.blossom.network.LoginRequest;
 import com.petalio.blossom.network.LoginResponse;
-import com.petalio.blossom.network.ResetPasswordRequest;
 import com.petalio.blossom.network.UserDto;
 
 import retrofit2.Call;
@@ -185,105 +184,17 @@ public class LoginActivity extends AppCompatActivity {
             overridePendingTransition(R.anim.slide_in_right_fade, R.anim.slide_out_left_fade);
         });
 
-        tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
-    }
-
-    /**
-     * Real Forgot Password flow connecting to MySQL users table via POST /api/auth/reset-password
-     * Presented in a luxury Petalio Blossom card dialog.
-     */
-    private void showForgotPasswordDialog() {
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_reset_password, null);
-
-        com.google.android.material.textfield.TextInputLayout tilResetEmail = dialogView.findViewById(R.id.tilResetEmail);
-        com.google.android.material.textfield.TextInputEditText etResetEmail = dialogView.findViewById(R.id.etResetEmail);
-        com.google.android.material.textfield.TextInputLayout tilResetPhone = dialogView.findViewById(R.id.tilResetPhone);
-        com.google.android.material.textfield.TextInputEditText etResetPhone = dialogView.findViewById(R.id.etResetPhone);
-        com.google.android.material.textfield.TextInputLayout tilResetPass = dialogView.findViewById(R.id.tilResetPass);
-        com.google.android.material.textfield.TextInputEditText etResetPass = dialogView.findViewById(R.id.etResetPass);
-        Button btnCancel = dialogView.findViewById(R.id.btnCancelReset);
-        Button btnSubmit = dialogView.findViewById(R.id.btnSubmitReset);
-
-        String currentEmail = etEmail != null && etEmail.getText() != null ? etEmail.getText().toString().trim() : "";
-        if (!currentEmail.isEmpty()) {
-            etResetEmail.setText(currentEmail);
-        }
-
-        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setView(dialogView)
-                .setCancelable(true)
-                .create();
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-
-        btnCancel.setOnClickListener(v -> dialog.dismiss());
-
-        btnSubmit.setOnClickListener(v -> {
-            String email = etResetEmail.getText() != null ? etResetEmail.getText().toString().trim() : "";
-            String phone = etResetPhone.getText() != null ? etResetPhone.getText().toString().trim() : "";
-            String newPass = etResetPass.getText() != null ? etResetPass.getText().toString().trim() : "";
-
-            tilResetEmail.setError(null);
-            tilResetPhone.setError(null);
-            tilResetPass.setError(null);
-
-            if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                tilResetEmail.setError("Please enter a valid registered email address");
-                etResetEmail.requestFocus();
-                return;
+        tvForgotPassword.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+            String currentEmail = etEmail != null && etEmail.getText() != null
+                    ? etEmail.getText().toString().trim()
+                    : "";
+            if (!currentEmail.isEmpty()) {
+                intent.putExtra(ForgotPasswordActivity.EXTRA_PREFILL_EMAIL, currentEmail);
             }
-            if (phone.isEmpty()) {
-                tilResetPhone.setError("Please enter your registered phone number");
-                etResetPhone.requestFocus();
-                return;
-            }
-            if (newPass.length() < 6) {
-                tilResetPass.setError("Password must be at least 6 characters");
-                etResetPass.requestFocus();
-                return;
-            }
-
-            btnSubmit.setEnabled(false);
-            Toast.makeText(LoginActivity.this, "Verifying details with server...", Toast.LENGTH_SHORT).show();
-
-            ApiClient.getApiService(getApplicationContext())
-                    .resetPassword(new ResetPasswordRequest(email, phone, newPass))
-                    .enqueue(new Callback<CommonResponse>() {
-                        @Override
-                        public void onResponse(Call<CommonResponse> call, Response<CommonResponse> response) {
-                            if (isFinishing() || isDestroyed()) return;
-                            btnSubmit.setEnabled(true);
-
-                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                                Toast.makeText(LoginActivity.this, "✓ " + response.body().getMessage(), Toast.LENGTH_LONG).show();
-                                if (etEmail != null) etEmail.setText(email);
-                                if (etPassword != null) {
-                                    etPassword.setText(newPass);
-                                    etPassword.requestFocus();
-                                }
-                                dialog.dismiss();
-                            } else {
-                                String fallbackMsg = "Could not reset password. Please check your details.";
-                                String msg = (response.body() != null && response.body().getMessage() != null && !response.body().getMessage().trim().isEmpty())
-                                        ? response.body().getMessage()
-                                        : ApiClient.extractErrorMessage(response, fallbackMsg);
-                                tilResetPhone.setError(msg);
-                                Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<CommonResponse> call, Throwable t) {
-                            if (isFinishing() || isDestroyed()) return;
-                            btnSubmit.setEnabled(true);
-                            Toast.makeText(LoginActivity.this, "Unable to reach Petalio right now. Please check your connection.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_right_fade, R.anim.slide_out_left_fade);
         });
-
-        dialog.show();
     }
 
     /**
@@ -385,7 +296,12 @@ public class LoginActivity extends AppCompatActivity {
 
         String currentUrl = ApiClient.getBaseUrl(this);
         tvCurrentServerUrl.setText(currentUrl);
-        String cleanHost = currentUrl.replace("http://", "").replace("/api/", "");
+        String cleanHost = currentUrl.endsWith("/api/")
+                ? currentUrl.substring(0, currentUrl.length() - 5)
+                : currentUrl;
+        if (cleanHost.startsWith("http://")) {
+            cleanHost = cleanHost.substring("http://".length());
+        }
         etServerHost.setText(cleanHost);
 
         androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
@@ -398,14 +314,13 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         btnQuickUsb.setOnClickListener(v -> etServerHost.setText("127.0.0.1:5000"));
-        btnQuickWifi.setOnClickListener(v -> etServerHost.setText("192.168.8.183:5000"));
+        btnQuickWifi.setOnClickListener(v -> etServerHost.setText("192.168.137.1:5000"));
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         btnSave.setOnClickListener(v -> {
-            String text = etServerHost.getText() != null ? etServerHost.getText().toString().trim().replace("http://", "").replace("/api/", "") : "";
+            String text = etServerHost.getText() != null ? etServerHost.getText().toString().trim() : "";
             if (!text.isEmpty()) {
-                String ip = text.contains(":") ? text.split(":")[0] : text;
-                ApiClient.updateServerIp(this, ip);
+                ApiClient.updateServerEndpoint(this, text);
                 Toast.makeText(this, "Server updated: " + ApiClient.getBaseUrl(this), Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }

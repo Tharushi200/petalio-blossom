@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_botanical_light">
 
     <!-- Top Bar with Soft Blush Luxury Accent -->
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topBarPayment"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="56dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:background="@color/card_surface"
         android:elevation="1dp"
         android:paddingStart="16dp"
@@ -18,7 +21,10 @@
         <ImageView
             android:id="@+id/btnBackPayment"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"
@@ -28,21 +34,25 @@
 
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:layout_marginStart="8dp"
-            android:layout_toEndOf="@id/btnBackPayment"
+            app:layout_constraintStart_toEndOf="@id/btnBackPayment"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:gravity="center_vertical"
             android:text="Secure Payment"
             android:textColor="@color/text_primary"
             android:textSize="18sp"
             android:textStyle="bold" />
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/bottomPayActionBar"
-        android:layout_below="@id/topBarPayment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBarPayment"
+        app:layout_constraintBottom_toTopOf="@id/bottomPayActionBar"
         android:scrollbars="none">
 
         <LinearLayout
@@ -80,7 +90,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp">
 
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_card_container"
@@ -89,7 +99,8 @@
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:orientation="vertical">
 
                         <TextView
@@ -115,13 +126,14 @@
                         android:id="@+id/tvPaymentSummaryAmount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         android:text="Rs. 0"
                         android:textColor="@color/primary_brand"
                         android:textSize="20sp"
                         android:textStyle="bold" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
             <!-- Card Input Form Card -->
@@ -141,15 +153,16 @@
                     android:orientation="vertical"
                     android:padding="18dp">
 
-                    <RelativeLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             android:text="Credit or Debit Card"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
@@ -159,8 +172,9 @@
                             android:id="@+id/tvCardBrandBadge"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             android:background="@drawable/bg_badge_maroon_pill"
                             android:paddingStart="8dp"
                             android:paddingTop="3dp"
@@ -170,7 +184,7 @@
                             android:textColor="@color/text_white"
                             android:textSize="10sp"
                             android:textStyle="bold" />
-                    </RelativeLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <!-- Card Number -->
                     <TextView
@@ -290,15 +304,16 @@
                     android:orientation="vertical"
                     android:padding="18dp">
 
-                    <RelativeLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             android:text="Direct Bank Transfer"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
@@ -307,8 +322,9 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             android:background="@drawable/bg_badge_maroon_pill"
                             android:paddingStart="8dp"
                             android:paddingTop="3dp"
@@ -318,7 +334,7 @@
                             android:textColor="@color/text_white"
                             android:textSize="10sp"
                             android:textStyle="bold" />
-                    </RelativeLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -385,15 +401,16 @@
                             android:background="@color/divider_color" />
 
                         <!-- Account Number + 1-Tap Copy -->
-                        <RelativeLayout
+                        <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
 
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_alignParentStart="true"
-                                android:layout_centerVertical="true"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
                                 android:orientation="vertical">
 
                                 <TextView
@@ -419,8 +436,9 @@
                                 style="@style/Widget.MaterialComponents.Button.TextButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="36dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
                                 android:backgroundTint="@color/blush_tint_pill"
                                 android:minWidth="0dp"
                                 android:paddingStart="12dp"
@@ -435,7 +453,7 @@
                                 app:iconPadding="4dp"
                                 app:iconSize="14dp"
                                 app:iconTint="@color/primary_brand" />
-                        </RelativeLayout>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
                     </LinearLayout>
 
                     <!-- Transfer Remark Dynamic Note -->
@@ -495,9 +513,11 @@
     <!-- Bottom Pay Button -->
     <LinearLayout
         android:id="@+id/bottomPayActionBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:background="@color/card_surface"
         android:elevation="8dp"
         android:padding="16dp">
@@ -521,4 +541,4 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

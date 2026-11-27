@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_botanical_light">
 
     <!-- Top Action Bar -->
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topBarSupplierLogin"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="56dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:background="@color/blush_tint_light"
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
@@ -17,7 +20,10 @@
         <ImageView
             android:id="@+id/btnBackSupplierLogin"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"
@@ -28,19 +34,24 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:letterSpacing="0.06"
             android:text="Supplier Portal • Highland Floriculture"
             android:textColor="@color/primary_brand"
             android:textSize="14sp"
             android:textStyle="bold" />
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/bottomSupplierLoginBar"
-        android:layout_below="@id/topBarSupplierLogin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBarSupplierLogin"
+        app:layout_constraintBottom_toTopOf="@id/bottomSupplierLoginBar"
         android:scrollbars="none">
 
         <LinearLayout
@@ -198,9 +209,11 @@
     <!-- Bottom Buttons: Login & Register as supplier -->
     <LinearLayout
         android:id="@+id/bottomSupplierLoginBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:background="@color/card_surface"
         android:elevation="8dp"
         android:orientation="vertical"
@@ -234,4 +247,4 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

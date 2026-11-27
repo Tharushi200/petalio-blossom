@@ -39,7 +39,7 @@ public class CustomerOrderDetailsActivity extends AppCompatActivity {
     private View rowItem1;
     private View tvItem1Icon;
     private TextView tvItem1Title, tvItem1Qty, tvItem1Price;
-    private RelativeLayout rowItem2;
+    private View rowItem2;
     private View tvItem2Icon;
     private TextView tvItem2Title, tvItem2Qty, tvItem2Price;
     private View rowItem3, rowOrderDiscount;

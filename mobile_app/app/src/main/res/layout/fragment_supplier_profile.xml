@@ -17,15 +17,18 @@
         android:paddingBottom="36dp">
 
         <!-- Header Row -->
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_toStartOf="@id/btnEditProfileHeader"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btnEditProfileHeader"
+                app:layout_constraintTop_toTopOf="parent"
                 android:orientation="vertical">
 
                 <TextView
@@ -51,15 +54,16 @@
                 android:id="@+id/btnEditProfileHeader"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 android:background="@drawable/bg_logout_pill"
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="9dp"
                 android:src="@drawable/ic_edit"
                 app:tint="@color/primary_brand" />
-        </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Hero Estate Card with Avatar, Name, Code, and Verification Badge -->
         <androidx.cardview.widget.CardView
@@ -280,7 +284,7 @@
                     android:textStyle="bold" />
 
                 <!-- Row 1: Contact Person -->
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp">
@@ -288,6 +292,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="Contact Person"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
@@ -296,12 +302,13 @@
                         android:id="@+id/tvProfileContactPerson"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="—"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:textStyle="bold" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -311,13 +318,15 @@
                     android:background="@color/divider_color" />
 
                 <!-- Row 2: Email -->
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="Email"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
@@ -326,11 +335,12 @@
                         android:id="@+id/tvProfileEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="—"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -340,13 +350,15 @@
                     android:background="@color/divider_color" />
 
                 <!-- Row 3: Phone -->
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="Phone"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
@@ -355,11 +367,12 @@
                         android:id="@+id/tvProfilePhone"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="—"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -369,13 +382,15 @@
                     android:background="@color/divider_color" />
 
                 <!-- Row 4: District / City -->
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="District / Estate"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
@@ -384,11 +399,12 @@
                         android:id="@+id/tvProfileLocation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="—"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -398,13 +414,15 @@
                     android:background="@color/divider_color" />
 
                 <!-- Row 5: Detailed Address -->
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="Address"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
@@ -413,11 +431,12 @@
                         android:id="@+id/tvProfileAddress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="—"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -427,13 +446,15 @@
                     android:background="@color/divider_color" />
 
                 <!-- Row 6: Capacity -->
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="Monthly Capacity"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
@@ -442,12 +463,13 @@
                         android:id="@+id/tvProfileCapacity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="0 Stems / mo"
                         android:textColor="@color/primary_brand"
                         android:textSize="14sp"
                         android:textStyle="bold" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -477,7 +499,7 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_card_container"
@@ -487,17 +509,19 @@
                     android:id="@+id/ivSecurityIcon"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     android:src="@drawable/ic_security"
                     app:tint="@color/primary_brand" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_marginStart="14dp"
-                    android:layout_toEndOf="@id/ivSecurityIcon"
+                    app:layout_constraintStart_toEndOf="@id/ivSecurityIcon"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     android:text="Change Password"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
@@ -506,13 +530,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     android:text="›"
                     android:textColor="@color/text_secondary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
-            </RelativeLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
         <!-- Help Desk / WhatsApp Row -->
@@ -527,7 +552,7 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_card_container"
@@ -537,17 +562,19 @@
                     android:id="@+id/ivSupportIcon"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     android:src="@drawable/ic_chat"
                     app:tint="@color/badge_in_stock_text" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_marginStart="14dp"
-                    android:layout_toEndOf="@id/ivSupportIcon"
+                    app:layout_constraintStart_toEndOf="@id/ivSupportIcon"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     android:text="Highland Florist Desk (WhatsApp)"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
@@ -556,13 +583,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     android:text="›"
                     android:textColor="@color/text_secondary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
-            </RelativeLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
         <!-- Sign Out Button -->

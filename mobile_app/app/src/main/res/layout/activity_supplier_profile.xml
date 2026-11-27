@@ -1,34 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_botanical_light">
 
     <!-- Top Action Bar -->
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topBarSupplierProfile"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="56dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
 
         <ImageView
             android:id="@+id/btnBackSupplierProfile"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
             android:src="@drawable/ic_arrow_back"
             app:tint="@color/text_primary" />
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/topBarSupplierProfile"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBarSupplierProfile"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:scrollbars="none">
 
         <LinearLayout
@@ -75,13 +84,15 @@
                     android:padding="20dp">
 
                     <!-- Row 1: Farm -->
-                    <RelativeLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
                             android:text="Farm"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
@@ -90,11 +101,12 @@
                             android:id="@+id/tvProfileFarm"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
                             android:text="—"
                             android:textColor="@color/text_secondary"
                             android:textSize="14sp" />
-                    </RelativeLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <View
                         android:layout_width="match_parent"
@@ -104,13 +116,15 @@
                         android:background="@color/divider_color" />
 
                     <!-- Row 2: Contact -->
-                    <RelativeLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
                             android:text="Contact"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
@@ -119,11 +133,12 @@
                             android:id="@+id/tvProfileContact"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
                             android:text="—"
                             android:textColor="@color/text_secondary"
                             android:textSize="14sp" />
-                    </RelativeLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <View
                         android:layout_width="match_parent"
@@ -133,13 +148,15 @@
                         android:background="@color/divider_color" />
 
                     <!-- Row 3: Phone -->
-                    <RelativeLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
                             android:text="Phone"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
@@ -148,11 +165,12 @@
                             android:id="@+id/tvProfilePhone"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
                             android:text="—"
                             android:textColor="@color/text_secondary"
                             android:textSize="14sp" />
-                    </RelativeLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <View
                         android:layout_width="match_parent"
@@ -162,13 +180,15 @@
                         android:background="@color/divider_color" />
 
                     <!-- Row 4: Location -->
-                    <RelativeLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
                             android:text="Location"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
@@ -177,11 +197,12 @@
                             android:id="@+id/tvProfileLocation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
                             android:text="—"
                             android:textColor="@color/text_secondary"
                             android:textSize="14sp" />
-                    </RelativeLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -217,4 +238,4 @@
         </LinearLayout>
     </ScrollView>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

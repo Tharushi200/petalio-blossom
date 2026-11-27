@@ -468,17 +468,20 @@
                 android:orientation="vertical"
                 android:padding="18dp">
 
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
                         android:layout_marginEnd="8dp"
-                        android:layout_toStartOf="@id/tvViewAllAlerts"
+                        app:layout_constrainedWidth="true"
+                        app:layout_constraintHorizontal_bias="0"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/tvViewAllAlerts"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
@@ -512,13 +515,14 @@
                         android:id="@+id/tvViewAllAlerts"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         android:text="View all ›"
                         android:textColor="@color/primary_brand"
                         android:textSize="13sp"
                         android:textStyle="bold" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
                     android:layout_width="match_parent"

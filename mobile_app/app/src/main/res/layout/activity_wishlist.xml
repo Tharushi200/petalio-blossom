@@ -7,7 +7,7 @@
     android:fitsSystemWindows="true">
 
     <!-- Top Action Bar -->
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topBarWishlist"
         android:layout_width="0dp"
         android:layout_height="56dp"
@@ -20,7 +20,10 @@
         <ImageView
             android:id="@+id/btnBackWishlist"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"
@@ -31,8 +34,9 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@id/btnBackWishlist"
+            app:layout_constraintStart_toEndOf="@id/btnBackWishlist"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:orientation="vertical">
 
             <TextView
@@ -51,7 +55,7 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
         </LinearLayout>
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ProgressBar
         android:id="@+id/pbWishlistLoading"

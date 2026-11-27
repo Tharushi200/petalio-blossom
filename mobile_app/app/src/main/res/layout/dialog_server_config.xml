@@ -14,7 +14,7 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="@drawable/bg_icon_badge_blush">
@@ -22,11 +22,14 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_centerInParent="true"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 android:contentDescription="Server Config"
                 android:src="@drawable/ic_verified_badge"
                 app:tint="@color/primary_brand" />
-        </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -58,7 +61,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Select USB mode or enter your laptop's local Wi-Fi IP address:"
+        android:text="Select USB, Mobile Hotspot (no USB needed), or enter your laptop Wi-Fi IP / HTTPS tunnel URL:"
         android:textColor="@color/text_secondary"
         android:textSize="13sp" />
 
@@ -69,7 +72,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Server IP or Host (e.g. 127.0.0.1)"
+        android:hint="Server IP or URL (e.g. 192.168.137.1)"
         android:textColorHint="@color/text_secondary"
         app:boxCornerRadiusBottomEnd="14dp"
         app:boxCornerRadiusBottomStart="14dp"
@@ -115,10 +118,10 @@
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:background="@drawable/bg_btn_secondary_blossom"
-            android:text="Wi-Fi (192.168.8.183)"
+            android:text="Hotspot (192.168.137.1)"
             android:textAllCaps="false"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
     </LinearLayout>
 

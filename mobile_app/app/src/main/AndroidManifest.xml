@@ -30,6 +30,10 @@
             android:name=".RegisterActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ForgotPasswordActivity"
+            android:exported="false" />
+
         <!-- Customer Main Navigation Activity (Hosts Browse, Cart, Orders, Profile) -->
         <activity
             android:name=".CustomerMainActivity"
