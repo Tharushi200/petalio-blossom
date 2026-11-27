@@ -163,6 +163,52 @@ async function initDatabaseTables() {
     } catch (_) {}
 
     try {
+      await pool.query('ALTER TABLE rating_reviews ADD COLUMN flower_id INT DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE rating_reviews ADD COLUMN customer_id INT DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query(
+        UPDATE rating_reviews rr 
+        JOIN order_items oi ON rr.order_id = oi.order_id 
+        SET rr.flower_id = oi.flower_id 
+        WHERE rr.flower_id IS NULL
+      );
+    } catch (_) {}
+    try {
+      await pool.query(
+        UPDATE rating_reviews rr 
+        JOIN orders o ON rr.order_id = o.order_id 
+        SET rr.customer_id = o.customer_id 
+        WHERE rr.customer_id IS NULL
+      );
+    } catch (_) {}
+
+    try {
+      await pool.query('ALTER TABLE deliveries ADD COLUMN vehicle_number VARCHAR(50) DEFAULT "WP CAD-4521"');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE deliveries ADD COLUMN driver_name VARCHAR(100) DEFAULT "Sunil Shantha"');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE deliveries ADD COLUMN driver_phone VARCHAR(20) DEFAULT "+94 77 123 4567"');
+    } catch (_) {}
+
+    try {
+      await pool.query('ALTER TABLE invoices ADD COLUMN customer_name VARCHAR(120) DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE invoices ADD COLUMN invoice_number VARCHAR(50) DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE deliveries ADD COLUMN destination_address VARCHAR(255) DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE deliveries MODIFY COLUMN business_officer_id INT NULL DEFAULT 2');
+    } catch (_) {}
+
+    try {
       await pool.query("UPDATE orders SET fulfilment_status = 'Pending' WHERE UPPER(status) = 'PENDING'");
     } catch (_) {}
     try {
@@ -508,8 +554,8 @@ function buildResetPageHtml({ valid, email, token, errorMessage }) {
 
 // Unified Login (Customer or Supplier)
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password, role } = req.body;
-  const input = (email || '').trim();
+  const { email, identifier, username, password, role } = req.body;
+  const input = (email || identifier || username || '').trim();
   const inputPassword = (password || '').trim();
   const selectedRole = (role || '').trim().toUpperCase();
 
@@ -569,13 +615,22 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    // 5. Verify Password strictly against database bcrypt hash
+    // 5. Verify Password (supports bcrypt hash and automatic plain-text upgrade)
     if (user.password_hash && user.password_hash.trim() !== '') {
       let isMatch = false;
       try {
         isMatch = bcrypt.compareSync(inputPassword, user.password_hash);
       } catch (err) {
         isMatch = false;
+      }
+
+      // If bcrypt comparison fails, also allow direct plain-text match and auto-upgrade to bcrypt
+      if (!isMatch && (user.password_hash === inputPassword || user.password_hash.trim() === inputPassword)) {
+        isMatch = true;
+        try {
+          const upgradedHash = bcrypt.hashSync(inputPassword, 10);
+          pool.query('UPDATE users SET password_hash = ? WHERE user_id = ?', [upgradedHash, user.user_id]).catch(() => {});
+        } catch (_) {}
       }
 
       if (!isMatch) {
@@ -1994,8 +2049,8 @@ app.post('/api/orders', async (req, res) => {
     // 5. Schedule Delivery
     const deliveryCode = `DEL-${orderId}-${Math.floor(100 + Math.random() * 900)}`;
     await conn.query(
-      `INSERT INTO deliveries (delivery_code, order_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
-       VALUES (?, ?, NULL, NULL, NULL, ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'SCHEDULED')`,
+      `INSERT INTO deliveries (delivery_code, order_id, business_officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
+       VALUES (?, ?, 2, 'WP CAD-4521', 'Sunil Shantha', '+94 77 123 4567', ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'SCHEDULED')`,
       [deliveryCode, orderId, address]
     );
 
@@ -3472,4 +3527,3 @@ app.listen(PORT, '0.0.0.0', () => {
   }
   console.log(`===================================================`);
 });
-
