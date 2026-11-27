@@ -169,20 +169,20 @@ async function initDatabaseTables() {
       await pool.query('ALTER TABLE rating_reviews ADD COLUMN customer_id INT DEFAULT NULL');
     } catch (_) {}
     try {
-      await pool.query(
+      await pool.query(`
         UPDATE rating_reviews rr 
         JOIN order_items oi ON rr.order_id = oi.order_id 
         SET rr.flower_id = oi.flower_id 
         WHERE rr.flower_id IS NULL
-      );
+      `);
     } catch (_) {}
     try {
-      await pool.query(
+      await pool.query(`
         UPDATE rating_reviews rr 
         JOIN orders o ON rr.order_id = o.order_id 
         SET rr.customer_id = o.customer_id 
         WHERE rr.customer_id IS NULL
-      );
+      `);
     } catch (_) {}
 
     try {
@@ -1812,6 +1812,7 @@ app.get('/api/flowers', async (req, res) => {
         f.created_at,
         f.supplier_id,
         COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock_quantity,
+        COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock,
         COALESCE(MAX(i.reorder_level), 30) AS reorder_level,
         COALESCE(sales.sold_count, 0) AS sold_count,
         COALESCE(reviews.avg_rating, 5.0) AS avg_rating,
@@ -1840,6 +1841,24 @@ app.get('/api/flowers', async (req, res) => {
   }
 });
 
+// Dynamic flower categories auto-synced from MySQL flowers table
+app.get(['/api/categories', '/api/flowers/categories'], async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT DISTINCT TRIM(category) AS category FROM flowers WHERE category IS NOT NULL AND TRIM(category) != '' ORDER BY category ASC"
+    );
+    const categories = rows.map(r => r.category).filter(Boolean);
+    return res.json({
+      success: true,
+      count: categories.length,
+      categories
+    });
+  } catch (error) {
+    console.error('Get Categories Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch categories', error: error.message });
+  }
+});
+
 // Get single flower detail + latest customer reviews
 app.get('/api/flowers/:id', async (req, res) => {
   try {
@@ -1847,6 +1866,7 @@ app.get('/api/flowers/:id', async (req, res) => {
       SELECT 
         f.*,
         COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock_quantity,
+        COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock,
         COALESCE(MAX(i.reorder_level), 30) AS reorder_level,
         COALESCE(sales.sold_count, 0) AS sold_count,
         COALESCE(reviews.avg_rating, 0.0) AS avg_rating,
@@ -3527,3 +3547,4 @@ app.listen(PORT, '0.0.0.0', () => {
   }
   console.log(`===================================================`);
 });
+
