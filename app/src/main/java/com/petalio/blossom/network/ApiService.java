@@ -4,6 +4,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -19,6 +20,9 @@ public interface ApiService {
     // 1. Auth & Profile Endpoints
     @POST("auth/login")
     Call<LoginResponse> login(@Body LoginRequest request);
+
+    @POST("auth/register")
+    Call<CommonResponse> registerGeneric(@Body CustomerRegisterRequest request);
 
     @POST("auth/register-customer")
     Call<CommonResponse> registerCustomer(@Body CustomerRegisterRequest request);
@@ -93,6 +97,15 @@ public interface ApiService {
     @POST("supplier/stock-update")
     Call<CommonResponse> updateSupplierStock(@Body StockUpdateRequest request);
 
+    @Headers("Cache-Control: no-cache, no-store")
+    @GET("suppliers/status")
+    Call<SupplierStatusResponse> getSupplierStatusQuery(
+            @Query("supplier_code") String supplierCode,
+            @Query("user_id") String userId,
+            @Query("email") String email
+    );
+
+    @Headers("Cache-Control: no-cache, no-store")
     @GET("supplier/status/{id}")
     Call<SupplierStatusResponse> getSupplierStatus(@Path("id") String id);
 

@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 @SuppressWarnings("unused")
 public class UserDto {
+    @SerializedName(value = "user_id", alternate = {"id"})
     private int user_id;
     @SerializedName(value = "name", alternate = {"full_name", "customer_name"})
     private String name;
@@ -155,7 +156,10 @@ public class UserDto {
     }
 
     public boolean isApproved() {
-        return is_approved != null && is_approved == 1;
+        if (is_approved != null && is_approved == 1) return true;
+        if ("APPROVED".equalsIgnoreCase(approval_status) || "ACTIVE".equalsIgnoreCase(approval_status)) return true;
+        if ("APPROVED".equalsIgnoreCase(status) || "ACTIVE".equalsIgnoreCase(status)) return true;
+        return false;
     }
 
     public void setIsApproved(Integer is_approved) {

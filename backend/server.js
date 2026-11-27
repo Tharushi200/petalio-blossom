@@ -249,6 +249,19 @@ const escapeHtml = (val) => String(val || '')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;');
 
+function isStatusApproved(val) {
+  if (val === 1 || val === '1' || val === true) return true;
+  if (!val) return false;
+  const s = String(val).trim().toUpperCase();
+  return s === 'APPROVED' || s === 'ACTIVE' || s === '1' || s === 'TRUE';
+}
+
+function isStatusRejected(val) {
+  if (!val) return false;
+  const s = String(val).trim().toUpperCase();
+  return s === 'REJECTED' || s === 'DECLINED' || s === 'BLOCKED';
+}
+
 function createSmtpTransporter() {
   const smtpUser = (process.env.SMTP_USER || '').trim();
   // Strip spaces so 16-char Google App Passwords pasted with spaces work seamlessly
@@ -658,14 +671,28 @@ app.post('/api/auth/login', async (req, res) => {
         profileDetails = {
           supplier_id: user.user_id,
           supplier_code: `SUP-2026-${String(user.user_id).padStart(4, '0')}`,
-          is_approved: String(user.status || '').toUpperCase() === 'ACTIVE' ? 1 : 0
+          is_approved: isStatusApproved(user.status) ? 1 : 0
         };
       }
-      const isApprNum = Number(profileDetails.is_approved) === 1 ? 1 : 0;
-      profileDetails.is_approved = isApprNum;
-      profileDetails.approval_status = isApprNum === 1
-        ? 'Approved'
-        : (String(user.status || '').toUpperCase() === 'REJECTED' ? 'Rejected' : 'Pending');
+
+      const approved = isStatusApproved(profileDetails.is_approved) || isStatusApproved(user.status);
+      const rejected = isStatusRejected(profileDetails.is_approved) || isStatusRejected(user.status);
+
+      if (approved) {
+        profileDetails.is_approved = 1;
+        profileDetails.approval_status = 'Approved';
+        user.status = 'ACTIVE';
+        pool.query('UPDATE suppliers SET is_approved = 1 WHERE supplier_id = ?', [user.user_id]).catch(() => {});
+        pool.query('UPDATE users SET status = "ACTIVE" WHERE user_id = ?', [user.user_id]).catch(() => {});
+      } else if (rejected) {
+        profileDetails.is_approved = 0;
+        profileDetails.approval_status = 'Rejected';
+        user.status = 'REJECTED';
+      } else {
+        profileDetails.is_approved = 0;
+        profileDetails.approval_status = 'Pending';
+        user.status = 'PENDING';
+      }
     } else {
       const [customerRows] = await pool.query('SELECT * FROM customers WHERE customer_id = ?', [user.user_id]);
       if (customerRows.length > 0) {
@@ -677,13 +704,24 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const { password_hash: _omittedHash, ...safeUser } = user;
+    const cleanUser = {
+      ...safeUser,
+      ...profileDetails,
+      id: user.user_id,
+      user_id: user.user_id,
+      name: user.name || profileDetails.customer_name || profileDetails.supplier_name || '',
+      email: user.email || '',
+      phone: user.phone || profileDetails.contact_number || '',
+      address: profileDetails.address || '',
+      city: profileDetails.city || '',
+      role: user.role || 'CUSTOMER',
+      status: user.status || 'ACTIVE'
+    };
+
     return res.json({
       success: true,
       message: 'Login successful',
-      user: {
-        ...safeUser,
-        ...profileDetails
-      }
+      user: cleanUser
     });
   } catch (error) {
     console.error('Login Error:', error);
@@ -691,9 +729,9 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Customer Registration
-app.post('/api/auth/register-customer', async (req, res) => {
-  const { name, email, password, phone, address, city } = req.body;
+// Helper: Handle Customer Registration
+async function handleRegisterCustomer(req, res) {
+  const { name, email, password, phone, address, city } = req.body || {};
   const userName = (name || '').trim();
   const userEmail = (email || '').trim().toLowerCase();
   const userPhone = (phone || '').trim();
@@ -739,11 +777,16 @@ app.post('/api/auth/register-customer', async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Customer registered successfully',
+      id: userId,
       user_id: userId,
       customer_id: userId,
       role: 'CUSTOMER',
       name: userName,
-      email: userEmail
+      email: userEmail,
+      phone: userPhone,
+      address: userAddress,
+      city: userCity,
+      status: 'ACTIVE'
     });
   } catch (error) {
     try { await conn.rollback(); } catch (_) {}
@@ -755,11 +798,11 @@ app.post('/api/auth/register-customer', async (req, res) => {
   } finally {
     conn.release();
   }
-});
+}
 
-// Supplier Registration
-app.post('/api/auth/register-supplier', async (req, res) => {
-  const { farmName, contactPerson, password, phone, farmLocation, email, supplierId, monthly_capacity } = req.body;
+// Helper: Handle Supplier Registration
+async function handleRegisterSupplier(req, res) {
+  const { farmName, contactPerson, password, phone, farmLocation, email, supplierId, monthly_capacity } = req.body || {};
   const name = (contactPerson || farmName || '').trim();
   const farmTitle = (farmName || name).trim();
   const supplierEmail = (email || '').trim().toLowerCase();
@@ -815,12 +858,20 @@ app.post('/api/auth/register-supplier', async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Supplier registration submitted and awaiting Admin approval.',
+      id: userId,
       user_id: userId,
       supplier_id: assignedCode,
       supplier_code: assignedCode,
       farmName: farmTitle,
+      name: name,
+      email: supplierEmail,
+      phone: supplierPhone,
+      city: location,
+      address: location,
+      role: 'SUPPLIER',
       is_approved: 0,
-      approval_status: 'Pending'
+      approval_status: 'Pending',
+      status: 'PENDING'
     });
   } catch (error) {
     try { await conn.rollback(); } catch (_) {}
@@ -832,7 +883,22 @@ app.post('/api/auth/register-supplier', async (req, res) => {
   } finally {
     conn.release();
   }
+}
+
+// Unified Registration endpoint
+app.post('/api/auth/register', async (req, res) => {
+  const role = String(req.body?.role || '').trim().toUpperCase();
+  if (role === 'SUPPLIER') {
+    return handleRegisterSupplier(req, res);
+  }
+  return handleRegisterCustomer(req, res);
 });
+
+// Customer Registration
+app.post('/api/auth/register-customer', handleRegisterCustomer);
+
+// Supplier Registration
+app.post('/api/auth/register-supplier', handleRegisterSupplier);
 
 // Forgot Password (Generate 32-byte token, 15m expiry, send Nodemailer reset email or console fallback)
 app.post('/api/auth/forgot-password', async (req, res) => {
@@ -2993,59 +3059,91 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
   }
 });
 
-// Check supplier approval status
-app.get('/api/supplier/status/:id', async (req, res) => {
-  const { id } = req.params;
+// Check supplier approval status (supporting path :id or query params supplier_code, user_id, email)
+app.get(['/api/suppliers/status', '/api/supplier/status', '/api/supplier/status/:id', '/api/suppliers/status/:id'], async (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+
+  const idParam = (req.params.id || '').trim();
+  const codeQuery = (req.query.supplier_code || req.query.code || '').trim();
+  const uidQuery = (req.query.user_id || req.query.id || '').trim();
+  const emailQuery = (req.query.email || '').trim();
+  const lookup = idParam || codeQuery || uidQuery || emailQuery;
+
+  if (!lookup) {
+    return res.status(400).json({ success: false, message: 'Supplier identifier (supplier_code, user_id, or email) is required.' });
+  }
+
   try {
     const [rows] = await pool.query(
-      `SELECT s.supplier_id, s.supplier_code, s.supplier_name, s.city, s.monthly_capacity, s.is_approved, u.status, u.name, u.email
+      `SELECT s.supplier_id, s.supplier_code, s.supplier_name, s.city, s.address, s.monthly_capacity, s.is_approved, u.user_id, u.status, u.name, u.email, u.phone
        FROM suppliers s
        LEFT JOIN users u ON s.supplier_id = u.user_id
-       WHERE s.supplier_id = ? OR u.user_id = ? OR LOWER(COALESCE(s.supplier_code, '')) = LOWER(?) OR s.supplier_name = ?
+       WHERE s.supplier_id = ? OR u.user_id = ? OR LOWER(COALESCE(s.supplier_code, '')) = LOWER(?) OR LOWER(u.email) = LOWER(?) OR s.supplier_name = ?
        LIMIT 1`,
-      [id, id, id, id]
+      [lookup, lookup, lookup, lookup, lookup]
     );
 
     if (rows.length === 0) {
       const [userRows] = await pool.query(
-        'SELECT user_id, name, email, status FROM users WHERE user_id = ? AND role = "SUPPLIER"',
-        [id]
+        'SELECT user_id, name, email, phone, status, role FROM users WHERE (user_id = ? OR LOWER(email) = LOWER(?)) AND role = "SUPPLIER" LIMIT 1',
+        [lookup, lookup]
       );
       if (userRows.length > 0) {
         const u = userRows[0];
-        const isAppr = u.status === 'ACTIVE' ? 1 : 0;
+        const approved = isStatusApproved(u.status);
+        const rejected = isStatusRejected(u.status);
+        const finalStatus = approved ? 'APPROVED' : (rejected ? 'REJECTED' : 'PENDING');
+        const finalIsApproved = approved ? 1 : 0;
+        const supCode = `SUP-2026-${String(u.user_id).padStart(4, '0')}`;
+
         return res.json({
           success: true,
+          status: finalStatus,
+          is_approved: finalIsApproved,
+          id: u.user_id,
+          user_id: u.user_id,
           supplier_id: u.user_id,
-          supplier_code: `SUP-2026-${String(u.user_id).padStart(4, '0')}`,
+          supplier_code: supCode,
           supplier_name: u.name,
           farm_name: u.name,
           city: '',
-          monthly_capacity: 0,
-          is_approved: isAppr,
-          status: isAppr === 1 ? 'Approved' : (u.status === 'REJECTED' ? 'Rejected' : 'Pending')
+          address: '',
+          monthly_capacity: 0
         });
       }
-      return res.status(404).json({ success: false, message: 'Supplier record not found' });
+      return res.status(404).json({ success: false, message: 'Supplier record not found.' });
     }
 
     const s = rows[0];
-    const isAppr = Number(s.is_approved) === 1 ? 1 : 0;
-    const finalStatus = isAppr === 1 ? 'Approved' : (String(s.status || '').toUpperCase() === 'REJECTED' ? 'Rejected' : 'Pending');
+    const approved = isStatusApproved(s.is_approved) || isStatusApproved(s.status);
+    const rejected = isStatusRejected(s.is_approved) || isStatusRejected(s.status);
+    const finalStatus = approved ? 'APPROVED' : (rejected ? 'REJECTED' : 'PENDING');
+    const finalIsApproved = approved ? 1 : 0;
+    const supCode = s.supplier_code || `SUP-2026-${String(s.supplier_id).padStart(4, '0')}`;
+
+    if (approved && (Number(s.is_approved) !== 1 || String(s.status || '').toUpperCase() !== 'ACTIVE')) {
+      pool.query('UPDATE suppliers SET is_approved = 1 WHERE supplier_id = ?', [s.supplier_id]).catch(() => {});
+      pool.query('UPDATE users SET status = "ACTIVE" WHERE user_id = ?', [s.supplier_id]).catch(() => {});
+    }
 
     return res.json({
       success: true,
+      status: finalStatus,
+      is_approved: finalIsApproved,
+      id: s.supplier_id,
+      user_id: s.supplier_id,
       supplier_id: s.supplier_id,
-      supplier_code: s.supplier_code || `SUP-2026-${String(s.supplier_id).padStart(4, '0')}`,
+      supplier_code: supCode,
       supplier_name: s.supplier_name || s.name,
       farm_name: s.supplier_name || s.name,
       city: s.city || '',
-      monthly_capacity: s.monthly_capacity || 0,
-      is_approved: isAppr,
-      status: finalStatus
+      address: s.address || '',
+      monthly_capacity: s.monthly_capacity || 0
     });
   } catch (error) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, message: 'Server error retrieving status', error: error.message });
   }
 });
 

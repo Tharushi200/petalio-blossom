@@ -240,11 +240,24 @@ public class SupplierApprovalStatusActivity extends AppCompatActivity {
             btnRefreshApprovalStatus.setEnabled(false);
         }
         if (notifyUser) {
-            Toast.makeText(this, "Checking with Highland Admin portal...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Checking with Petalio Admin portal...", Toast.LENGTH_SHORT).show();
+        }
+
+        String lookupId = supplierId != null && !supplierId.trim().isEmpty() ? supplierId.trim() : PetalioUserPrefs.getSupplierCode(this);
+        if (lookupId.isEmpty()) {
+            int uid = PetalioUserPrefs.getUserId(this);
+            if (uid > 0) lookupId = String.valueOf(uid);
+        }
+        if (lookupId.isEmpty()) {
+            lookupId = PetalioUserPrefs.getUserEmail(this);
+        }
+        if (lookupId.isEmpty()) {
+            SharedPreferences prefs = getSharedPreferences("PetalioSupplierPrefs", MODE_PRIVATE);
+            lookupId = prefs.getString("LAST_SUPPLIER_ID", prefs.getString("LAST_SUPPLIER_EMAIL", ""));
         }
 
         ApiClient.getApiService(getApplicationContext())
-                .getSupplierStatus(supplierId)
+                .getSupplierStatus(lookupId)
                 .enqueue(new Callback<SupplierStatusResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<SupplierStatusResponse> call, @NonNull Response<SupplierStatusResponse> response) {
@@ -258,12 +271,26 @@ public class SupplierApprovalStatusActivity extends AppCompatActivity {
                             if (status.getFarmName() != null && !status.getFarmName().isEmpty() && tvApprovalFarmName != null) {
                                 tvApprovalFarmName.setText(status.getFarmName());
                             }
+                            if (status.getSupplierCode() != null && !status.getSupplierCode().isEmpty() && tvApprovalSupplierId != null) {
+                                tvApprovalSupplierId.setText(status.getSupplierCode());
+                                supplierId = status.getSupplierCode();
+                            }
 
                             if (status.isApproved()) {
+                                PetalioUserPrefs.setApprovalStatus(SupplierApprovalStatusActivity.this, "APPROVED");
+                                PetalioUserPrefs.setSupplierApproved(SupplierApprovalStatusActivity.this, true);
+                                getSharedPreferences("PetalioSupplierPrefs", MODE_PRIVATE).edit()
+                                        .putString("STATUS", "APPROVED")
+                                        .putBoolean("KEY_SUPPLIER_APPROVED", true)
+                                        .apply();
+
                                 applyApprovalGateUi(true, "Approved");
-                                if (notifyUser) {
-                                    Toast.makeText(SupplierApprovalStatusActivity.this, "Admin Approval Granted! Welcome to Petalio Blossom.", Toast.LENGTH_LONG).show();
-                                }
+                                Toast.makeText(SupplierApprovalStatusActivity.this, "Account approved! Welcome to Petalio Blossom.", Toast.LENGTH_LONG).show();
+
+                                Intent intent = new Intent(SupplierApprovalStatusActivity.this, SupplierMainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
                             } else {
                                 String stateText = status.getStatus();
                                 applyApprovalGateUi(false, stateText);

@@ -20,6 +20,7 @@ public class PetalioUserPrefs {
     public static final String KEY_CONTACT_PERSON = "CONTACT_PERSON";
     public static final String KEY_MONTHLY_CAPACITY = "MONTHLY_CAPACITY";
     public static final String KEY_SUPPLIER_APPROVED = "SUPPLIER_APPROVED";
+    public static final String KEY_APPROVAL_STATUS = "APPROVAL_STATUS";
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -204,8 +205,45 @@ public class PetalioUserPrefs {
         getPrefs(context).edit().putString(baseKey + "_" + userId, value).apply();
     }
 
+    public static String getApprovalStatus(Context context) {
+        if (context == null) return "PENDING";
+        return getPrefs(context).getString(KEY_APPROVAL_STATUS, isSupplierApproved(context) ? "APPROVED" : "PENDING");
+    }
+
+    public static void setApprovalStatus(Context context, String status) {
+        if (context == null) return;
+        String normalized = (status != null && !status.trim().isEmpty()) ? status.trim().toUpperCase() : "PENDING";
+        boolean approved = "APPROVED".equals(normalized) || "ACTIVE".equals(normalized) || "1".equals(normalized);
+        getPrefs(context).edit()
+                .putString(KEY_APPROVAL_STATUS, normalized)
+                .putBoolean(KEY_SUPPLIER_APPROVED, approved)
+                .apply();
+    }
+
     public static void clear(Context context) {
         if (context == null) return;
-        getPrefs(context).edit().clear().apply();
+        Context appCtx = context.getApplicationContext();
+        try {
+            getPrefs(appCtx).edit().clear().apply();
+        } catch (Exception ignored) {}
+
+        try {
+            appCtx.getSharedPreferences("PetalioSupplierPrefs", Context.MODE_PRIVATE)
+                    .edit().clear().apply();
+        } catch (Exception ignored) {}
+
+        try {
+            appCtx.getSharedPreferences("petalio_cart_prefs", Context.MODE_PRIVATE)
+                    .edit().clear().apply();
+        } catch (Exception ignored) {}
+
+        try {
+            appCtx.getSharedPreferences("petalio_wishlist_prefs", Context.MODE_PRIVATE)
+                    .edit().clear().apply();
+        } catch (Exception ignored) {}
+
+        try {
+            BrowseFragment.clearCache();
+        } catch (Exception ignored) {}
     }
 }

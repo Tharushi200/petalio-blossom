@@ -8,6 +8,7 @@ public class SupplierRegisterRequest {
     private String farmLocation;
     private String email;
     private String supplierId;
+    private String role = "SUPPLIER";
 
     public SupplierRegisterRequest(String farmName, String contactPerson, String password, String phone, String farmLocation, String email, String supplierId) {
         this.farmName = farmName;
@@ -17,6 +18,15 @@ public class SupplierRegisterRequest {
         this.farmLocation = farmLocation;
         this.email = email;
         this.supplierId = supplierId;
+        this.role = "SUPPLIER";
     }
+
+    public String getFarmName() { return farmName; }
+    public String getContactPerson() { return contactPerson; }
+    public String getPhone() { return phone; }
+    public String getFarmLocation() { return farmLocation; }
+    public String getEmail() { return email; }
+    public String getSupplierId() { return supplierId; }
+    public String getRole() { return role; }
 }
 
