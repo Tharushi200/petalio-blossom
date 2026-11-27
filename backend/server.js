@@ -1137,7 +1137,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 });
 
 // Get User Profile & Real Stats (Orders count, Total spend, Points)
-app.get('/api/users/:userId/profile', async (req, res) => {
+app.get(['/api/users/:userId/profile', '/api/users/:userId', '/api/customers/:userId/profile', '/api/customers/:userId'], async (req, res) => {
   const userId = parseInt(req.params.userId, 10);
   if (isNaN(userId)) {
     return res.status(400).json({ success: false, message: 'Invalid user ID' });
@@ -1428,7 +1428,7 @@ app.post(['/api/customers/:customerId/redeem-points', '/api/users/:customerId/re
 });
 
 // Update User Profile
-app.put('/api/users/:userId/profile', async (req, res) => {
+app.put(['/api/users/:userId/profile', '/api/users/:userId', '/api/customers/:userId/profile', '/api/customers/:userId'], async (req, res) => {
   const userId = parseInt(req.params.userId, 10);
   const { name, phone, address, city } = req.body;
 
@@ -2453,23 +2453,29 @@ app.get(['/api/orders/customer/:customerId', '/api/customers/:customerId/orders'
         o.delivery_address,
         o.delivery_city,
         o.payment_status,
+        COALESCE(p.payment_method, 'CARD') AS payment_method,
+        COALESCE(p.payment_reference, '') AS payment_reference,
         COALESCE(o.fulfilment_status, o.status) AS fulfilment_status,
         o.status,
         COALESCE(i.total_amount, 0) AS total_amount,
-        GROUP_CONCAT(CONCAT(oi.quantity, 'x ', f.name) SEPARATOR ', ') AS items_summary,
+        GROUP_CONCAT(DISTINCT CONCAT(oi.quantity, 'x ', f.name) SEPARATOR ', ') AS items_summary,
         d.delivery_code,
         COALESCE(d.status, 'IN_TRANSIT') AS delivery_status,
         d.delivery_date,
         d.vehicle_number,
-        d.driver_name,
-        d.driver_phone
+        COALESCE(d.driver_name, 'Sunil Shantha') AS driver_name,
+        COALESCE(d.driver_phone, '+94 77 123 4567') AS driver_phone,
+        COALESCE(u_bo.name, 'Chaminda Silva') AS officer_name,
+        COALESCE(u_bo.phone, '+94 71 889 9001') AS officer_phone
       FROM orders o
       LEFT JOIN invoices i ON o.order_id = i.order_id
+      LEFT JOIN payments p ON i.invoice_id = p.invoice_id
       LEFT JOIN order_items oi ON o.order_id = oi.order_id
       LEFT JOIN flowers f ON oi.flower_id = f.flower_id
       LEFT JOIN deliveries d ON o.order_id = d.order_id
+      LEFT JOIN users u_bo ON d.business_officer_id = u_bo.user_id
       WHERE o.customer_id = ?
-      GROUP BY o.order_id, d.delivery_id
+      GROUP BY o.order_id, d.delivery_id, p.payment_id
       ORDER BY o.order_date DESC, o.order_id DESC
     `;
     const [orders] = await pool.query(query, [custId]);
@@ -2556,7 +2562,19 @@ app.get('/api/orders/:orderId', async (req, res) => {
 
     const [invoice] = await pool.query('SELECT * FROM invoices WHERE order_id = ?', [order.order_id]);
     const [payment] = await pool.query('SELECT * FROM payments WHERE invoice_id = ? ORDER BY payment_id DESC LIMIT 1', [invoice[0] ? invoice[0].invoice_id : 0]);
-    const [deliveries] = await pool.query('SELECT * FROM deliveries WHERE order_id = ? ORDER BY delivery_id DESC LIMIT 1', [order.order_id]);
+    const [deliveries] = await pool.query(`
+      SELECT d.*,
+             COALESCE(u_bo.name, 'Chaminda Silva') AS officer_name,
+             COALESCE(u_bo.phone, '+94 71 889 9001') AS officer_phone
+      FROM deliveries d
+      LEFT JOIN users u_bo ON d.business_officer_id = u_bo.user_id
+      WHERE d.order_id = ?
+      ORDER BY d.delivery_id DESC
+      LIMIT 1
+    `, [order.order_id]);
+
+    const activePayment = payment[0] || null;
+    const activeDelivery = deliveries[0] || null;
 
     // Resolve supplier estate dynamically from MySQL suppliers/supplier_flowers
     let supplierInfo = null;
@@ -2593,8 +2611,10 @@ app.get('/api/orders/:orderId', async (req, res) => {
         subtotal: itemsSubtotal,
         delivery_fee: deliveryFee,
         invoice: invoice[0] || null,
-        payment: payment[0] || null,
-        delivery: deliveries[0] || null,
+        payment: activePayment,
+        delivery: activeDelivery,
+        payment_method: activePayment ? (activePayment.payment_method || 'CARD') : 'CARD',
+        payment_reference: activePayment ? (activePayment.payment_reference || '') : '',
         supplier: supplierInfo
       }
     });
