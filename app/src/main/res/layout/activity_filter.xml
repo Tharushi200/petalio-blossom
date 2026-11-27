@@ -72,7 +72,7 @@
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
-            <!-- Section 1: Category -->
+            <!-- Section 1: Category (Dynamically synchronized with MySQL backend) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -89,6 +89,7 @@
                 android:scrollbars="none">
 
                 <LinearLayout
+                    android:id="@+id/layoutFilterCategoriesContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
@@ -107,175 +108,10 @@
                         android:textColor="@color/text_white"
                         android:textSize="13sp"
                         android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/filterChipRoses"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Roses"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipOrchids"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Orchids"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipLilies"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Lilies"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipCarnations"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Carnations"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipChrysanthemums"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Chrysanthemums"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipGerberas"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Gerberas"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipSunflowers"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Sunflowers"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipTulips"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Tulips"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipLavender"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Lavender"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipHydrangeas"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Hydrangeas"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/filterChipPeonies"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp"
-                        android:text="Peonies"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
                 </LinearLayout>
             </HorizontalScrollView>
 
-            <!-- Section 2: Availability -->
+            <!-- Section 2: Availability (Pre-order removed) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -318,21 +154,6 @@
                     android:paddingStart="20dp"
                     android:paddingEnd="20dp"
                     android:text="In stock"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
-
-                <TextView
-                    android:id="@+id/chipPreOrder"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="10dp"
-                    android:background="@drawable/bg_chip_unselected"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:paddingStart="20dp"
-                    android:paddingEnd="20dp"
-                    android:text="Pre-order"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
             </LinearLayout>

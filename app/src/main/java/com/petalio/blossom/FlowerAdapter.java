@@ -134,6 +134,10 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
     }
 
     public void applyFilter(String query, String category, String availability, int minPrice, int maxPrice, String subTab) {
+        applyFilter(query, category, availability, minPrice, maxPrice, subTab, "All Prices");
+    }
+
+    public void applyFilter(String query, String category, String availability, int minPrice, int maxPrice, String subTab, String priceOption) {
         displayedList.clear();
         lastAnimatedPosition = -1;
         String q = (query != null) ? query.trim().toLowerCase(Locale.US) : "";
@@ -162,11 +166,21 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
                 continue;
             }
 
-            // 5. Availability filter
+            // 5. Availability filter (Pre-order removed)
             if (availability != null && !availability.equalsIgnoreCase("All")) {
                 if ("In stock".equalsIgnoreCase(availability) && item.available <= 0) {
                     continue;
-                } else if ("Pre-order".equalsIgnoreCase(availability) && item.available > 0) {
+                }
+            }
+
+            // 6. Price Dropdown Filter (Under Rs. 2,500, Rs. 2,500 – Rs. 5,000, Above Rs. 5,000)
+            if (priceOption != null) {
+                if ("Under Rs. 2,500".equalsIgnoreCase(priceOption) && item.price >= 2500) {
+                    continue;
+                } else if (("Rs. 2,500 – Rs. 5,000".equalsIgnoreCase(priceOption) || "Rs. 2,500 - Rs. 5,000".equalsIgnoreCase(priceOption))
+                        && (item.price < 2500 || item.price > 5000)) {
+                    continue;
+                } else if ("Above Rs. 5,000".equalsIgnoreCase(priceOption) && item.price <= 5000) {
                     continue;
                 }
             }
@@ -174,8 +188,15 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
             displayedList.add(item);
         }
 
-        // Sub-Tab filtering & sorting (All keeps default MySQL catalog order from masterList)
-        applySubTabFilterAndSort(subTab);
+        // Price Sort Option or Sub-Tab sorting
+        if (priceOption != null && "Price: Low to High".equalsIgnoreCase(priceOption)) {
+            Collections.sort(displayedList, (a, b) -> Integer.compare(a.price, b.price));
+        } else if (priceOption != null && "Price: High to Low".equalsIgnoreCase(priceOption)) {
+            Collections.sort(displayedList, (a, b) -> Integer.compare(b.price, a.price));
+        } else {
+            // Sub-Tab filtering & sorting (All keeps default MySQL catalog order from masterList)
+            applySubTabFilterAndSort(subTab);
+        }
 
         notifyDataSetChanged();
         if (countListener != null) {
@@ -261,10 +282,10 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
         // Live MySQL review rating or New badge (never show unreviewed defaults as 5-star)
         if (holder.tvFlowerRating != null) {
             if (flower.reviewCount > 0 && flower.avgRating > 0) {
-                holder.tvFlowerRating.setText("★ " + String.format(Locale.US, "%.1f", flower.avgRating) + " (" + flower.reviewCount + ")");
+                holder.tvFlowerRating.setText(String.format(Locale.US, "%.1f", flower.avgRating) + " (" + flower.reviewCount + ")");
                 holder.tvFlowerRating.setTextColor(ContextCompat.getColor(context, R.color.gold_loyalty));
             } else {
-                holder.tvFlowerRating.setText("★ New");
+                holder.tvFlowerRating.setText("New");
                 holder.tvFlowerRating.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             }
         }
@@ -345,7 +366,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
             }
         });
 
-        // Quick-Add Shopping Cart Action (🛒+) with live stock guard
+        // Quick-Add Shopping Cart Action (Quick Add) with live stock guard
         if (holder.btnAddToCart != null) {
             if (flower.available <= 0) {
                 holder.btnAddToCart.setEnabled(false);

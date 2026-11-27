@@ -63,6 +63,9 @@ public interface ApiService {
     @GET("flowers")
     Call<FlowersResponse> getFlowers();
 
+    @GET("categories")
+    Call<CategoriesResponse> getCategories();
+
     @GET("flowers")
     Call<FlowersResponse> getSupplierFlowers(@Query("supplier_id") int supplierId);
 
