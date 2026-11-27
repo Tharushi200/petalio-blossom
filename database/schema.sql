@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20),
     role ENUM('ADMIN', 'BUSINESS_OFFICER', 'CUSTOMER', 'SUPPLIER') NOT NULL,
     status ENUM('PENDING', 'ACTIVE', 'REJECTED') DEFAULT 'ACTIVE',
+    reset_token VARCHAR(255) NULL,
+    reset_token_expiry DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -291,8 +293,8 @@ CREATE TABLE IF NOT EXISTS demand_forecasts (
 
 -- A. Users
 INSERT INTO users (user_id, name, email, password_hash, phone, role, status) VALUES
-(1, 'Dr. K. Wickramasinghe', 'admin@petalio.lk',   '$2b$10$eIYaQzBVHgSq08dCS/9Gre54d1/R3lYskTVG4YofYK4oGXokoEISm', '+94 77 111 2233', 'ADMIN',            'ACTIVE'),
-(2, 'Anuki Perera',          'officer@petalio.lk', '$2b$10$o496LMRD4tM.A55B./H2UeDbOp6LHNmAan/gfg4f7bvboI..Z9q1S', '+94 77 123 4567', 'BUSINESS_OFFICER', 'ACTIVE'),
+(1, 'Dr. K. Wickramasinghe', 'tharushidikkumbura727@gmail.com', '$2b$10$8tKzH990GDETP0nMXdOO1e70GmImy36YYtSzwWHOgekiCS0TeXzpS', '+94 77 111 2233', 'ADMIN',            'ACTIVE'),
+(2, 'Anuki Perera',          'dikkumburatharushi@gmail.com',   '$2b$10$8tKzH990GDETP0nMXdOO1e70GmImy36YYtSzwWHOgekiCS0TeXzpS', '+94 77 123 4567', 'BUSINESS_OFFICER', 'ACTIVE'),
 (3, 'Manjula Rajapaksha',    'sunil@ella.lk',      '$2b$10$C0EcyK6LlR8TmmPoBFfIEe5DgBCBqj8jyveVSCkLm0S/M8WR9XNQG', '+94 71 234 5678', 'SUPPLIER',         'ACTIVE'),
 (4, 'Gamini Disanayake',     'nimal@hakgala.lk',   '$2b$10$C0EcyK6LlR8TmmPoBFfIEe5DgBCBqj8jyveVSCkLm0S/M8WR9XNQG', '+94 77 345 6789', 'SUPPLIER',         'PENDING'),
 (5, 'Dilshan Perera',        'dilshan@gmail.com',  '$2b$10$vru7vvMkV.BiUZqxyf30PeVSZTLNLYo56N03DX0.ytsB4.1AHehAC', '+94 77 333 4455', 'CUSTOMER',         'ACTIVE'),
@@ -323,7 +325,7 @@ INSERT INTO flowers (flower_id, name, category, color, unit_price, image_url, de
 (3,  'Lily',             'Lily',             'White',   830.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsybGsp0VZnLWS3RLEba1KLQDJaPKo9zFVH9xpdeXvBJMBplAIgqJngoQ&s=10', 'Fragrant Oriental white lilies with stately stems grown in Ambewela alpine fields.'),
 (4,  'Carnation',        'Carnation',        'Red',     300.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOL2BukndIVjerxnQBffIvDAzSxiNyW196fPWjdzMYO2uOFHZwbhWy2f1m&s=10', 'Long-lasting ruffled cut carnations from Hakgala terraced estates.'),
 (5,  'Chrysanthemum',    'Chrysanthemum',    'White',   240.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlAxqqHuoF68upnZFu2PPk8x6ZvJCXoiFJ7xTEUc2YXREasfiD8D8LLxLW&s=10', 'Traditional festival bloom harvested across Welimada plateau.'),
-(6,  'Gerbera',          'Gerbera',          'Red',     200.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10', 'Large daisy-like blooms from Bandarawela, bright commercial bouquet filler.'),
+(6,  'Gerbera',          'Gerbera',          'Yellow',  200.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10', 'Large daisy-like blooms from Bandarawela, bright commercial bouquet filler.'),
 (7,  'Lisianthus',       'Lisianthus',       'White',   510.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4wl-OmkBCXuQ0UEvSwByBgPAEO_Z7ejGCre1PJtqqaX_MEatY9qNqfwo&s=10', 'Double-petaled eustoma grandiflorum with extended 14-day vase life.'),
 (8,  'Lavender',         'Lavender',         'Purple',  975.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-nzRRZzeoX2c4HXFB6JFZ0vwWPIPzMUpiCUYYVEigXZULRzJLSWak-jbb&s=10', 'Aromatic English lavender with papery violet florets, dried & fresh styling.'),
 (9,  "Baby's Breath",    "Baby's Breath",    'White',  1500.00, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKIkjS2xPZj96SP_2idOSlVs98i-v3dyRggjNFySSzbCoQfSDxWm8lmgGu&s=10', 'Airy cloud gypsophila bunches, essential bridal bouquet foundation.'),

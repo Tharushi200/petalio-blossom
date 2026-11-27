@@ -9,6 +9,7 @@ import OfficerLayout from './layouts/OfficerLayout';
 // Screens
 import PublicLandingPage from './screens/public/PublicLandingPage';
 import LoginPage from './screens/auth/LoginPage';
+import ResetPasswordPage from './screens/auth/ResetPasswordPage';
 import AdminDashboard from './screens/admin/AdminDashboard';
 import UserManagement from './screens/admin/UserManagement';
 import SupplierApprovals from './screens/admin/SupplierApprovals';
@@ -34,6 +35,7 @@ export default function App() {
         <Routes>
           {/* Public Authentication Route */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Public Landing Page */}
           <Route path="/" element={<PublicLandingPage />} />
