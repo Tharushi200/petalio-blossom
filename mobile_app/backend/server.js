@@ -2046,6 +2046,139 @@ app.get('/api/flowers/:id', async (req, res) => {
   }
 });
 
+// Add new flower (Supplier Portal & Admin)
+app.post(['/api/suppliers/flowers', '/api/flowers'], async (req, res) => {
+  const { name, category, unit_price, price, stock, stock_quantity, color, description, image_url, supplier_id, user_id } = req.body;
+  if (!name || !String(name).trim()) {
+    return res.status(400).json({ success: false, message: 'Flower name is required' });
+  }
+  const cleanName = String(name).trim();
+  const cleanCat = (category && String(category).trim()) || 'Bouquet';
+  const cleanColor = (color && String(color).trim()) || 'Multicolor';
+  const finalPrice = Math.max(0, parseFloat(unit_price !== undefined ? unit_price : price) || 0);
+  const finalStock = Math.max(0, parseInt(stock !== undefined ? stock : stock_quantity, 10) || 0);
+  const cleanImg = (image_url && String(image_url).trim()) || '';
+  const cleanDesc = (description && String(description).trim()) || `Fresh Highland ${cleanName} blooms harvested daily.`;
+  const resolvedSid = parseInt(supplier_id || user_id, 10) || null;
+
+  try {
+    const [insRes] = await pool.query(
+      `INSERT INTO flowers (name, category, color, unit_price, stock_quantity, stock, image_url, description, supplier_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [cleanName, cleanCat, cleanColor, finalPrice, finalStock, finalStock, cleanImg, cleanDesc, resolvedSid]
+    );
+    const flowerId = insRes.insertId;
+
+    // Sync inventory table
+    try {
+      await pool.query(
+        'INSERT INTO inventory (flower_id, stock_quantity, reorder_level) VALUES (?, ?, 30) ON DUPLICATE KEY UPDATE stock_quantity = VALUES(stock_quantity)',
+        [flowerId, finalStock]
+      );
+    } catch (_) {}
+
+    // Sync supplier_flowers table if supplier resolved
+    if (resolvedSid) {
+      try {
+        await pool.query(
+          'INSERT INTO supplier_flowers (flower_id, supplier_id, supplier_user_id, supply_price, capacity, supply_capacity) VALUES (?, ?, ?, ?, ?, ?)',
+          [flowerId, resolvedSid, resolvedSid, finalPrice, finalStock, finalStock]
+        );
+      } catch (_) {}
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Flower created successfully',
+      flower_id: flowerId,
+      flower: {
+        id: flowerId,
+        flower_id: flowerId,
+        name: cleanName,
+        category: cleanCat,
+        color: cleanColor,
+        unit_price: finalPrice,
+        price: finalPrice,
+        stock: finalStock,
+        stock_quantity: finalStock,
+        image_url: cleanImg,
+        description: cleanDesc
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to add flower', error: error.message });
+  }
+});
+
+// Update flower details & stock (Supplier Portal & Admin)
+app.put(['/api/flowers/:id', '/api/suppliers/flowers/:id'], async (req, res) => {
+  const flowerId = parseInt(req.params.id, 10);
+  if (isNaN(flowerId) || flowerId <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid flower ID' });
+  }
+
+  const { name, category, unit_price, price, stock, stock_quantity, color, description, image_url } = req.body;
+  try {
+    const [existing] = await pool.query('SELECT * FROM flowers WHERE flower_id = ?', [flowerId]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'Flower not found' });
+    }
+    const cur = existing[0];
+    const newName = name !== undefined ? String(name).trim() : cur.name;
+    const newCat = category !== undefined ? String(category).trim() : cur.category;
+    const newColor = color !== undefined ? String(color).trim() : cur.color;
+    const newPrice = (unit_price !== undefined || price !== undefined)
+      ? Math.max(0, parseFloat(unit_price !== undefined ? unit_price : price) || 0)
+      : parseFloat(cur.unit_price || 0);
+    const newStock = (stock !== undefined || stock_quantity !== undefined)
+      ? Math.max(0, parseInt(stock !== undefined ? stock : stock_quantity, 10) || 0)
+      : (parseInt(cur.stock !== undefined ? cur.stock : cur.stock_quantity, 10) || 0);
+    const newImg = image_url !== undefined ? String(image_url).trim() : (cur.image_url || '');
+    const newDesc = description !== undefined ? String(description).trim() : (cur.description || '');
+
+    await pool.query(
+      `UPDATE flowers 
+       SET name = ?, category = ?, color = ?, unit_price = ?, stock_quantity = ?, stock = ?, image_url = ?, description = ?
+       WHERE flower_id = ?`,
+      [newName, newCat, newColor, newPrice, newStock, newStock, newImg, newDesc, flowerId]
+    );
+
+    // Sync inventory table
+    try {
+      const [invCheck] = await pool.query('SELECT inventory_id FROM inventory WHERE flower_id = ?', [flowerId]);
+      if (invCheck.length > 0) {
+        await pool.query(
+          'UPDATE inventory SET stock_quantity = ?, last_restocked = CURRENT_TIMESTAMP WHERE flower_id = ?',
+          [newStock, flowerId]
+        );
+      } else {
+        await pool.query('INSERT INTO inventory (flower_id, stock_quantity, reorder_level) VALUES (?, ?, 30)', [flowerId, newStock]);
+      }
+    } catch (_) {}
+
+    return res.json({
+      success: true,
+      message: 'Flower updated successfully',
+      flower_id: flowerId,
+      flower: {
+        id: flowerId,
+        flower_id: flowerId,
+        name: newName,
+        category: newCat,
+        color: newColor,
+        unit_price: newPrice,
+        price: newPrice,
+        stock: newStock,
+        stock_quantity: newStock,
+        image_url: newImg,
+        description: newDesc
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to update flower', error: error.message });
+  }
+});
+
 // Get user wishlist
 app.get('/api/wishlist', async (req, res) => {
   try {
