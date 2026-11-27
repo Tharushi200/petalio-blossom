@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_botanical_light">
+
+    <!-- Top Action Bar -->
+    <RelativeLayout
+        android:id="@+id/topBarSupplierReg"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/blush_tint_light"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageView
+            android:id="@+id/btnBackSupplierReg"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/text_primary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:letterSpacing="0.06"
+            android:text="Supplier Registration • Highland Floriculture"
+            android:textColor="@color/primary_brand"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomSupplierRegBar"
+        android:layout_below="@id/topBarSupplierReg"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="24dp">
+
+            <!-- Title & Subtitle -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Join as supplier"
+                android:textColor="@color/text_primary"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Partner with Petalio Blossom to supply fresh blooms directly to florists and customers nationwide."
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+
+            <!-- Auto-Generated Supplier ID Card -->
+            <LinearLayout
+                android:id="@+id/cardSupplierIdInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_supplier_id_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.08"
+                        android:text="ASSIGNED SUPPLIER ID"
+                        android:textColor="@color/supplier_id_text"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnCopySupplierId"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/bg_badge_in_stock"
+                        android:clickable="true"
+                        android:drawablePadding="5dp"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:paddingStart="10dp"
+                        android:paddingTop="3dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="3dp"
+                        android:text="Copy ID"
+                        android:textColor="@color/badge_in_stock_text"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        app:drawableStartCompat="@drawable/ic_copy"
+                        app:drawableTint="@color/badge_in_stock_text" />
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/tvGeneratedSupplierId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:letterSpacing="0.05"
+                    android:text="SUP-2026-XXXX"
+                    android:textColor="@color/primary_forest"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="This unique ID is auto-assigned to your farm for verification, invoice tracking, and direct supplier login."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Form Section Header -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Farm &amp; Contact Details"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <!-- Input 1: Farm Name -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilFarmName"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:hint="Supplier / Farm Name"
+                android:textColorHint="@color/text_secondary"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxStrokeColor="@color/primary_brand"
+                app:boxStrokeWidth="1.2dp"
+                app:hintTextColor="@color/primary_brand">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etFarmName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapWords"
+                    android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Input 2: Contact Person -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilContactPerson"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Contact Person Name"
+                android:textColorHint="@color/text_secondary"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxStrokeColor="@color/primary_brand"
+                app:boxStrokeWidth="1.2dp"
+                app:hintTextColor="@color/primary_brand">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etContactPerson"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName"
+                    android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Input 3: Phone -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilSupplierPhone"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Phone / WhatsApp (e.g. 0522224589)"
+                android:textColorHint="@color/text_secondary"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxStrokeColor="@color/primary_brand"
+                app:boxStrokeWidth="1.2dp"
+                app:hintTextColor="@color/primary_brand">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSupplierPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="phone"
+                    android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Input 4: Location -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilFarmLocation"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Farm Location / Address (e.g. Nuwara Eliya)"
+                android:textColorHint="@color/text_secondary"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxStrokeColor="@color/primary_brand"
+                app:boxStrokeWidth="1.2dp"
+                app:hintTextColor="@color/primary_brand">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etFarmLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPostalAddress"
+                    android:maxLines="2"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Input 5: Email -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilSupplierEmail"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Official Business Email"
+                android:textColorHint="@color/text_secondary"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxStrokeColor="@color/primary_brand"
+                app:boxStrokeWidth="1.2dp"
+                app:hintTextColor="@color/primary_brand">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSupplierEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Input 6: Password -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilSupplierPassword"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Create Supplier Account Password"
+                android:textColorHint="@color/text_secondary"
+                app:boxCornerRadiusBottomEnd="14dp"
+                app:boxCornerRadiusBottomStart="14dp"
+                app:boxCornerRadiusTopEnd="14dp"
+                app:boxCornerRadiusTopStart="14dp"
+                app:boxStrokeColor="@color/primary_brand"
+                app:boxStrokeWidth="1.2dp"
+                app:hintTextColor="@color/primary_brand"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/primary_forest">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSupplierPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Policy & SLA banner -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_badge_status"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_security"
+                    app:tint="@color/primary_forest" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Petalio Grower Standards: Applications are verified within 24 hours. Once verified, your harvest catalog will be visible to florists."
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Fixed Button: Submit for approval -->
+    <LinearLayout
+        android:id="@+id/bottomSupplierRegBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/card_surface"
+        android:elevation="8dp"
+        android:padding="16dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnSubmitForApproval"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_primary_button"
+            android:stateListAnimator="@null"
+            android:text="Submit for approval"
+            android:textAllCaps="false"
+            android:textColor="@color/text_white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</RelativeLayout>

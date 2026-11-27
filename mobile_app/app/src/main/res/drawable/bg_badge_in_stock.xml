@@ -1,0 +1,1 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="@color/badge_in_stock_bg"/><corners android:radius="12dp"/></shape>

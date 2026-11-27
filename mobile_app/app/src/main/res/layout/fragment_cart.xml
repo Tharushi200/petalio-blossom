@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_botanical_light">
+
+    <!-- Clean Editorial Header matching My Orders -->
+    <LinearLayout
+        android:id="@+id/cartHeaderBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingTop="28dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Shopping Cart"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvCartSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Freshly handpicked from boutique luxury floral estates"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomPayBar"
+        android:layout_below="@id/cartHeaderBanner"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="24dp">
+
+            <!-- Empty Cart State -->
+            <LinearLayout
+                android:id="@+id/layoutCartEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="32dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:src="@drawable/ic_nav_cart"
+                    app:tint="@color/primary_brand" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Your Cart is Empty"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:text="Explore our fresh highland flowers and add your favourites to cart."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnExploreBlooms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_primary_button"
+                    android:paddingStart="24dp"
+                    android:paddingEnd="24dp"
+                    android:text="Explore Curated Blooms"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Dynamic Cart Items Container -->
+            <LinearLayout
+                android:id="@+id/layoutCartItemsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical" />
+
+            <!-- Retained view IDs for backward-compatibility -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone">
+                <androidx.cardview.widget.CardView android:id="@+id/cardCartItem1" android:layout_width="0dp" android:layout_height="0dp" />
+                <androidx.cardview.widget.CardView android:id="@+id/cardCartItem2" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/tvCartTitle1" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/tvCartTitle2" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/tvCartDesc1" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/tvCartDesc2" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/tvCartPrice1" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/tvCartPrice2" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/btnRemoveCart1" android:layout_width="0dp" android:layout_height="0dp" />
+                <TextView android:id="@+id/btnRemoveCart2" android:layout_width="0dp" android:layout_height="0dp" />
+                <ImageView android:id="@+id/ivCartImg1" android:layout_width="0dp" android:layout_height="0dp" />
+                <ImageView android:id="@+id/ivCartImg2" android:layout_width="0dp" android:layout_height="0dp" />
+            </FrameLayout>
+
+            <!-- Payment Method Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardPaymentMethod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="@color/card_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_container"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Payment Method"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/rgPaymentMethod"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+                        <RadioButton
+                            android:id="@+id/rbCard"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="@color/primary_brand"
+                            android:checked="true"
+                            android:text="Credit / Debit Card (Visa, Mastercard)"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbBankTransfer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:buttonTint="@color/primary_brand"
+                            android:text="Direct Bank Transfer"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp" />
+                    </RadioGroup>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Cost Breakdown Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardCostBreakdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/card_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_container"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cost Breakdown"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <!-- Items Subtotal Row -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Items Subtotal"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvCartSubtotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="Rs. 0"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </RelativeLayout>
+
+                    <!-- Delivery Fee Row -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Standard Delivery Fee"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvCartDeliveryFee"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="Rs. 200"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="12dp"
+                        android:background="@color/divider_color" />
+
+                    <!-- Total Amount Row -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total Amount"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvCartTotalAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="Rs. 0"
+                            android:textColor="@color/primary_brand"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                    </RelativeLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Confirm Order & Pay Button -->
+    <LinearLayout
+        android:id="@+id/bottomPayBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/card_surface"
+        android:elevation="8dp"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnConfirmOrderPay"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_primary_button"
+            android:stateListAnimator="@null"
+            android:text="Confirm Order &amp; Pay"
+            android:textAllCaps="false"
+            android:textColor="@color/text_white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</RelativeLayout>

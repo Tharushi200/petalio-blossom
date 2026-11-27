@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".PetalioApplication"
+        android:allowBackup="false"
+        android:icon="@drawable/logo_petalio"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/logo_petalio"
+        android:supportsRtl="true"
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:theme="@style/Theme.PetalioBlossom">
+
+        <!-- Launcher: Login Screen -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+
+        <!-- Customer Main Navigation Activity (Hosts Browse, Cart, Orders, Profile) -->
+        <activity
+            android:name=".CustomerMainActivity"
+            android:exported="true" />
+
+        <!-- Customer Flow Activities -->
+        <activity
+            android:name=".FlowerDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".FilterActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PaymentActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".OrderConfirmationActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".DeliveryTrackingActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".RateOrderActivity"
+            android:exported="true" />
+
+        <!-- Customer Order Details Activity -->
+        <activity
+            android:name=".CustomerOrderDetailsActivity"
+            android:exported="true" />
+
+        <!-- Customer Wishlist & Saved Flowers Activity -->
+        <activity
+            android:name=".WishlistActivity"
+            android:exported="false" />
+
+        <!-- Supplier Main Navigation Activity (Hosts Home, Orders, Stock, Demand) -->
+        <activity
+            android:name=".SupplierMainActivity"
+            android:exported="false" />
+
+        <!-- B1: Supplier Registration -->
+        <activity
+            android:name=".SupplierRegisterActivity"
+            android:exported="false" />
+
+        <!-- B2: Supplier Login -->
+        <activity
+            android:name=".SupplierLoginActivity"
+            android:exported="false" />
+
+        <!-- B3: Admin Approval Status -->
+        <activity
+            android:name=".SupplierApprovalStatusActivity"
+            android:exported="false" />
+
+        <!-- B4: Supplier Profile & Logout -->
+        <activity
+            android:name=".SupplierProfileActivity"
+            android:exported="false" />
+
+        <!-- D1: Declare Flower Types & Quantities -->
+        <activity
+            android:name=".DeclareFlowersActivity"
+            android:exported="false" />
+
+        <!-- D2: Order Request Details -->
+        <activity
+            android:name=".OrderRequestDetailsActivity"
+            android:exported="false" />
+
+        <!-- D3: Harvest Record & Fulfilment -->
+        <activity
+            android:name=".HarvestFulfilmentActivity"
+            android:exported="false" />
+
+        <!-- D4: Supplier Notifications -->
+        <activity
+            android:name=".SupplierNotificationsActivity"
+            android:exported="false" />
+
+        <!-- D5-D7: Demand & Payments Dedicated Sub-Screens -->
+        <activity
+            android:name=".SupplierLowStockActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SupplierForecastsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SupplierPayoutsActivity"
+            android:exported="false" />
+
+    </application>
+
+</manifest>
