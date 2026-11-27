@@ -163,6 +163,52 @@ async function initDatabaseTables() {
     } catch (_) {}
 
     try {
+      await pool.query('ALTER TABLE rating_reviews ADD COLUMN flower_id INT DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE rating_reviews ADD COLUMN customer_id INT DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query(
+        UPDATE rating_reviews rr 
+        JOIN order_items oi ON rr.order_id = oi.order_id 
+        SET rr.flower_id = oi.flower_id 
+        WHERE rr.flower_id IS NULL
+      );
+    } catch (_) {}
+    try {
+      await pool.query(
+        UPDATE rating_reviews rr 
+        JOIN orders o ON rr.order_id = o.order_id 
+        SET rr.customer_id = o.customer_id 
+        WHERE rr.customer_id IS NULL
+      );
+    } catch (_) {}
+
+    try {
+      await pool.query('ALTER TABLE deliveries ADD COLUMN vehicle_number VARCHAR(50) DEFAULT "WP CAD-4521"');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE deliveries ADD COLUMN driver_name VARCHAR(100) DEFAULT "Sunil Shantha"');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE deliveries ADD COLUMN driver_phone VARCHAR(20) DEFAULT "+94 77 123 4567"');
+    } catch (_) {}
+
+    try {
+      await pool.query('ALTER TABLE invoices ADD COLUMN customer_name VARCHAR(120) DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE invoices ADD COLUMN invoice_number VARCHAR(50) DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE deliveries ADD COLUMN destination_address VARCHAR(255) DEFAULT NULL');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE deliveries MODIFY COLUMN business_officer_id INT NULL DEFAULT 2');
+    } catch (_) {}
+
+    try {
       await pool.query("UPDATE orders SET fulfilment_status = 'Pending' WHERE UPPER(status) = 'PENDING'");
     } catch (_) {}
     try {
@@ -3472,4 +3518,3 @@ app.listen(PORT, '0.0.0.0', () => {
   }
   console.log(`===================================================`);
 });
-
