@@ -1,13 +1,16 @@
 package com.petalio.blossom.network;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.Collections;
 import java.util.List;
 
 public class FlowerDto {
+    @SerializedName(value = "flower_id", alternate = {"id"})
     private int flower_id;
     private String name;
     private String category;
     private String color;
+    @SerializedName(value = "unit_price", alternate = {"price"})
     private double unit_price;
     private String image_url;
     private String description;
@@ -15,6 +18,7 @@ public class FlowerDto {
     private int stock;
     private int reorder_level;
     private int sold_count;
+    @SerializedName(value = "avg_rating", alternate = {"rating"})
     private double avg_rating;
     private int review_count;
     private String created_at;

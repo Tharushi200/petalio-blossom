@@ -393,6 +393,7 @@ public class BrowseFragment extends Fragment {
 
     private void fetchLiveFlowersFromBackend(boolean allowSpinner) {
         if (getContext() == null) return;
+        WishlistManager.syncWithServer(requireContext(), null);
         if (allowSpinner && !isCatalogLoaded && cachedFlowerDtos.isEmpty() && pbBrowseLoading != null) {
             pbBrowseLoading.setVisibility(View.VISIBLE);
         }

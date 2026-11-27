@@ -70,6 +70,13 @@ public interface ApiService {
     @GET("categories")
     Call<CategoriesResponse> getCategories();
 
+    @Headers("Cache-Control: no-cache, no-store")
+    @GET("wishlist")
+    Call<WishlistResponse> getWishlist(@Query("user_id") int userId);
+
+    @POST("wishlist")
+    Call<CommonResponse> toggleWishlist(@Body WishlistRequest request);
+
     @GET("flowers")
     Call<FlowersResponse> getSupplierFlowers(@Query("supplier_id") int supplierId);
 

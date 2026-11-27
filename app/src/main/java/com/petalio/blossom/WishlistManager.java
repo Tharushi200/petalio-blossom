@@ -3,13 +3,26 @@ package com.petalio.blossom;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.NonNull;
+
+import com.petalio.blossom.network.ApiClient;
+import com.petalio.blossom.network.CommonResponse;
+import com.petalio.blossom.network.WishlistRequest;
+import com.petalio.blossom.network.WishlistResponse;
+
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 /**
  * WishlistManager: Persists and retrieves customer's saved flower favorites
- * strictly isolated per logged-in user_id across Browse, Flower Detail, and Wishlist screens.
+ * strictly isolated per logged-in user_id across Browse, Flower Detail, and Wishlist screens
+ * with dual persistence in SharedPreferences and live MySQL wishlists table.
  */
 public class WishlistManager {
 
@@ -82,8 +95,12 @@ public class WishlistManager {
     }
 
     public static void setFavorite(Context context, String flowerName, boolean isFav) {
+        setFavorite(context, 0, flowerName, isFav);
+    }
+
+    public static void setFavorite(Context context, int flowerId, String flowerName, boolean isFav) {
         if (context == null || flowerName == null || flowerName.trim().isEmpty()) return;
-        int userId = resolveActiveUserId(context);
+        final int userId = resolveActiveUserId(context);
         if (userId <= 0) return;
         String itemKey = normalizeFlowerKey(flowerName);
         Set<String> keys = readScopedKeys(context, userId);
@@ -93,15 +110,68 @@ public class WishlistManager {
             keys.remove(itemKey);
         }
         getPrefs(context).edit().putStringSet(getScopedWishlistKey(userId), keys).apply();
+
+        // Asynchronously synchronize with MySQL wishlists table
+        final Context appCtx = context.getApplicationContext();
+        try {
+            ApiClient.getApiService(appCtx)
+                    .toggleWishlist(new WishlistRequest(userId, flowerId, flowerName, isFav))
+                    .enqueue(new Callback<CommonResponse>() {
+                        @Override
+                        public void onResponse(@NonNull Call<CommonResponse> call, @NonNull Response<CommonResponse> response) {}
+                        @Override
+                        public void onFailure(@NonNull Call<CommonResponse> call, @NonNull Throwable t) {}
+                    });
+        } catch (Exception ignored) {}
     }
 
     public static boolean toggleFavorite(Context context, String flowerName) {
+        return toggleFavorite(context, 0, flowerName);
+    }
+
+    public static boolean toggleFavorite(Context context, int flowerId, String flowerName) {
         if (context == null || flowerName == null || flowerName.trim().isEmpty()) return false;
         int userId = resolveActiveUserId(context);
         if (userId <= 0) return false;
         boolean newState = !isFavorite(context, flowerName);
-        setFavorite(context, flowerName, newState);
+        setFavorite(context, flowerId, flowerName, newState);
         return newState;
+    }
+
+    public static void syncWithServer(Context context, Runnable onComplete) {
+        if (context == null) {
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+        final int userId = resolveActiveUserId(context);
+        if (userId <= 0) {
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+        final Context appCtx = context.getApplicationContext();
+        ApiClient.getApiService(appCtx).getWishlist(userId).enqueue(new Callback<WishlistResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<WishlistResponse> call, @NonNull Response<WishlistResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<String> names = response.body().getFlowerNames();
+                    if (names != null) {
+                        Set<String> serverKeys = new HashSet<>();
+                        for (String n : names) {
+                            if (n != null && !n.trim().isEmpty()) {
+                                serverKeys.add(normalizeFlowerKey(n));
+                            }
+                        }
+                        getPrefs(appCtx).edit().putStringSet(getScopedWishlistKey(userId), serverKeys).apply();
+                    }
+                }
+                if (onComplete != null) onComplete.run();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<WishlistResponse> call, @NonNull Throwable t) {
+                if (onComplete != null) onComplete.run();
+            }
+        });
     }
 
     public static void clearForCurrentUser(Context context) {

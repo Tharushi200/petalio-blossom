@@ -90,33 +90,36 @@ public class WishlistActivity extends AppCompatActivity {
             pbWishlistLoading.setVisibility(View.VISIBLE);
         }
 
-        ApiClient.getApiService(getApplicationContext())
-                .getFlowers()
-                .enqueue(new Callback<FlowersResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<FlowersResponse> call, @NonNull Response<FlowersResponse> response) {
-                        if (isFinishing() || isDestroyed()) return;
-                        if (pbWishlistLoading != null) pbWishlistLoading.setVisibility(View.GONE);
+        WishlistManager.syncWithServer(this, () -> {
+            if (isFinishing() || isDestroyed()) return;
+            ApiClient.getApiService(getApplicationContext())
+                    .getFlowers()
+                    .enqueue(new Callback<FlowersResponse>() {
+                        @Override
+                        public void onResponse(@NonNull Call<FlowersResponse> call, @NonNull Response<FlowersResponse> response) {
+                            if (isFinishing() || isDestroyed()) return;
+                            if (pbWishlistLoading != null) pbWishlistLoading.setVisibility(View.GONE);
 
-                        savedFlowers.clear();
-                        if (response.isSuccessful() && response.body() != null && response.body().getFlowers() != null) {
-                            for (FlowerDto dto : response.body().getFlowers()) {
-                                if (WishlistManager.isFavorite(WishlistActivity.this, dto.getName())) {
-                                    savedFlowers.add(dto);
+                            savedFlowers.clear();
+                            if (response.isSuccessful() && response.body() != null && response.body().getFlowers() != null) {
+                                for (FlowerDto dto : response.body().getFlowers()) {
+                                    if (WishlistManager.isFavorite(WishlistActivity.this, dto.getName())) {
+                                        savedFlowers.add(dto);
+                                    }
                                 }
                             }
+                            updateEmptyState();
                         }
-                        updateEmptyState();
-                    }
 
-                    @Override
-                    public void onFailure(@NonNull Call<FlowersResponse> call, @NonNull Throwable t) {
-                        if (isFinishing() || isDestroyed()) return;
-                        if (pbWishlistLoading != null) pbWishlistLoading.setVisibility(View.GONE);
-                        updateEmptyState();
-                        Toast.makeText(WishlistActivity.this, "Unable to sync wishlist from server.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        @Override
+                        public void onFailure(@NonNull Call<FlowersResponse> call, @NonNull Throwable t) {
+                            if (isFinishing() || isDestroyed()) return;
+                            if (pbWishlistLoading != null) pbWishlistLoading.setVisibility(View.GONE);
+                            updateEmptyState();
+                            Toast.makeText(WishlistActivity.this, "Unable to sync wishlist from server.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
     }
 
     private void updateEmptyState() {

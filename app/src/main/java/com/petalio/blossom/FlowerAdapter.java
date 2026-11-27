@@ -185,17 +185,52 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
                 }
             }
 
+            // 7. Sub-Tab filter:
+            if ("RATED".equalsIgnoreCase(subTab)) {
+                if (effectiveRating(item) < 4.0 && item.reviewCount <= 0) {
+                    continue;
+                }
+            } else if ("BEST_SELLING".equalsIgnoreCase(subTab)) {
+                if (hasAnySalesInMaster() && item.soldCount <= 0) {
+                    continue;
+                }
+            }
+
             displayedList.add(item);
         }
 
-        // Price Sort Option or Sub-Tab sorting
+        // Sorting: Price sorting takes priority if explicit; otherwise subTab sorting
         if (priceOption != null && "Price: Low to High".equalsIgnoreCase(priceOption)) {
             Collections.sort(displayedList, (a, b) -> Integer.compare(a.price, b.price));
         } else if (priceOption != null && "Price: High to Low".equalsIgnoreCase(priceOption)) {
             Collections.sort(displayedList, (a, b) -> Integer.compare(b.price, a.price));
-        } else {
-            // Sub-Tab filtering & sorting (All keeps default MySQL catalog order from masterList)
-            applySubTabFilterAndSort(subTab);
+        } else if ("RATED".equalsIgnoreCase(subTab)) {
+            Collections.sort(displayedList, (a, b) -> {
+                int ratingCmp = Double.compare(effectiveRating(b), effectiveRating(a));
+                if (ratingCmp != 0) return ratingCmp;
+                int reviewCmp = Integer.compare(b.reviewCount, a.reviewCount);
+                if (reviewCmp != 0) return reviewCmp;
+                int soldCmp = Integer.compare(b.soldCount, a.soldCount);
+                if (soldCmp != 0) return soldCmp;
+                return Integer.compare(a.id, b.id);
+            });
+        } else if ("BEST_SELLING".equalsIgnoreCase(subTab)) {
+            Collections.sort(displayedList, (a, b) -> {
+                int soldCmp = Integer.compare(b.soldCount, a.soldCount);
+                if (soldCmp != 0) return soldCmp;
+                int ratingCmp = Double.compare(effectiveRating(b), effectiveRating(a));
+                if (ratingCmp != 0) return ratingCmp;
+                return Integer.compare(a.id, b.id);
+            });
+        } else if ("NEW_IN".equalsIgnoreCase(subTab)) {
+            Collections.sort(displayedList, (a, b) -> {
+                String ca = a.createdAt != null ? a.createdAt.trim() : "";
+                String cb = b.createdAt != null ? b.createdAt.trim() : "";
+                if (!ca.isEmpty() && !cb.isEmpty()) {
+                    return cb.compareTo(ca);
+                }
+                return Integer.compare(b.id, a.id);
+            });
         }
 
         notifyDataSetChanged();

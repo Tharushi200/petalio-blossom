@@ -228,6 +228,21 @@ async function initDatabaseTables() {
       await pool.query("UPDATE deliveries d JOIN orders o ON d.order_id = o.order_id SET d.status = 'DELIVERED' WHERE UPPER(o.status) = 'DELIVERED' AND d.status != 'DELIVERED'");
     } catch (_) {}
 
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS wishlists (
+          wishlist_id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          flower_id INT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY unique_user_flower (user_id, flower_id),
+          INDEX idx_wishlist_user (user_id),
+          INDEX idx_wishlist_flower (flower_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+      `);
+      console.log('🌸 MySQL table wishlists is ready');
+    } catch (_) {}
+
   } catch (err) {
     console.error('Error initializing tables:', err.message);
   }
@@ -1908,8 +1923,18 @@ app.get('/api/flowers', async (req, res) => {
       const st = Math.max(0, parseInt(f.stock !== undefined ? f.stock : f.stock_quantity, 10) || 0);
       return {
         ...f,
+        id: f.flower_id,
+        flower_id: f.flower_id,
+        price: Number(f.unit_price) || 0,
+        unit_price: Number(f.unit_price) || 0,
         stock_quantity: st,
-        stock: st
+        stock: st,
+        rating: Number(f.avg_rating) || 0,
+        avg_rating: Number(f.avg_rating) || 0,
+        review_count: Number(f.review_count) || 0,
+        sold_count: Number(f.sold_count) || 0,
+        image_url: f.image_url || '',
+        created_at: f.created_at || ''
       };
     });
     return res.json({ success: true, count: flowersFormatted.length, flowers: flowersFormatted });
@@ -1993,12 +2018,186 @@ app.get('/api/flowers/:id', async (req, res) => {
       success: true,
       flower: {
         ...flRow,
+        id: flRow.flower_id,
+        flower_id: flRow.flower_id,
+        price: Number(flRow.unit_price) || 0,
+        unit_price: Number(flRow.unit_price) || 0,
         stock_quantity: st,
         stock: st,
+        rating: Number(flRow.avg_rating) || 0,
+        avg_rating: Number(flRow.avg_rating) || 0,
+        review_count: Number(flRow.review_count) || 0,
+        sold_count: Number(flRow.sold_count) || 0,
+        image_url: flRow.image_url || '',
+        created_at: flRow.created_at || '',
         reviews: reviewRows
       },
       reviews: reviewRows
     });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get user wishlist
+app.get('/api/wishlist', async (req, res) => {
+  try {
+    const rawUid = req.query.user_id || req.query.userId || req.query.customer_id;
+    const userId = parseInt(rawUid, 10);
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ success: false, message: 'Valid user_id is required.' });
+    }
+
+    const query = `
+      SELECT 
+        w.wishlist_id,
+        w.user_id,
+        w.flower_id,
+        w.flower_id AS id,
+        w.created_at AS wishlisted_at,
+        f.name,
+        f.category,
+        f.color,
+        f.unit_price,
+        f.unit_price AS price,
+        f.image_url,
+        f.description,
+        f.created_at,
+        COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock_quantity,
+        COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock,
+        COALESCE(sales.sold_count, 0) AS sold_count,
+        COALESCE(reviews.avg_rating, 5.0) AS avg_rating,
+        COALESCE(reviews.avg_rating, 5.0) AS rating,
+        COALESCE(reviews.review_count, 0) AS review_count
+      FROM wishlists w
+      JOIN flowers f ON w.flower_id = f.flower_id
+      LEFT JOIN inventory i ON f.flower_id = i.flower_id
+      LEFT JOIN (
+        SELECT flower_id, COALESCE(SUM(quantity), 0) AS sold_count
+        FROM order_items
+        GROUP BY flower_id
+      ) sales ON f.flower_id = sales.flower_id
+      LEFT JOIN (
+        SELECT flower_id, COALESCE(ROUND(AVG(rating), 1), 5.0) AS avg_rating, COUNT(review_id) AS review_count
+        FROM rating_reviews
+        GROUP BY flower_id
+      ) reviews ON f.flower_id = reviews.flower_id
+      WHERE w.user_id = ?
+      GROUP BY w.wishlist_id, f.flower_id
+      ORDER BY w.created_at DESC
+    `;
+    const [rows] = await pool.query(query, [userId]);
+    const flowerIds = rows.map(r => r.flower_id);
+    const flowerNames = rows.map(r => r.name);
+    return res.json({
+      success: true,
+      count: rows.length,
+      flowers: rows,
+      items: rows,
+      flower_ids: flowerIds,
+      flower_names: flowerNames
+    });
+  } catch (error) {
+    console.error('Get Wishlist Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch wishlist', error: error.message });
+  }
+});
+
+// Add / Remove / Toggle user wishlist item
+app.post('/api/wishlist', async (req, res) => {
+  try {
+    const { user_id, userId, customer_id, flower_id, flowerId, flower_name, flowerName, is_favorite, action } = req.body || {};
+    const resolvedUserId = parseInt(user_id || userId || customer_id, 10);
+    let resolvedFlowerId = parseInt(flower_id || flowerId, 10);
+    const name = String(flower_name || flowerName || '').trim();
+
+    if (!resolvedUserId || isNaN(resolvedUserId)) {
+      return res.status(400).json({ success: false, message: 'Valid user_id is required.' });
+    }
+
+    if ((!resolvedFlowerId || isNaN(resolvedFlowerId)) && name) {
+      const [lookupRows] = await pool.query('SELECT flower_id FROM flowers WHERE LOWER(name) = LOWER(?) LIMIT 1', [name]);
+      if (lookupRows.length > 0) {
+        resolvedFlowerId = lookupRows[0].flower_id;
+      }
+    }
+
+    if (!resolvedFlowerId || isNaN(resolvedFlowerId)) {
+      return res.status(400).json({ success: false, message: 'Valid flower_id or flower_name is required.' });
+    }
+
+    const shouldRemove = action === 'remove' || action === 'delete' || is_favorite === false || is_favorite === 0 || is_favorite === 'false';
+    const shouldAdd = action === 'add' || is_favorite === true || is_favorite === 1 || is_favorite === 'true';
+
+    if (shouldRemove) {
+      await pool.query('DELETE FROM wishlists WHERE user_id = ? AND flower_id = ?', [resolvedUserId, resolvedFlowerId]);
+      return res.json({
+        success: true,
+        action: 'removed',
+        is_favorite: false,
+        user_id: resolvedUserId,
+        flower_id: resolvedFlowerId,
+        message: 'Flower removed from wishlist'
+      });
+    }
+
+    if (shouldAdd) {
+      await pool.query(
+        'INSERT INTO wishlists (user_id, flower_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE created_at = CURRENT_TIMESTAMP',
+        [resolvedUserId, resolvedFlowerId]
+      );
+      return res.json({
+        success: true,
+        action: 'added',
+        is_favorite: true,
+        user_id: resolvedUserId,
+        flower_id: resolvedFlowerId,
+        message: 'Flower added to wishlist'
+      });
+    }
+
+    // Default: Toggle!
+    const [existing] = await pool.query('SELECT wishlist_id FROM wishlists WHERE user_id = ? AND flower_id = ? LIMIT 1', [resolvedUserId, resolvedFlowerId]);
+    if (existing.length > 0) {
+      await pool.query('DELETE FROM wishlists WHERE user_id = ? AND flower_id = ?', [resolvedUserId, resolvedFlowerId]);
+      return res.json({
+        success: true,
+        action: 'removed',
+        is_favorite: false,
+        user_id: resolvedUserId,
+        flower_id: resolvedFlowerId,
+        message: 'Flower removed from wishlist'
+      });
+    } else {
+      await pool.query(
+        'INSERT INTO wishlists (user_id, flower_id) VALUES (?, ?)',
+        [resolvedUserId, resolvedFlowerId]
+      );
+      return res.json({
+        success: true,
+        action: 'added',
+        is_favorite: true,
+        user_id: resolvedUserId,
+        flower_id: resolvedFlowerId,
+        message: 'Flower added to wishlist'
+      });
+    }
+  } catch (error) {
+    console.error('Wishlist Toggle Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update wishlist', error: error.message });
+  }
+});
+
+// Delete flower from wishlist
+app.delete(['/api/wishlist/:flowerId', '/api/wishlist'], async (req, res) => {
+  try {
+    const flowerId = parseInt(req.params.flowerId || req.query.flower_id || req.body?.flower_id, 10);
+    const userId = parseInt(req.query.user_id || req.query.userId || req.body?.user_id, 10);
+    if (!userId || !flowerId) {
+      return res.status(400).json({ success: false, message: 'Both user_id and flower_id are required' });
+    }
+    await pool.query('DELETE FROM wishlists WHERE user_id = ? AND flower_id = ?', [userId, flowerId]);
+    return res.json({ success: true, message: 'Removed from wishlist' });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
