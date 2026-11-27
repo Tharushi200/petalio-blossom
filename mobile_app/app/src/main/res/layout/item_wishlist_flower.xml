@@ -19,7 +19,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -27,8 +27,9 @@
                 android:id="@+id/cardWishlistThumb"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
 
@@ -43,11 +44,14 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
                 android:layout_marginStart="14dp"
                 android:layout_marginEnd="8dp"
-                android:layout_toStartOf="@id/btnRemoveWishlistItem"
-                android:layout_toEndOf="@id/cardWishlistThumb"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toEndOf="@id/cardWishlistThumb"
+                app:layout_constraintEnd_toStartOf="@id/btnRemoveWishlistItem"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 android:orientation="vertical">
 
                 <TextView
@@ -83,15 +87,16 @@
                 android:id="@+id/btnRemoveWishlistItem"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="7dp"
                 android:src="@drawable/ic_heart_filled"
                 app:tint="@color/accent_blossom_pink" />
-        </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnAddWishlistItemToCart"

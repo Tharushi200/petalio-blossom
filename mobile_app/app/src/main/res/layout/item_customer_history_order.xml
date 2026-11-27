@@ -18,7 +18,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -26,6 +26,8 @@
                 android:id="@+id/tvHistoryOrderCode"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:text="Order —"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
@@ -35,7 +37,8 @@
                 android:id="@+id/tvHistoryOrderStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:background="@drawable/bg_badge_in_stock"
                 android:drawablePadding="4dp"
                 android:gravity="center_vertical"
@@ -49,7 +52,7 @@
                 android:textStyle="bold"
                 app:drawableEndCompat="@drawable/ic_verified_badge"
                 app:drawableTint="@color/badge_in_stock_text" />
-        </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             android:id="@+id/tvHistoryOrderDate"
@@ -73,7 +76,7 @@
             app:drawableStartCompat="@drawable/ic_flower_petal"
             app:drawableTint="@color/accent_blossom_pink" />
 
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp">
@@ -82,6 +85,8 @@
                 android:id="@+id/tvHistoryOrderTotal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:text="Total: Rs. 0"
                 android:textColor="@color/primary_forest"
                 android:textSize="13sp"
@@ -91,8 +96,9 @@
                 android:id="@+id/btnRateHistoryOrder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/tvViewDetailsHistory"
                 android:layout_marginEnd="14dp"
+                app:layout_constraintEnd_toStartOf="@id/tvViewDetailsHistory"
+                app:layout_constraintTop_toTopOf="parent"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
@@ -106,7 +112,8 @@
                 android:id="@+id/tvViewDetailsHistory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
@@ -115,6 +122,6 @@
                 android:textColor="@color/accent_blossom_pink"
                 android:textSize="13sp"
                 android:textStyle="bold" />
-        </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -8,7 +8,7 @@
     app:cardCornerRadius="16dp"
     app:cardElevation="2dp">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_card_container"
@@ -18,8 +18,9 @@
             android:id="@+id/cardCartItemImg"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp">
 
@@ -33,12 +34,13 @@
 
         <!-- Flower Details Column -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_marginStart="14dp"
-            android:layout_toEndOf="@id/cardCartItemImg"
-            android:layout_toStartOf="@id/layoutCartItemActions"
+            app:layout_constraintStart_toEndOf="@id/cardCartItemImg"
+            app:layout_constraintEnd_toStartOf="@id/layoutCartItemActions"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:orientation="vertical">
 
             <TextView
@@ -106,8 +108,9 @@
             android:id="@+id/layoutCartItemActions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:gravity="end"
             android:orientation="vertical">
 
@@ -133,5 +136,5 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

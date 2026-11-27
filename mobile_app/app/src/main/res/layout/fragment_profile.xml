@@ -17,13 +17,15 @@
         android:paddingBottom="48dp">
 
         <!-- Top Header: Title & Edit Profile -->
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:text="My Profile"
                 android:textColor="@color/text_primary"
                 android:textSize="28sp"
@@ -33,14 +35,15 @@
                 android:id="@+id/btnEditProfileHeader"
                 android:layout_width="38dp"
                 android:layout_height="38dp"
-                android:layout_alignParentEnd="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:padding="8dp"
                 android:src="@drawable/ic_edit"
                 app:tint="@color/text_primary" />
-        </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Premium Profile Identity Card -->
         <androidx.cardview.widget.CardView
@@ -314,13 +317,15 @@
                 android:orientation="vertical"
                 android:padding="18dp">
 
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         app:drawableStartCompat="@drawable/ic_sprout"
                         android:drawablePadding="6dp"
                         android:text="Bloom Rewards Club"
@@ -332,7 +337,8 @@
                         android:id="@+id/btnRedeemPoints"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:background="@drawable/bg_gold_badge"
                         android:paddingStart="10dp"
                         android:paddingTop="3dp"
@@ -342,7 +348,7 @@
                         android:textColor="@color/gold_loyalty"
                         android:textSize="11sp"
                         android:textStyle="bold" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
                     android:id="@+id/tvRewardsSubtitle"
@@ -390,7 +396,7 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -398,6 +404,8 @@
                         android:id="@+id/tvReminderTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         app:drawableStartCompat="@drawable/ic_calendar"
                         android:drawablePadding="6dp"
                         android:text="No upcoming occasions set"
@@ -409,12 +417,13 @@
                         android:id="@+id/tvReminderDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         android:text="+ Add Date"
                         android:textColor="@color/accent_blossom_pink"
                         android:textSize="12sp"
                         android:textStyle="bold" />
-                </RelativeLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
                     android:id="@+id/tvReminderPreset"
