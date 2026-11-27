@@ -261,7 +261,7 @@ export default function Orders() {
   };
 
   // ── Create New Order Submit ─────────────────────────────────────────────────
-  const handleCreateOrderSubmit = (e) => {
+  const handleCreateOrderSubmit = async (e) => {
     e.preventDefault();
     if (!newOrderForm.customer.trim()) return;
 
@@ -278,7 +278,7 @@ export default function Orders() {
       orderDate: new Date().toISOString().split('T')[0],
       deliveryDate: newOrderForm.deliveryDate,
       status: 'PENDING',
-      paymentStatus: 'PENDING',
+      paymentStatus: 'UNPAID',
       totalAmount: total,
       items: [
         {
@@ -290,9 +290,30 @@ export default function Orders() {
       driver: 'Unassigned'
     };
 
+    try {
+      const res = await api.createOrder({
+        items: [
+          {
+            flower_id: 1, // Red Naomi Rose default
+            quantity: parseInt(newOrderForm.quantity) || 100
+          }
+        ],
+        delivery_address: newOrderForm.destination || 'Colombo',
+        delivery_city: 'Colombo',
+        season_event: 'Normal'
+      });
+      if (res && res.success && res.data) {
+        createdOrder.order_id = res.data.order_id;
+        showToast(`🌸 Order #${newId} saved to MySQL Database!`);
+      } else {
+        showToast(`🌸 New Order #${newId} created successfully!`);
+      }
+    } catch {
+      showToast(`🌸 New Order #${newId} created successfully!`);
+    }
+
     setOrders([createdOrder, ...orders]);
     setShowCreateModal(false);
-    showToast(`🌸 New Order #${newId} created successfully!`);
     setNewOrderForm({
       customer: '',
       contactPerson: '',

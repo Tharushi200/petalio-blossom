@@ -781,91 +781,47 @@ export default function PublicLandingPage() {
           {/* Quick Links */}
           <div>
             <h5 className="footer-col-title">Navigation</h5>
-            <ul className="footer-links">
-              <li>
-                <a href="#home" onClick={(e) => scrollToSection(e, 'home')} className="footer-link">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="footer-link">
-                  About Platform
-                </a>
-              </li>
-              <li>
-                <a href="#flowers" onClick={(e) => scrollToSection(e, 'flowers')} className="footer-link">
-                  Signature Flowers
-                </a>
-              </li>
-              <li>
-                <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="footer-link">
-                  Platform Features
-                </a>
-              </li>
-              <li>
-                <a href="#forecasting" onClick={(e) => scrollToSection(e, 'forecasting')} className="footer-link">
-                  Demand Forecasting
-                </a>
-              </li>
-              <li>
-                <a href="#workflow" onClick={(e) => scrollToSection(e, 'workflow')} className="footer-link">
-                  Operations Workflow
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Operations Modules */}
-          <div>
-            <h5 className="footer-col-title">Core Modules</h5>
-            <ul className="footer-links">
-              <li>
-                <span className="footer-link" style={{ cursor: 'default' }}>Catalogue Management</span>
-              </li>
-              <li>
-                <span className="footer-link" style={{ cursor: 'default' }}>Warehouse Inventory</span>
-              </li>
-              <li>
-                <span className="footer-link" style={{ cursor: 'default' }}>Supplier Matching Engine</span>
-              </li>
-              <li>
-                <span className="footer-link" style={{ cursor: 'default' }}>Logistics & Telematics</span>
-              </li>
-              <li>
-                <span className="footer-link" style={{ cursor: 'default' }}>Invoicing & Settlements</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Academic Info */}
-          <div>
-            <h5 className="footer-col-title">Academic Project</h5>
-            <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: '0 0 0.5rem 0' }}>
-              <strong>National Institute of Business Management (NIBM)</strong><br />
-              School of Computing<br />
-              Higher National Diploma in Software Engineering<br />
-              Batch: GAHDSE24.2F
-            </p>
-            <div
-              style={{
-                display: 'inline-block',
-                marginTop: '0.5rem',
-                fontSize: '0.72rem',
-                padding: '0.25rem 0.65rem',
-                borderRadius: 'var(--radius-sm)',
-                background: 'var(--pb-tint)',
-                color: 'var(--pb-rose-hover)',
-                fontWeight: 600
-              }}
-            >
-              🎓 Final Year Project Submission
+            <div style={{ display: 'flex', gap: '3rem' }}>
+              <ul className="footer-links">
+                <li>
+                  <a href="#home" onClick={(e) => scrollToSection(e, 'home')} className="footer-link">
+                    Home
+                  </a>
+                </li>
+                <li>
+                  <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="footer-link">
+                    About Platform
+                  </a>
+                </li>
+                <li>
+                  <a href="#flowers" onClick={(e) => scrollToSection(e, 'flowers')} className="footer-link">
+                    Signature Flowers
+                  </a>
+                </li>
+              </ul>
+              <ul className="footer-links">
+                <li>
+                  <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="footer-link">
+                    Platform Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#forecasting" onClick={(e) => scrollToSection(e, 'forecasting')} className="footer-link">
+                    Demand Forecasting
+                  </a>
+                </li>
+                <li>
+                  <a href="#workflow" onClick={(e) => scrollToSection(e, 'workflow')} className="footer-link">
+                    Operations Workflow
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
 
-        <div className="footer-bottom-bar">
+        <div className="footer-bottom-bar" style={{ justifyContent: 'center' }}>
           <span>© 2026 Petalio Blossom. All rights reserved.</span>
-          <span>Higher National Diploma in Software Engineering Final Project</span>
         </div>
       </footer>
     </div>

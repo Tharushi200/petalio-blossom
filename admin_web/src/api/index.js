@@ -122,11 +122,113 @@ export const api = {
     }
   },
 
+  createOrder: async (orderData) => {
+    const res = await fetch(`${API_BASE}/orders`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(orderData)
+    });
+    return await res.json();
+  },
+
   updateOrderStatus: async (orderId, status) => {
     const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify({ status })
+    });
+    return await res.json();
+  },
+
+  // ─── Deliveries Management ────────────────────────────────────
+  getDeliveries: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/deliveries`, {
+        headers: getAuthHeaders()
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Failed to fetch deliveries:', err);
+      return { success: false, data: [] };
+    }
+  },
+
+  createDelivery: async (deliveryData) => {
+    const res = await fetch(`${API_BASE}/deliveries`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(deliveryData)
+    });
+    return await res.json();
+  },
+
+  updateDeliveryStatus: async (deliveryId, status) => {
+    const res = await fetch(`${API_BASE}/deliveries/${deliveryId}/status`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status })
+    });
+    return await res.json();
+  },
+
+  // ─── Invoices Management ──────────────────────────────────────
+  getInvoices: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/invoices`, {
+        headers: getAuthHeaders()
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Failed to fetch invoices:', err);
+      return { success: false, data: [] };
+    }
+  },
+
+  createInvoice: async (invoiceData) => {
+    const res = await fetch(`${API_BASE}/invoices`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(invoiceData)
+    });
+    return await res.json();
+  },
+
+  updateInvoiceStatus: async (invoiceId, status) => {
+    const res = await fetch(`${API_BASE}/invoices/${invoiceId}/status`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status })
+    });
+    return await res.json();
+  },
+
+  // ─── Suppliers Management ─────────────────────────────────────
+  getSuppliers: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/suppliers`, {
+        headers: getAuthHeaders()
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Failed to fetch suppliers:', err);
+      return { success: false, data: [] };
+    }
+  },
+
+  createSupplier: async (supplierData) => {
+    const res = await fetch(`${API_BASE}/suppliers`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(supplierData)
+    });
+    return await res.json();
+  },
+
+  updateSupplierApproval: async (supplierId, isApproved) => {
+    const res = await fetch(`${API_BASE}/suppliers/${supplierId}/approval`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ is_approved: isApproved })
     });
     return await res.json();
   },

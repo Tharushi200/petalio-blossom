@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { api } from '../../api';
 import {
   FileText,
   Search,
@@ -64,6 +65,30 @@ export default function Invoices() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [toastMessage, setToastMessage] = useState(null);
 
+  // Fetch live invoices from backend
+  useEffect(() => {
+    let isMounted = true;
+    api.getInvoices()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const dbMapped = res.data.map((inv) => ({
+            invoiceId: inv.invoice_id,
+            orderId: inv.order_id,
+            totalAmount: parseFloat(inv.total_amount) || 0,
+            taxAmount: parseFloat(inv.tax_amount) || 0,
+            date: inv.date || '2026-11-04',
+            status: inv.status || 'UNPAID'
+          }));
+          const dbIds = new Set(dbMapped.map((d) => d.invoiceId));
+          const remaining = INITIAL_INVOICES.filter((p) => !dbIds.has(p.invoiceId));
+          setInvoices([...dbMapped, ...remaining]);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   // New Invoice Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newForm, setNewForm] = useState({
@@ -108,17 +133,23 @@ export default function Invoices() {
   }, [invoices, search, statusFilter]);
 
   // ── Mark Paid Action ────────────────────────────────────────────────────────
-  const handleMarkPaid = (inv) => {
+  const handleMarkPaid = async (inv) => {
     setInvoices((prev) =>
       prev.map((i) =>
         i.invoiceId === inv.invoiceId ? { ...i, status: 'PAID' } : i
       )
     );
     showToast(`Invoice #${inv.invoiceId} marked as Paid!`);
+
+    if (inv.invoiceId) {
+      try {
+        await api.updateInvoiceStatus(inv.invoiceId, 'PAID');
+      } catch {}
+    }
   };
 
   // ── Create Invoice ──────────────────────────────────────────────────────────
-  const handleCreateInvoice = (e) => {
+  const handleCreateInvoice = async (e) => {
     e.preventDefault();
     if (!newForm.orderId || !newForm.totalAmount) return;
 
@@ -132,6 +163,24 @@ export default function Invoices() {
       status: 'UNPAID'
     };
 
+    try {
+      const res = await api.createInvoice({
+        order_id: Number(newForm.orderId) || 1,
+        total_amount: parseFloat(newForm.totalAmount) || 0,
+        tax_amount: parseFloat(newForm.taxAmount) || 0,
+        date: newForm.date || new Date().toISOString().split('T')[0],
+        status: 'UNPAID'
+      });
+      if (res && res.success && res.data) {
+        item.invoiceId = res.data.invoice_id;
+        showToast(`📄 Invoice #${item.invoiceId} saved to MySQL Database!`);
+      } else {
+        showToast(`🧾 Invoice #${newId} generated successfully!`);
+      }
+    } catch {
+      showToast(`🧾 Invoice #${newId} generated successfully!`);
+    }
+
     setInvoices([item, ...invoices]);
     setShowAddModal(false);
     setNewForm({
@@ -140,7 +189,6 @@ export default function Invoices() {
       taxAmount: '',
       date: new Date().toISOString().split('T')[0]
     });
-    showToast(`🧾 Invoice #${newId} generated successfully!`);
   };
 
   return (

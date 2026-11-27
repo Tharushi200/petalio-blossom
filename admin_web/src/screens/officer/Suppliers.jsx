@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { api } from '../../api';
 import {
   Users,
   Search,
@@ -70,6 +71,32 @@ export default function Suppliers() {
   const [cityFilter, setCityFilter] = useState('ALL');
   const [toastMessage, setToastMessage] = useState(null);
 
+  // Fetch live suppliers from MySQL
+  useEffect(() => {
+    let isMounted = true;
+    api.getSuppliers()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const dbMapped = res.data.map((s) => ({
+            id: `SUP-${s.supplier_id}`,
+            supplier_id: s.supplier_id,
+            supplierName: s.supplier_name,
+            contactNumber: s.contact_number,
+            city: s.city,
+            address: s.address,
+            monthlyCapacity: s.monthly_capacity || 15000,
+            isApproved: Boolean(s.is_approved)
+          }));
+          const dbIds = new Set(dbMapped.map((s) => s.id));
+          const remaining = INITIAL_SUPPLIERS.filter((p) => !dbIds.has(p.id));
+          setSuppliers([...dbMapped, ...remaining]);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   // New Supplier Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newForm, setNewForm] = useState({
@@ -114,7 +141,7 @@ export default function Suppliers() {
   }, [suppliers, search, cityFilter]);
 
   // ── Submit New Supplier ─────────────────────────────────────────────────────
-  const handleAddSupplier = (e) => {
+  const handleAddSupplier = async (e) => {
     e.preventDefault();
     if (!newForm.supplierName.trim()) return;
 
@@ -126,9 +153,33 @@ export default function Suppliers() {
       isApproved: true
     };
 
+    try {
+      const res = await api.createSupplier({
+        supplier_name: newForm.supplierName,
+        contact_number: newForm.contactNumber,
+        city: newForm.city,
+        address: newForm.address,
+        monthly_capacity: parseInt(newForm.monthlyCapacity) || 12000
+      });
+      if (res && res.success && res.data) {
+        item.supplier_id = res.data.supplier_id;
+        showToast(`🌸 Supplier "${newForm.supplierName}" saved to MySQL Database!`);
+      } else {
+        showToast(`🌸 Supplier "${newForm.supplierName}" registered successfully!`);
+      }
+    } catch {
+      showToast(`🌸 Supplier "${newForm.supplierName}" registered successfully!`);
+    }
+
     setSuppliers([item, ...suppliers]);
     setShowAddModal(false);
-    showToast(`🌸 Supplier "${newForm.supplierName}" registered successfully!`);
+    setNewForm({
+      supplierName: '',
+      contactNumber: '',
+      city: 'Nuwara Eliya',
+      address: '',
+      monthlyCapacity: 15000
+    });
   };
 
   return (

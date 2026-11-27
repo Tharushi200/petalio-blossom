@@ -919,24 +919,18 @@ html {
 }
 
 .landing-footer-container {
-  max-width: 1320px;
+  max-width: 1200px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 3rem;
-  margin-bottom: 3.5rem;
+  margin-bottom: 2.5rem;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 768px) {
   .landing-footer-container {
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .landing-footer-container {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 2rem;
   }
 }

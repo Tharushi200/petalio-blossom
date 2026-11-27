@@ -37,11 +37,6 @@ const Order = sequelize.define('Order', {
     type: DataTypes.STRING(50),
     defaultValue: 'Colombo',
   },
-  total_amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0.00,
-  },
   payment_status: {
     type: DataTypes.ENUM('UNPAID', 'PAID'),
     defaultValue: 'UNPAID',

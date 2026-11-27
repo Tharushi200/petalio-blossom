@@ -15,6 +15,9 @@ const userRoutes             = require('./src/routes/userRoutes');
 const flowerRoutes           = require('./src/routes/flowerRoutes');
 const orderRoutes            = require('./src/routes/orderRoutes');
 const inventoryRoutes        = require('./src/routes/inventoryRoutes');
+const deliveryRoutes         = require('./src/routes/deliveryRoutes');
+const invoiceRoutes          = require('./src/routes/invoiceRoutes');
+const supplierRoutes         = require('./src/routes/supplierRoutes');
 const supplierCapacityRoutes = require('./src/routes/supplierCapacityRoutes');
 const forecastRoutes         = require('./src/routes/forecastRoutes');
 
@@ -43,6 +46,9 @@ app.use('/api/users',             userRoutes);
 app.use('/api/flowers',           flowerRoutes);
 app.use('/api/orders',            orderRoutes);
 app.use('/api/inventory',         inventoryRoutes);
+app.use('/api/deliveries',        deliveryRoutes);
+app.use('/api/invoices',          invoiceRoutes);
+app.use('/api/suppliers',         supplierRoutes);
 app.use('/api/supplier-capacity', supplierCapacityRoutes);
 app.use('/api/forecasts',         forecastRoutes);
 

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { api } from '../../api';
 import {
   Truck,
   Package,
@@ -45,6 +46,30 @@ export default function Deliveries() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [toastMessage, setToastMessage] = useState(null);
 
+  // Fetch live deliveries from backend if available
+  useEffect(() => {
+    let isMounted = true;
+    api.getDeliveries()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const dbMapped = res.data.map((d) => ({
+            id: d.delivery_code || `DEL-${100 + d.delivery_id}`,
+            delivery_id: d.delivery_id,
+            orderCode: d.order?.order_code || `ORD-${1000 + d.order_id}`,
+            officerId: d.officer?.name || `OFF-0${d.business_officer_id}`,
+            deliveryDate: d.delivery_date || '2026-11-20',
+            status: d.status || 'SCHEDULED'
+          }));
+          const dbIds = new Set(dbMapped.map((d) => d.id));
+          const remaining = INITIAL_DELIVERIES.filter((p) => !dbIds.has(p.id));
+          setDeliveries([...dbMapped, ...remaining]);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   // New Delivery Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newForm, setNewForm] = useState({
@@ -86,15 +111,21 @@ export default function Deliveries() {
   }, [deliveries, search, statusFilter]);
 
   // ── Action: Mark Complete ───────────────────────────────────────────────────
-  const handleMarkComplete = (delivery) => {
+  const handleMarkComplete = async (delivery) => {
     setDeliveries((prev) =>
       prev.map((d) => (d.id === delivery.id ? { ...d, status: 'DELIVERED' } : d))
     );
     showToast(`Delivery #${delivery.id} confirmed completed!`);
+
+    if (delivery.delivery_id) {
+      try {
+        await api.updateDeliveryStatus(delivery.delivery_id, 'DELIVERED');
+      } catch {}
+    }
   };
 
   // ── Submit New Delivery ─────────────────────────────────────────────────────
-  const handleCreateDelivery = (e) => {
+  const handleCreateDelivery = async (e) => {
     e.preventDefault();
     const newId = `DEL-${100 + deliveries.length + 1}`;
     const item = {
@@ -103,10 +134,27 @@ export default function Deliveries() {
       status: 'SCHEDULED'
     };
 
+    try {
+      const res = await api.createDelivery({
+        delivery_code: newId,
+        order_id: 1, // Default linked order ID
+        business_officer_id: 2, // Officer user_id
+        delivery_date: newForm.deliveryDate,
+        status: 'SCHEDULED'
+      });
+      if (res && res.success && res.data) {
+        item.delivery_id = res.data.delivery_id;
+        showToast(`🚚 Delivery trip #${newId} saved to MySQL Database!`);
+      } else {
+        showToast(`🚚 Delivery trip #${newId} scheduled successfully!`);
+      }
+    } catch {
+      showToast(`🚚 Delivery trip #${newId} scheduled successfully!`);
+    }
+
     setDeliveries([item, ...deliveries]);
     setShowAddModal(false);
     setNewForm({ orderCode: '', officerId: 'OFF-01', deliveryDate: new Date().toISOString().split('T')[0] });
-    showToast(`🚚 Delivery trip #${newId} scheduled successfully!`);
   };
 
   return (

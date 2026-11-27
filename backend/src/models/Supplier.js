@@ -6,7 +6,7 @@ const Supplier = sequelize.define('Supplier', {
     type: DataTypes.INTEGER,
     primaryKey: true,
   },
-  farm_name: {
+  supplier_name: {
     type: DataTypes.STRING(120),
     allowNull: false,
     defaultValue: 'Highland Flora Nursery',
@@ -15,7 +15,7 @@ const Supplier = sequelize.define('Supplier', {
     type: DataTypes.STRING(20),
     allowNull: false,
   },
-  region: {
+  city: {
     type: DataTypes.STRING(60),
     defaultValue: 'Nuwara Eliya',
   },

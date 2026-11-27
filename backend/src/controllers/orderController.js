@@ -57,8 +57,8 @@ const getOrderById = async (req, res) => {
 const createOrder = async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const { items } = req.body;
-    const customer_id = req.user.user_id;
+    const { items, customer_id: requestedCustomerId } = req.body;
+    const customer_id = req.user.role === 'CUSTOMER' ? req.user.user_id : (requestedCustomerId || req.user.user_id);
 
     let total_amount = 0;
     const processedItems = [];
@@ -83,7 +83,16 @@ const createOrder = async (req, res) => {
       await inventory.update({ stock_quantity: inventory.stock_quantity - item.quantity }, { transaction: t });
     }
 
-    const order = await Order.create({ customer_id, total_amount, status: 'PENDING' }, { transaction: t });
+    const order = await Order.create({
+      order_code: `ORD-${Date.now().toString().slice(-4)}`,
+      customer_id,
+      officer_id: req.user.role === 'BUSINESS_OFFICER' ? req.user.user_id : null,
+      season_event: req.body.season_event || 'Normal',
+      delivery_address: req.body.delivery_address || null,
+      delivery_city: req.body.delivery_city || 'Colombo',
+      payment_status: req.body.payment_status || 'UNPAID',
+      status: 'PENDING'
+    }, { transaction: t });
 
     for (const item of processedItems) {
       await OrderItem.create({ order_id: order.order_id, ...item }, { transaction: t });

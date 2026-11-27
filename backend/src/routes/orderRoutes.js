@@ -5,7 +5,7 @@ const validate = require('../middleware/validate');
 
 router.get('/',          authenticate, getAllOrders);
 router.get('/:id',       authenticate, getOrderById);
-router.post('/',         authenticate, authorize('CUSTOMER'), orderValidation, validate, createOrder);
+router.post('/',         authenticate, authorize('CUSTOMER', 'BUSINESS_OFFICER', 'ADMIN'), orderValidation, validate, createOrder);
 router.patch('/:id/status', authenticate, authorize('ADMIN', 'BUSINESS_OFFICER'), updateOrderStatus);
 
 module.exports = router;
