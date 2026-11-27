@@ -617,22 +617,27 @@
         </LinearLayout>
 
         <!-- Wide Pill "Add to Cart" Action Button -->
-        <androidx.appcompat.widget.AppCompatButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddToCartDetail"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginStart="0dp"
             android:background="@drawable/bg_btn_primary_blossom"
-            android:drawablePadding="8dp"
             android:gravity="center"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             android:stateListAnimator="@null"
             android:text="Add to Cart  •  Rs. 0"
             android:textAllCaps="false"
             android:textColor="@color/text_white"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_nav_cart"
-            app:drawableTint="@color/text_white" />
+            app:backgroundTint="@null"
+            app:icon="@drawable/ic_nav_cart"
+            app:iconGravity="textEnd"
+            app:iconPadding="8dp"
+            app:iconSize="20dp"
+            app:iconTint="@color/text_white" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
