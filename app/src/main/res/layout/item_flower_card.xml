@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardFlowerRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/card_surface"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:cardPreventCornerOverlap="false"
+    app:contentPadding="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Edge-to-Edge Full-Bleed Top Flower Image Container -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="175dp">
+
+            <!-- Real Authentic Flower Botanical Photo (Full Bleed Edge-to-Edge) -->
+            <ImageView
+                android:id="@+id/ivFlowerImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:padding="0dp"
+                android:transitionName="flower_hero_transition"
+                android:src="@drawable/img_flower_rose" />
+
+            <!-- Retained View ID for backward compatibility -->
+            <View
+                android:id="@+id/tvFlowerBadge"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- Retained View ID for backward compatibility -->
+            <TextView
+                android:id="@+id/tvFlowerLocationPill"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- Top-Right Wishlist Heart Bubble -->
+            <ImageView
+                android:id="@+id/btnFlowerFav"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_heart_bubble"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="6dp"
+                android:src="@drawable/ic_heart_outline"
+                app:tint="@color/primary_brand" />
+        </FrameLayout>
+
+        <!-- Bottom Content Area (Padded Cleanly) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <!-- Flower Title -->
+            <TextView
+                android:id="@+id/tvFlowerName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="—"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <!-- Compact Social-Proof Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvFlowerRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/gold_loyalty"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvFlowerAvailable"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text=""
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Bottom Row: Bold Price on Left & Sleek Quick-Add Cart Pill on Right -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvFlowerPrice"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Rs. 0"
+                    android:textColor="@color/primary_brand"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- Sleek Pill-Shaped Quick-Add Shopping Cart Icon Button (🛒+) -->
+                <TextView
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_quick_cart_btn"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:paddingStart="7dp"
+                    android:paddingEnd="5dp"
+                    android:drawablePadding="2dp"
+                    app:drawableStartCompat="@drawable/ic_cart_white"
+                    app:drawableTint="#FFFFFF"
+                    android:drawableTint="#FFFFFF"
+                    android:text="+"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
