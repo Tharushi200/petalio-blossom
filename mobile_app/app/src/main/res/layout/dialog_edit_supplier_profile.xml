@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_inner"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header with Edit Badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <RelativeLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_icon_badge_blush">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerInParent="true"
+                    android:contentDescription="Edit Farm Profile"
+                    android:src="@drawable/ic_edit"
+                    app:tint="@color/primary_brand" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Edit Farm Profile"
+                    android:textColor="@color/text_primary"
+                    android:textSize="19sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Update your estate &amp; contact details"
+                    android:textColor="@color/primary_brand"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 1. Farm / Business Name -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSupplierFarmName"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Farm / Business Name"
+            android:textColorHint="@color/text_secondary"
+            app:boxCornerRadiusBottomEnd="14dp"
+            app:boxCornerRadiusBottomStart="14dp"
+            app:boxCornerRadiusTopEnd="14dp"
+            app:boxCornerRadiusTopStart="14dp"
+            app:boxStrokeColor="@color/primary_brand"
+            app:boxStrokeWidth="1.2dp"
+            app:hintTextColor="@color/primary_brand"
+            app:startIconDrawable="@drawable/ic_sprout"
+            app:startIconTint="@color/primary_brand">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSupplierFarmName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 2. Contact Person -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSupplierContactPerson"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Contact Person"
+            android:textColorHint="@color/text_secondary"
+            app:boxCornerRadiusBottomEnd="14dp"
+            app:boxCornerRadiusBottomStart="14dp"
+            app:boxCornerRadiusTopEnd="14dp"
+            app:boxCornerRadiusTopStart="14dp"
+            app:boxStrokeColor="@color/primary_brand"
+            app:boxStrokeWidth="1.2dp"
+            app:hintTextColor="@color/primary_brand"
+            app:startIconDrawable="@drawable/ic_nav_profile"
+            app:startIconTint="@color/primary_brand">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSupplierContactPerson"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 3. Contact Phone -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSupplierPhone"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Contact Phone"
+            android:textColorHint="@color/text_secondary"
+            app:boxCornerRadiusBottomEnd="14dp"
+            app:boxCornerRadiusBottomStart="14dp"
+            app:boxCornerRadiusTopEnd="14dp"
+            app:boxCornerRadiusTopStart="14dp"
+            app:boxStrokeColor="@color/primary_brand"
+            app:boxStrokeWidth="1.2dp"
+            app:hintTextColor="@color/primary_brand"
+            app:startIconDrawable="@drawable/ic_phone"
+            app:startIconTint="@color/primary_brand">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSupplierPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 4. District / Estate -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSupplierCity"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="District / Estate"
+            android:textColorHint="@color/text_secondary"
+            app:boxCornerRadiusBottomEnd="14dp"
+            app:boxCornerRadiusBottomStart="14dp"
+            app:boxCornerRadiusTopEnd="14dp"
+            app:boxCornerRadiusTopStart="14dp"
+            app:boxStrokeColor="@color/primary_brand"
+            app:boxStrokeWidth="1.2dp"
+            app:hintTextColor="@color/primary_brand"
+            app:startIconDrawable="@drawable/ic_location_pin"
+            app:startIconTint="@color/primary_brand">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSupplierCity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 5. Detailed Address -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSupplierAddress"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Estate Address"
+            android:textColorHint="@color/text_secondary"
+            app:boxCornerRadiusBottomEnd="14dp"
+            app:boxCornerRadiusBottomStart="14dp"
+            app:boxCornerRadiusTopEnd="14dp"
+            app:boxCornerRadiusTopStart="14dp"
+            app:boxStrokeColor="@color/primary_brand"
+            app:boxStrokeWidth="1.2dp"
+            app:hintTextColor="@color/primary_brand"
+            app:startIconDrawable="@drawable/ic_location_pin"
+            app:startIconTint="@color/primary_brand">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSupplierAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPostalAddress"
+                android:maxLines="2"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 6. Monthly Capacity -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSupplierCapacity"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Monthly Capacity (Stems / mo)"
+            android:textColorHint="@color/text_secondary"
+            app:boxCornerRadiusBottomEnd="14dp"
+            app:boxCornerRadiusBottomStart="14dp"
+            app:boxCornerRadiusTopEnd="14dp"
+            app:boxCornerRadiusTopStart="14dp"
+            app:boxStrokeColor="@color/primary_brand"
+            app:boxStrokeWidth="1.2dp"
+            app:hintTextColor="@color/primary_brand">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSupplierCapacity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnCancelEditSupplierProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_btn_secondary_blossom"
+                android:minWidth="90dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Cancel"
+                android:textAllCaps="false"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSaveEditSupplierProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_btn_primary_blossom"
+                android:minWidth="120dp"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:text="Save Changes"
+                android:textAllCaps="false"
+                android:textColor="@color/text_white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

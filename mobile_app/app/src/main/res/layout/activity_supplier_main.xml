@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_botanical_light">
+
+    <!-- Subtle 1dp Top Divider Line above Bottom Navigation -->
+    <View
+        android:id="@+id/bottomNavSupplierDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@id/bottomNavSupplierCard"
+        android:background="@color/border_subtle" />
+
+    <!-- Fragment Container for Swapping Supplier Views (Home, Orders, Stock, Demand, Profile) -->
+    <FrameLayout
+        android:id="@+id/supplierFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomNavSupplierDivider" />
+
+    <!-- Supplier Bottom Navigation Bar matching wireframe -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bottomNavSupplierCard"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_alignParentBottom="true"
+        app:cardBackgroundColor="@color/card_surface"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="10dp">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/supplierBottomNav"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/card_surface"
+            app:elevation="0dp"
+            app:itemIconSize="22dp"
+            app:itemIconTint="@color/supplier_nav_item_color"
+            app:itemTextColor="@color/supplier_nav_item_color"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/supplier_bottom_nav_menu" />
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>
