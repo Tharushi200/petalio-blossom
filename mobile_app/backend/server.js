@@ -554,8 +554,8 @@ function buildResetPageHtml({ valid, email, token, errorMessage }) {
 
 // Unified Login (Customer or Supplier)
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password, role } = req.body;
-  const input = (email || '').trim();
+  const { email, identifier, username, password, role } = req.body;
+  const input = (email || identifier || username || '').trim();
   const inputPassword = (password || '').trim();
   const selectedRole = (role || '').trim().toUpperCase();
 
@@ -615,13 +615,22 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    // 5. Verify Password strictly against database bcrypt hash
+    // 5. Verify Password (supports bcrypt hash and automatic plain-text upgrade)
     if (user.password_hash && user.password_hash.trim() !== '') {
       let isMatch = false;
       try {
         isMatch = bcrypt.compareSync(inputPassword, user.password_hash);
       } catch (err) {
         isMatch = false;
+      }
+
+      // If bcrypt comparison fails, also allow direct plain-text match and auto-upgrade to bcrypt
+      if (!isMatch && (user.password_hash === inputPassword || user.password_hash.trim() === inputPassword)) {
+        isMatch = true;
+        try {
+          const upgradedHash = bcrypt.hashSync(inputPassword, 10);
+          pool.query('UPDATE users SET password_hash = ? WHERE user_id = ?', [upgradedHash, user.user_id]).catch(() => {});
+        } catch (_) {}
       }
 
       if (!isMatch) {
