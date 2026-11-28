@@ -33,6 +33,14 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('PENDING', 'ACTIVE', 'REJECTED'),
     defaultValue: 'ACTIVE',
   },
+  reset_token: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  reset_token_expiry: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

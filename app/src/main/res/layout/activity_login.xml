@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_botanical_light"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Top Header: Soft Blush-Tinted Banner with Petalio Blossom Branding -->
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/blush_tint_light"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp"
+                app:cardPreventCornerOverlap="false"
+                app:cardBackgroundColor="@color/card_surface">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_card_logo"
+                    android:padding="10dp">
+
+                    <ImageView
+                        android:id="@+id/ivLogo"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:scaleType="fitCenter"
+                        android:contentDescription="Petalio Blossom Logo"
+                        android:src="@drawable/logo_petalio" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:letterSpacing="0.16"
+                android:text="PETALIO BLOSSOM"
+                android:textColor="@color/primary_brand"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTagline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:letterSpacing="0.10"
+                android:text="HIGHLAND FLORICULTURE"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Main Card Section with Clean White Card (16dp Radius, 1dp Border) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardLoginForm"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="-12dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="@color/card_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardPreventCornerOverlap="false">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_container"
+                android:orientation="vertical"
+                android:paddingStart="24dp"
+                android:paddingTop="28dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="32dp">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome Back"
+                    android:textColor="@color/text_primary"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Sign in to continue your floral journey"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+
+                <!-- Role Selector (Customer / Supplier Toggle) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="Choose your role:"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/roleSelectorContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_role_container"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+
+                    <TextView
+                        android:id="@+id/btnRoleCustomer"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_role_active"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:text="Customer"
+                        app:drawableStartCompat="@drawable/ic_customer_user"
+                        android:drawablePadding="6dp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:textColor="@color/text_white"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnRoleSupplier"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:text="Supplier"
+                        app:drawableStartCompat="@drawable/ic_sprout"
+                        android:drawablePadding="6dp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvRoleHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Order fresh flowers &amp; track deliveries in real-time"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <!-- Email Input Field -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilEmail"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:hint="Email Address"
+                    android:textColorHint="@color/text_secondary"
+                    app:boxCornerRadiusBottomEnd="14dp"
+                    app:boxCornerRadiusBottomStart="14dp"
+                    app:boxCornerRadiusTopEnd="14dp"
+                    app:boxCornerRadiusTopStart="14dp"
+                    app:boxStrokeColor="@color/primary_brand"
+                    app:boxStrokeWidth="1.2dp"
+                    app:hintTextColor="@color/primary_brand"
+                    app:startIconTint="@color/primary_brand">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Password Input Field -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPassword"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:hint="Password"
+                    android:textColorHint="@color/text_secondary"
+                    app:boxCornerRadiusBottomEnd="14dp"
+                    app:boxCornerRadiusBottomStart="14dp"
+                    app:boxCornerRadiusTopEnd="14dp"
+                    app:boxCornerRadiusTopStart="14dp"
+                    app:boxStrokeColor="@color/primary_brand"
+                    app:boxStrokeWidth="1.2dp"
+                    app:hintTextColor="@color/primary_brand"
+                    app:passwordToggleEnabled="true"
+                    app:passwordToggleTint="@color/primary_brand">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Forgot Password -->
+                <TextView
+                    android:id="@+id/tvForgotPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="10dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:text="Forgot Password?"
+                    android:textColor="@color/accent_blossom_pink"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- Login Button with ripple & gradient -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_primary_button"
+                    android:elevation="4dp"
+                    android:stateListAnimator="@null"
+                    android:text="Sign In"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <!-- Progress Indicator (Hidden by default) -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:indeterminateTint="@color/primary_forest"
+                    android:visibility="gone" />
+
+                <!-- Bottom Link to Registration -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Don't have an account? "
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvGoToRegister"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="Create Account"
+                        android:textColor="@color/primary_forest"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+</ScrollView>

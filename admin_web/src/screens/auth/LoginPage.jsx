@@ -23,8 +23,8 @@ export default function LoginPage() {
   // Active role tab: 'BUSINESS_OFFICER' or 'ADMIN'
   const [selectedRole, setSelectedRole] = useState('BUSINESS_OFFICER');
 
-  const [email, setEmail] = useState('officer@petalio.lk');
-  const [password, setPassword] = useState('Officer@123');
+  const [email, setEmail] = useState('dikkumburatharushi@gmail.com');
+  const [password, setPassword] = useState('1234567');
   const [rememberMe, setRememberMe] = useState(true);
   const [errors, setErrors] = useState({});
   const [authError, setAuthError] = useState(null);
@@ -34,6 +34,8 @@ export default function LoginPage() {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState(null);
 
   // If already authenticated, redirect immediately based on role
   useEffect(() => {
@@ -52,11 +54,11 @@ export default function LoginPage() {
     setAuthError(null);
     setErrors({});
     if (role === 'ADMIN') {
-      setEmail('admin@petalio.lk');
-      setPassword('Admin@123');
+      setEmail('tharushidikkumbura727@gmail.com');
+      setPassword('1234567');
     } else {
-      setEmail('officer@petalio.lk');
-      setPassword('Officer@123');
+      setEmail('dikkumburatharushi@gmail.com');
+      setPassword('1234567');
     }
   };
 
@@ -99,15 +101,37 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotSubmit = (e) => {
+  const handleForgotSubmit = async (e) => {
     e.preventDefault();
-    if (!forgotEmail || !/\S+@\S+\.\S+/.test(forgotEmail)) return;
-    setForgotSuccess(true);
-    setTimeout(() => {
-      setForgotSuccess(false);
-      setShowForgotModal(false);
-      setForgotEmail('');
-    }, 2500);
+    if (!forgotEmail || !/\S+@\S+\.\S+/.test(forgotEmail)) {
+      setForgotError('Please enter a valid email address.');
+      return;
+    }
+    setForgotError(null);
+    setForgotLoading(true);
+    try {
+      const res = await fetch('http://localhost:5001/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForgotSuccess(true);
+        setTimeout(() => {
+          setForgotSuccess(false);
+          setShowForgotModal(false);
+          setForgotEmail('');
+          setForgotError(null);
+        }, 4000);
+      } else {
+        setForgotError(data.message || 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setForgotError('Could not connect to server. Please check your connection.');
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   return (
@@ -348,7 +372,7 @@ export default function LoginPage() {
               label="Corporate Email Address"
               type="email"
               name="email"
-              placeholder={selectedRole === 'ADMIN' ? 'admin@petalio.lk' : 'officer@petalio.lk'}
+              placeholder={selectedRole === 'ADMIN' ? 'tharushidikkumbura727@gmail.com' : 'dikkumburatharushi@gmail.com'}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -477,10 +501,10 @@ export default function LoginPage() {
                     <CheckCircle2 size={24} />
                   </div>
                   <h4 style={{ color: 'var(--pb-plum)', marginBottom: '0.35rem' }}>
-                    Reset Link Dispatched
+                    Email Sent! Check Your Inbox
                   </h4>
                   <p style={{ fontSize: '0.82rem', color: 'var(--pb-text-body)' }}>
-                    Instructions have been sent to <strong>{forgotEmail}</strong>.
+                    A password reset link has been sent to <strong>{forgotEmail}</strong>. Check your inbox (and spam folder) and follow the link within 1 hour.
                   </p>
                 </div>
               ) : (
@@ -492,25 +516,42 @@ export default function LoginPage() {
                       marginBottom: '1.25rem'
                     }}
                   >
-                    Enter your authorized corporate email to receive a password recovery link.
+                    Enter your registered email address and we'll send you a password reset link.
                   </p>
 
                   <Input
-                    label="Corporate Email"
+                    label="Registered Email"
                     type="email"
-                    placeholder="e.g. officer@petalio.lk or admin@petalio.lk"
+                    placeholder="e.g. tharushidikkumbura727@gmail.com"
                     value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
+                    onChange={(e) => { setForgotEmail(e.target.value); setForgotError(null); }}
                     icon={Mail}
                     required
                   />
 
+                  {forgotError && (
+                    <div style={{
+                      marginTop: '0.65rem',
+                      padding: '0.6rem 0.85rem',
+                      background: '#FEE2E2',
+                      borderRadius: '8px',
+                      color: '#DC2626',
+                      fontSize: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      <AlertCircle size={14} />
+                      {forgotError}
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem', marginTop: '1.25rem' }}>
-                    <Button variant="outline" size="sm" onClick={() => setShowForgotModal(false)}>
+                    <Button variant="outline" size="sm" onClick={() => { setShowForgotModal(false); setForgotError(null); }}>
                       Cancel
                     </Button>
-                    <Button type="submit" variant="primary" size="sm">
-                      Send Link
+                    <Button type="submit" variant="primary" size="sm" disabled={forgotLoading}>
+                      {forgotLoading ? '📨 Sending...' : '📨 Send Reset Link'}
                     </Button>
                   </div>
                 </form>

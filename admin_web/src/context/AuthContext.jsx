@@ -66,27 +66,27 @@ export const AuthProvider = ({ children }) => {
     // 2. Offline fallback verification
     await new Promise((r) => setTimeout(r, 350));
 
-    if (cleanEmail === 'admin@petalio.lk') {
-      if (password === 'Admin@123' || password === 'admin123') {
+    if (cleanEmail === 'tharushidikkumbura727@gmail.com') {
+      if (password === '1234567') {
         const adminUser = MOCK_USERS.admin;
         setUser(adminUser);
         setLoading(false);
         return { success: true, user: adminUser, source: 'OFFLINE' };
       } else {
         setLoading(false);
-        return { success: false, error: 'Invalid password. Try "Admin@123"' };
+        return { success: false, error: 'Invalid password.' };
       }
     }
 
-    if (cleanEmail === 'officer@petalio.lk') {
-      if (password === 'Officer@123' || password === 'officer123') {
+    if (cleanEmail === 'dikkumburatharushi@gmail.com') {
+      if (password === '1234567') {
         const officerUser = MOCK_USERS.officer;
         setUser(officerUser);
         setLoading(false);
         return { success: true, user: officerUser, source: 'OFFLINE' };
       } else {
         setLoading(false);
-        return { success: false, error: 'Invalid password. Try "Officer@123"' };
+        return { success: false, error: 'Invalid password.' };
       }
     }
 

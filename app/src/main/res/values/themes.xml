@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base Application Theme: Premium Highland Floriculture Light Theme -->
+    <style name="Theme.PetalioBlossom" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary_brand</item>
+        <item name="colorPrimaryVariant">@color/primary_brand_dark</item>
+        <item name="colorOnPrimary">@color/text_white</item>
+        <item name="colorSecondary">@color/primary_brand</item>
+        <item name="colorOnSecondary">@color/text_white</item>
+        <item name="colorSurface">@color/card_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:colorBackground">@color/bg_botanical_light</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+
+        <!-- Status Bar -->
+        <item name="android:statusBarColor">@color/bg_botanical_light</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Hardware-Accelerated Smooth Activity Transitions -->
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowAnimationStyle">@style/PetalioActivityAnimation</item>
+
+        <!-- Universal Dialog Theming -->
+        <item name="alertDialogTheme">@style/ThemeOverlay.PetalioBlossom.Dialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.PetalioBlossom.MaterialAlertDialog</item>
+        <item name="dialogCornerRadius">24dp</item>
+        <item name="android:datePickerDialogTheme">@style/PetalioDatePickerTheme</item>
+    </style>
+
+    <!-- Fast 240ms Silky Slide-Fade Activity Animations -->
+    <style name="PetalioActivityAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/slide_in_right_fade</item>
+        <item name="android:activityOpenExitAnimation">@anim/slide_out_left_fade</item>
+        <item name="android:activityCloseEnterAnimation">@anim/slide_in_left_fade</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_out_right_fade</item>
+    </style>
+
+    <!-- Material Alert Dialog Theme Overlay -->
+    <style name="ThemeOverlay.PetalioBlossom.MaterialAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/card_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:background">@drawable/bg_dialog_card</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.PetalioBlossom.Dialog</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/PetalioDialog.TitleText</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/PetalioDialog.BodyText</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PetalioDialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/PetalioDialog.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/PetalioDialog.Button.Neutral</item>
+    </style>
+
+    <!-- Standard Android Alert Dialog Theme -->
+    <style name="ThemeOverlay.PetalioBlossom.Dialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="colorSurface">@color/card_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_card</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PetalioDialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/PetalioDialog.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/PetalioDialog.Button.Neutral</item>
+    </style>
+
+    <!-- Dialog Shape Appearance (24dp rounded corners) -->
+    <style name="ShapeAppearance.PetalioBlossom.Dialog" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
+
+    <!-- Dialog Title Style -->
+    <style name="PetalioDialog.TitleText" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">19sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Dialog Message/Body Style -->
+    <style name="PetalioDialog.BodyText" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+    </style>
+
+    <!-- Dialog Positive Button (Deep Maroon Bold) -->
+    <style name="PetalioDialog.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/primary_brand</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="rippleColor">@color/blush_tint_pill</item>
+    </style>
+
+    <!-- Dialog Negative Button (Secondary Charcoal) -->
+    <style name="PetalioDialog.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">14sp</item>
+        <item name="rippleColor">@color/blush_tint_light</item>
+    </style>
+
+    <!-- Dialog Neutral Button -->
+    <style name="PetalioDialog.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/primary_brand</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">14sp</item>
+        <item name="rippleColor">@color/blush_tint_light</item>
+    </style>
+
+    <!-- Signature Petalio Rose-Burgundy Date Picker Theme -->
+    <style name="PetalioDatePickerTheme" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="colorPrimary">@color/petalio_burgundy</item>
+        <item name="colorPrimaryVariant">@color/petalio_burgundy</item>
+        <item name="colorSecondary">@color/petalio_rose_accent</item>
+        <item name="colorAccent">@color/petalio_burgundy</item>
+        <item name="android:colorAccent">@color/petalio_burgundy</item>
+        <item name="colorSurface">@color/card_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_card</item>
+        <item name="android:datePickerStyle">@style/PetalioDatePickerWidgetStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PetalioDatePickerActionButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/PetalioDatePickerActionButton</item>
+    </style>
+
+    <style name="PetalioDatePickerWidgetStyle" parent="@android:style/Widget.Material.Light.DatePicker">
+        <item name="android:headerBackground">@color/petalio_burgundy</item>
+        <item name="android:calendarTextColor">@color/text_primary</item>
+        <item name="android:dayOfWeekBackground">@color/blush_tint_light</item>
+        <item name="android:yearListSelectorColor">@color/petalio_burgundy</item>
+        <item name="android:datePickerMode">calendar</item>
+    </style>
+
+    <style name="PetalioDatePickerActionButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/petalio_burgundy</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="rippleColor">@color/blush_tint_pill</item>
+    </style>
+</resources>

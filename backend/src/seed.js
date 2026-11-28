@@ -13,17 +13,17 @@ const seedDatabase = async () => {
 
     // 1. Users & Passwords
     console.log('👤 Seeding Users & Roles...');
-    const adminPassword = await bcrypt.hash('Admin@123', 10);
-    const officerPassword = await bcrypt.hash('Officer@123', 10);
+    const adminPassword = await bcrypt.hash('1234567', 10);
+    const officerPassword = await bcrypt.hash('1234567', 10);
     const supplierPassword = await bcrypt.hash('Supplier@123', 10);
     const customerPassword = await bcrypt.hash('Customer@123', 10);
 
     // Admin
     await User.findOrCreate({
-      where: { email: 'admin@petalio.lk' },
+      where: { email: 'tharushidikkumbura727@gmail.com' },
       defaults: {
         name: 'Dr. K. Wickramasinghe',
-        email: 'admin@petalio.lk',
+        email: 'tharushidikkumbura727@gmail.com',
         password_hash: adminPassword,
         phone: '+94 77 111 2233',
         role: 'ADMIN',
@@ -33,10 +33,10 @@ const seedDatabase = async () => {
 
     // Business Officer
     const [officerUser] = await User.findOrCreate({
-      where: { email: 'officer@petalio.lk' },
+      where: { email: 'dikkumburatharushi@gmail.com' },
       defaults: {
         name: 'Anuki Perera',
-        email: 'officer@petalio.lk',
+        email: 'dikkumburatharushi@gmail.com',
         password_hash: officerPassword,
         phone: '+94 77 123 4567',
         role: 'BUSINESS_OFFICER',
@@ -273,8 +273,8 @@ const seedDatabase = async () => {
     console.log('🎉 Petalio Blossom Database Seeded Successfully!');
     console.log('======================================================');
     console.log('🔑 Credentials:');
-    console.log('   Admin:    admin@petalio.lk   / Admin@123');
-    console.log('   Officer:  officer@petalio.lk / Officer@123');
+    console.log('   Admin:    tharushidikkumbura727@gmail.com / 1234567');
+    console.log('   Officer:  dikkumburatharushi@gmail.com   / 1234567');
     console.log('   Supplier: sunil@ella.lk      / Supplier@123');
     console.log('   Customer: dilshan@gmail.com  / Customer@123');
     console.log('======================================================\n');

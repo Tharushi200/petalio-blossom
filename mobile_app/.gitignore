@@ -1,0 +1,19 @@
+﻿# Android / Gradle / IDE build outputs
+.gradle/
+build/
+app/build/
+app/bin/
+.idea/
+.vscode/
+.android_tmp/
+local.properties
+*.iml
+*.apk
+*.aab
+
+# Node / Backend dependencies & env
+backend/node_modules/
+node_modules/
+.env
+backend/.env
+*.log

@@ -110,10 +110,17 @@ const INITIAL_FLOWERS = [
     name: 'Sunshine Gerbera',
     category: 'Gerbera',
     unitPrice: 200,
-    color: 'Red',
+    color: 'Yellow',
     stock: 45, // low stock alert
     reorderLevel: 50,
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10',
+    colorImages: {
+      Yellow: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy1dUPHx8m71hPDTLGIi25Vi1D-obtPSIX2rfxzTXfZxG4UEeIJXoNZW0&s=10',
+      Orange: 'https://images.pexels.com/photos/931177/pexels-photo-931177.jpeg?auto=compress&cs=tinysrgb&w=400',
+      Pink: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500&auto=format&fit=crop&q=80',
+      Red: 'https://images.pexels.com/photos/931180/pexels-photo-931180.jpeg?auto=compress&cs=tinysrgb&w=400',
+      White: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=500&auto=format&fit=crop&q=80'
+    },
     description: 'Vibrant large cut gerberas from Bandarawela. Bright commercial filler for boutique floral arrangements.'
   },
   {
@@ -294,7 +301,12 @@ const FLOWER_COLOR_HEX = {
   Purple: '#A855F7',
   Orange: '#FB923C',
   Green: '#4ADE80',
+  'Blue-Green': '#2DD4BF',
   Blue: '#38BDF8',
+  Peach: '#FDBA74',
+  Coral: '#FB7185',
+  Cream: '#FEF3C7',
+  Mixed: '#C084FC',
   Crimson: '#BE123C'
 };
 
@@ -572,6 +584,7 @@ export default function FlowerCatalogue() {
               category: dbF.category || 'Rose',
               unitPrice: parseFloat(dbF.unit_price) || 300,
               color: dbF.color || fallback?.color || 'Multicolor',
+              colorImages: fallback?.colorImages || (dbF.color ? { [dbF.color]: dbF.image_url } : null),
               stock: dbF.inventory?.stock_quantity ?? fallback?.stock ?? 100,
               reorderLevel: dbF.inventory?.reorder_level ?? fallback?.reorderLevel ?? 50,
               image: dbF.image_url || fallback?.image || '/rose.jpg',
