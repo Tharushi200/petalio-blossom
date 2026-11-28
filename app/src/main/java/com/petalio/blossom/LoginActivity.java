@@ -346,11 +346,7 @@ public class LoginActivity extends AppCompatActivity {
         String prevRole = PetalioUserPrefs.getUserRole(this);
 
         // Session isolation: If switching accounts or changing roles, purge all prior user state
-        if (prevUserId > 0 && (prevUserId != user.getUserId() || !user.getRole().equalsIgnoreCase(prevRole))) {
-            PetalioUserPrefs.clear(this);
-        } else {
-            BrowseFragment.clearCache();
-        }
+        SessionManager.getInstance().isolateSessionOnAccountSwitch(this, user.getUserId(), user.getRole());
 
         if ("SUPPLIER".equalsIgnoreCase(user.getRole())) {
             CartManager.getInstance(this).clearCart();

@@ -521,8 +521,7 @@ public class SupplierProfileFragment extends Fragment {
                 .setTitle("Sign Out")
                 .setMessage("Are you sure you want to log out from your Supplier Portal?")
                 .setPositiveButton("Logout", (dialog, which) -> {
-                    PetalioUserPrefs.clear(requireContext());
-                    CartManager.getInstance(requireContext()).clearCart();
+                    SessionManager.getInstance().logout(requireContext());
                     requireContext().getSharedPreferences("PetalioSupplierPrefs", Context.MODE_PRIVATE).edit().clear().apply();
 
                     Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();

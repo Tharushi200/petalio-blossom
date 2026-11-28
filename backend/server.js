@@ -848,17 +848,36 @@ async function handleRegisterCustomer(req, res) {
 
 // Helper: Handle Supplier Registration
 async function handleRegisterSupplier(req, res) {
-  const { farmName, contactPerson, password, phone, farmLocation, email, supplierId, monthly_capacity } = req.body || {};
-  const name = (contactPerson || farmName || '').trim();
-  const farmTitle = (farmName || name).trim();
+  const {
+    farmName,
+    estateName,
+    contactPerson,
+    contact_person,
+    password,
+    phone,
+    farmLocation,
+    district,
+    address,
+    city,
+    email,
+    supplierId,
+    supplier_code,
+    monthly_capacity,
+    monthlyCapacity,
+    capacity
+  } = req.body || {};
+
+  const farmTitle = (estateName || farmName || contactPerson || contact_person || '').trim();
+  const name = (contactPerson || contact_person || farmTitle).trim();
   const supplierEmail = (email || '').trim().toLowerCase();
   const supplierPhone = (phone || '').trim();
-  const location = (farmLocation || '').trim();
+  const districtName = (district || city || farmLocation || '').trim();
+  const addressName = (address || farmLocation || districtName).trim();
   const pass = (password || '').trim();
-  const initialCapacity = Math.max(0, parseInt(monthly_capacity, 10) || 0);
+  const initialCapacity = Math.max(0, parseInt(monthly_capacity || monthlyCapacity || capacity, 10) || 0);
 
   if (name.length < 2 || farmTitle.length < 2) {
-    return res.status(400).json({ success: false, message: 'Farm name and contact name (min 2 chars) are required' });
+    return res.status(400).json({ success: false, message: 'Estate/farm name and contact person (min 2 chars) are required' });
   }
   if (!isValidEmail(supplierEmail)) {
     return res.status(400).json({ success: false, message: 'Please enter a valid email address' });
@@ -886,18 +905,23 @@ async function handleRegisterSupplier(req, res) {
     );
 
     const userId = userRes.insertId;
-    let assignedCode = (supplierId && String(supplierId).trim())
-      ? String(supplierId).trim()
+    const requestedCode = (supplierId || supplier_code || '').trim();
+    let assignedCode = (requestedCode && requestedCode.match(/^SUP-2026-\d{4}$/i))
+      ? requestedCode.toUpperCase()
       : `SUP-2026-${String(userId).padStart(4, '0')}`;
 
     const [dupCode] = await conn.query('SELECT supplier_id FROM suppliers WHERE LOWER(supplier_code) = LOWER(?) LIMIT 1', [assignedCode]);
     if (dupCode.length > 0) {
       assignedCode = `SUP-2026-${String(userId).padStart(4, '0')}`;
+      const [dupCode2] = await conn.query('SELECT supplier_id FROM suppliers WHERE LOWER(supplier_code) = LOWER(?) LIMIT 1', [assignedCode]);
+      if (dupCode2.length > 0) {
+        assignedCode = `SUP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      }
     }
 
     await conn.query(
       'INSERT INTO suppliers (supplier_id, supplier_code, supplier_name, contact_number, city, address, monthly_capacity, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [userId, assignedCode, farmTitle, supplierPhone, location, location, initialCapacity, 0]
+      [userId, assignedCode, farmTitle, supplierPhone, districtName, addressName, initialCapacity, 0]
     );
 
     await conn.commit();
@@ -909,11 +933,15 @@ async function handleRegisterSupplier(req, res) {
       supplier_id: assignedCode,
       supplier_code: assignedCode,
       farmName: farmTitle,
+      estate_name: farmTitle,
       name: name,
+      contact_person: name,
       email: supplierEmail,
       phone: supplierPhone,
-      city: location,
-      address: location,
+      city: districtName,
+      district: districtName,
+      address: addressName,
+      monthly_capacity: initialCapacity,
       role: 'SUPPLIER',
       is_approved: 0,
       approval_status: 'Pending',

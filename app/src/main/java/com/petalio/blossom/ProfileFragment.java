@@ -945,9 +945,7 @@ public class ProfileFragment extends Fragment {
                 .setMessage("Are you sure you want to sign out from Petalio Blossom?")
                 .setPositiveButton("Sign Out", (dialog, which) -> {
                     // Clear active Cart, User Preferences, and in-memory Browse caches
-                    CartManager.getInstance(requireContext()).clearCart();
-                    PetalioUserPrefs.clear(requireContext());
-                    BrowseFragment.clearCache();
+                    SessionManager.getInstance().logout(requireContext());
                     lastLoadedUserId = -1;
 
                     Toast.makeText(requireContext(), "Signed out successfully", Toast.LENGTH_SHORT).show();
