@@ -397,6 +397,9 @@ public class SupplierProfileFragment extends Fragment {
         }
 
         dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
     }
 
     private void showChangePasswordDialog() {
@@ -413,75 +416,87 @@ public class SupplierProfileFragment extends Fragment {
         Button btnCancel = dialogView.findViewById(R.id.btnCancelChangePassword);
         Button btnSubmit = dialogView.findViewById(R.id.btnSubmitChangePassword);
 
+        if (btnCancel != null) {
+            AnimationUtilsHelper.applyPressScale(btnCancel);
+        }
+        if (btnSubmit != null) {
+            AnimationUtilsHelper.applyPressScale(btnSubmit);
+        }
+
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
                 .setCancelable(true)
                 .create();
 
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        if (btnSubmit != null) {
+            btnSubmit.setOnClickListener(v -> {
+                if (tilCurrentPass != null) tilCurrentPass.setError(null);
+                if (tilNewPass != null) tilNewPass.setError(null);
+                if (tilConfirmPass != null) tilConfirmPass.setError(null);
+
+                String currentP = etCurrentPass != null && etCurrentPass.getText() != null ? etCurrentPass.getText().toString().trim() : "";
+                String newP = etNewPass != null && etNewPass.getText() != null ? etNewPass.getText().toString().trim() : "";
+                String confirmP = etConfirmPass != null && etConfirmPass.getText() != null ? etConfirmPass.getText().toString().trim() : "";
+
+                if (currentP.isEmpty()) {
+                    if (tilCurrentPass != null) tilCurrentPass.setError("Enter current password");
+                    else Toast.makeText(requireContext(), "Please enter current password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (newP.length() < 6) {
+                    if (tilNewPass != null) tilNewPass.setError("Password must be at least 6 characters");
+                    else Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (!newP.equals(confirmP)) {
+                    if (tilConfirmPass != null) tilConfirmPass.setError("New passwords do not match");
+                    else Toast.makeText(requireContext(), "New passwords do not match", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                btnSubmit.setEnabled(false);
+                btnSubmit.setText("Updating...");
+
+                int uid = (currentUserId > 0) ? currentUserId : PetalioUserPrefs.getUserId(requireContext());
+
+                ApiClient.getApiService(requireContext())
+                        .changePassword(new ChangePasswordRequest(uid, currentP, newP))
+                        .enqueue(new Callback<CommonResponse>() {
+                            @Override
+                            public void onResponse(Call<CommonResponse> call, Response<CommonResponse> response) {
+                                if (!isAdded() || getContext() == null) return;
+                                btnSubmit.setEnabled(true);
+                                btnSubmit.setText("Update Password");
+
+                                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                    Toast.makeText(requireContext(), "Password changed successfully! Please use your new password next time.", Toast.LENGTH_LONG).show();
+                                    dialog.dismiss();
+                                } else {
+                                    String msg = ApiClient.extractErrorMessage(response, "Current password may be incorrect.");
+                                    if (tilCurrentPass != null) tilCurrentPass.setError(msg);
+                                    Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<CommonResponse> call, Throwable t) {
+                                if (!isAdded() || getContext() == null) return;
+                                btnSubmit.setEnabled(true);
+                                btnSubmit.setText("Update Password");
+                                Toast.makeText(requireContext(), "Network error: Could not update password", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            });
+        }
+
+        dialog.show();
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
-
-        btnCancel.setOnClickListener(v -> dialog.dismiss());
-
-        btnSubmit.setOnClickListener(v -> {
-            if (tilCurrentPass != null) tilCurrentPass.setError(null);
-            if (tilNewPass != null) tilNewPass.setError(null);
-            if (tilConfirmPass != null) tilConfirmPass.setError(null);
-
-            String currentP = etCurrentPass != null && etCurrentPass.getText() != null ? etCurrentPass.getText().toString().trim() : "";
-            String newP = etNewPass != null && etNewPass.getText() != null ? etNewPass.getText().toString().trim() : "";
-            String confirmP = etConfirmPass != null && etConfirmPass.getText() != null ? etConfirmPass.getText().toString().trim() : "";
-
-            if (currentP.isEmpty()) {
-                if (tilCurrentPass != null) tilCurrentPass.setError("Enter current password");
-                else Toast.makeText(requireContext(), "Please enter current password", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (newP.length() < 6) {
-                if (tilNewPass != null) tilNewPass.setError("Password must be at least 6 characters");
-                else Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (!newP.equals(confirmP)) {
-                if (tilConfirmPass != null) tilConfirmPass.setError("New passwords do not match");
-                else Toast.makeText(requireContext(), "New passwords do not match", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            btnSubmit.setEnabled(false);
-            btnSubmit.setText("Updating...");
-
-            ApiClient.getApiService(requireContext())
-                    .changePassword(new ChangePasswordRequest(currentUserId, currentP, newP))
-                    .enqueue(new Callback<CommonResponse>() {
-                        @Override
-                        public void onResponse(Call<CommonResponse> call, Response<CommonResponse> response) {
-                            if (!isAdded() || getContext() == null) return;
-                            btnSubmit.setEnabled(true);
-                            btnSubmit.setText("Update Password");
-
-                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                                Toast.makeText(requireContext(), "Password changed successfully! Please use your new password next time.", Toast.LENGTH_LONG).show();
-                                dialog.dismiss();
-                            } else {
-                                String msg = ApiClient.extractErrorMessage(response, "Current password may be incorrect.");
-                                if (tilCurrentPass != null) tilCurrentPass.setError(msg);
-                                Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<CommonResponse> call, Throwable t) {
-                            if (!isAdded() || getContext() == null) return;
-                            btnSubmit.setEnabled(true);
-                            btnSubmit.setText("Update Password");
-                            Toast.makeText(requireContext(), "Network error: Could not update password", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        });
-
-        dialog.show();
     }
 
     private void openWhatsAppHelpDesk() {
