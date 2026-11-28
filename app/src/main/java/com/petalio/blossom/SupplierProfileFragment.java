@@ -283,11 +283,11 @@ public class SupplierProfileFragment extends Fragment {
         if (etAddress != null) etAddress.setText(currentAddress);
         if (etCapacity != null) etCapacity.setText(currentCapacity > 0 ? String.valueOf(currentCapacity) : "");
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
-                .setCancelable(true)
-                .create();
+                .setCancelable(true);
 
+        AlertDialog dialog = builder.create();
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
@@ -423,10 +423,14 @@ public class SupplierProfileFragment extends Fragment {
             AnimationUtilsHelper.applyPressScale(btnSubmit);
         }
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
-                .setCancelable(true)
-                .create();
+                .setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
 
         if (btnCancel != null) {
             btnCancel.setOnClickListener(v -> dialog.dismiss());

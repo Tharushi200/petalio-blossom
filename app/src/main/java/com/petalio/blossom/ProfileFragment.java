@@ -535,11 +535,11 @@ public class ProfileFragment extends Fragment {
         etEditPhone.setText(PetalioUserPrefs.getUserPhone(requireContext()));
         etEditAddress.setText(PetalioUserPrefs.getUserAddress(requireContext()));
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
-                .setCancelable(true)
-                .create();
+                .setCancelable(true);
 
+        AlertDialog dialog = builder.create();
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
@@ -644,10 +644,14 @@ public class ProfileFragment extends Fragment {
             AnimationUtilsHelper.applyPressScale(btnSubmit);
         }
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
-                .setCancelable(true)
-                .create();
+                .setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
 
         if (btnCancel != null) {
             btnCancel.setOnClickListener(v -> dialog.dismiss());
@@ -843,11 +847,11 @@ public class ProfileFragment extends Fragment {
         etDate.setText(PetalioUserPrefs.getScopedString(requireContext(), KEY_REMINDER_DATE, uid, ""));
         etPreset.setText(PetalioUserPrefs.getScopedString(requireContext(), KEY_REMINDER_PRESET, uid, ""));
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
-                .setCancelable(true)
-                .create();
+                .setCancelable(true);
 
+        AlertDialog dialog = builder.create();
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
