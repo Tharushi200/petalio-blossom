@@ -2825,7 +2825,9 @@ app.get('/api/orders/:orderId', async (req, res) => {
     }
 
     const [items] = await pool.query(`
-      SELECT oi.*, f.name, f.category, f.image_url 
+      SELECT oi.*, f.name, f.category, f.image_url,
+             COALESCE(f.stock_quantity, f.stock, 0) AS stock,
+             COALESCE(f.stock_quantity, f.stock, 0) AS stock_quantity
       FROM order_items oi
       JOIN flowers f ON oi.flower_id = f.flower_id
       WHERE oi.order_id = ?
@@ -3049,9 +3051,10 @@ app.get(['/api/suppliers/orders', '/api/supplier/orders'], async (req, res) => {
 });
 
 // Update order status & fulfilment status in MySQL orders table (transactional with cancellation stock restore)
-app.put(['/api/orders/:orderId/status', '/api/supplier/orders/:orderId/status'], async (req, res) => {
+async function handleOrderStatusUpdate(req, res) {
   const orderId = parseInt(req.params.orderId, 10);
-  const { status, fulfilment_status } = req.body;
+  const isCancelPath = String(req.path || '').includes('/cancel');
+  const { status, fulfilment_status } = req.body || {};
   if (isNaN(orderId) || orderId <= 0) {
     return res.status(400).json({ success: false, message: 'Invalid order ID' });
   }
@@ -3073,7 +3076,7 @@ app.put(['/api/orders/:orderId/status', '/api/supplier/orders/:orderId/status'],
     let resolvedStatus = 'CONFIRMED';
     let resolvedFulfilment = fulfilment_status || status || 'Preparing';
 
-    const lower = (status || fulfilment_status || '').toLowerCase();
+    const lower = (status || fulfilment_status || (isCancelPath ? 'cancel' : '')).toLowerCase();
     if (lower.includes('deliver')) {
       resolvedStatus = 'DELIVERED';
       resolvedFulfilment = 'Delivered';
@@ -3086,7 +3089,7 @@ app.put(['/api/orders/:orderId/status', '/api/supplier/orders/:orderId/status'],
     } else if (lower.includes('accept') || lower.includes('prepar') || lower.includes('confirm')) {
       resolvedStatus = 'CONFIRMED';
       resolvedFulfilment = 'Preparing';
-    } else if (lower.includes('cancel') || lower.includes('reject')) {
+    } else if (lower.includes('cancel') || lower.includes('reject') || isCancelPath) {
       resolvedStatus = 'CANCELLED';
       resolvedFulfilment = 'Cancelled';
     }
@@ -3104,6 +3107,9 @@ app.put(['/api/orders/:orderId/status', '/api/supplier/orders/:orderId/status'],
         if (qty > 0 && oi.flower_id) {
           await conn.query('UPDATE flowers SET stock_quantity = COALESCE(stock_quantity, 0) + ? WHERE flower_id = ?', [qty, oi.flower_id]);
           await conn.query('UPDATE inventory SET stock_quantity = COALESCE(stock_quantity, 0) + ? WHERE flower_id = ?', [qty, oi.flower_id]);
+          try {
+            await conn.query('UPDATE flowers SET stock = COALESCE(stock, 0) + ? WHERE flower_id = ?', [qty, oi.flower_id]);
+          } catch (_) {}
         }
       }
       try {
@@ -3112,7 +3118,7 @@ app.put(['/api/orders/:orderId/status', '/api/supplier/orders/:orderId/status'],
     }
 
     // Sync deliveries & settlement tables
-    const { vehicle_number, driver_name, driver_phone } = req.body;
+    const { vehicle_number, driver_name, driver_phone } = req.body || {};
     if (resolvedStatus === 'SHIPPED') {
       try {
         await conn.query(
@@ -3157,7 +3163,15 @@ app.put(['/api/orders/:orderId/status', '/api/supplier/orders/:orderId/status'],
   } finally {
     conn.release();
   }
-});
+}
+
+app.route([
+  '/api/orders/:orderId/status',
+  '/api/orders/:orderId/cancel',
+  '/api/supplier/orders/:orderId/status'
+])
+  .put(handleOrderStatusUpdate)
+  .post(handleOrderStatusUpdate);
 
 // Bulk update flower stock quantities (rejects negative counts, runs atomically)
 app.route('/api/flowers/bulk-stock').put(handleBulkStockUpdate).post(handleBulkStockUpdate);

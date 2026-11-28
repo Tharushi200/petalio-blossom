@@ -12,12 +12,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
 import com.petalio.blossom.network.ApiClient;
+import com.petalio.blossom.network.CommonResponse;
 import com.petalio.blossom.network.OrderDetailResponse;
+import com.petalio.blossom.network.OrderStatusUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -190,6 +193,7 @@ public class CustomerOrderDetailsActivity extends AppCompatActivity {
                                 orderStatus = statusLabel;
                                 badgeOrderDetailsStatus.setText(statusLabel);
                             }
+                            updateActionButtons(statusLabel);
                             if (data.delivery_address != null && !data.delivery_address.isEmpty() && tvOrderDetailsAddress != null) {
                                 tvOrderDetailsAddress.setText(data.delivery_address);
                             }
@@ -356,37 +360,126 @@ public class CustomerOrderDetailsActivity extends AppCompatActivity {
         AnimationUtilsHelper.applyPressScale(btnRateThisOrder);
         AnimationUtilsHelper.applyPressScale(btnReorder);
 
-        btnBackOrderDetails.setOnClickListener(v -> supportFinishAfterTransition());
+        updateActionButtons(orderStatus);
 
-        btnRateThisOrder.setOnClickListener(v -> {
-            Intent intent = new Intent(CustomerOrderDetailsActivity.this, RateOrderActivity.class);
-            intent.putExtra("ORDER_DB_ID", orderDbId);
-            intent.putExtra("ORDER_ID", orderId);
-            intent.putExtra("FLOWER_ID", primaryFlowerId);
-            startActivity(intent);
-        });
+        btnBackOrderDetails.setOnClickListener(v -> supportFinishAfterTransition());
 
         btnReorder.setOnClickListener(v -> {
             if (loadedItems.isEmpty()) {
                 Toast.makeText(this, "Still loading order items, please wait.", Toast.LENGTH_SHORT).show();
                 return;
             }
+            int addedCount = 0;
+            int outOfStockCount = 0;
             for (OrderDetailResponse.DetailItem item : loadedItems) {
+                int itemStock = item.stock_quantity > 0 ? item.stock_quantity : item.stock;
+                if (itemStock <= 0 && item.stock_quantity == 0 && item.stock == 0 && item.price > 0) {
+                    outOfStockCount++;
+                    continue;
+                }
+                int addQty = itemStock > 0 ? Math.min(Math.max(1, item.quantity), itemStock) : Math.max(1, item.quantity);
                 CartManager.getInstance(this).addItem(new CartManager.CartItem(
                         item.flower_id,
                         item.name != null ? item.name : "Bloom",
                         item.category != null ? item.category : "General",
                         (int) Math.round(item.price),
-                        Math.max(1, item.quantity),
-                        item.name != null ? item.name.toLowerCase().replace(" ", "_") : ""
+                        addQty,
+                        item.name != null ? item.name.toLowerCase().replace(" ", "_") : "",
+                        itemStock
                 ));
+                addedCount++;
             }
-            Toast.makeText(this, "Order " + orderId + " items added to your cart!", Toast.LENGTH_SHORT).show();
+            if (outOfStockCount > 0 && addedCount == 0) {
+                Toast.makeText(this, "Items in this order are currently out of stock.", Toast.LENGTH_LONG).show();
+                return;
+            }
+            String note = outOfStockCount > 0 ? " (some out-of-stock items skipped)" : "";
+            Toast.makeText(this, "Order items added to your cart!" + note, Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(CustomerOrderDetailsActivity.this, CustomerMainActivity.class);
             intent.putExtra("TARGET_TAB", 1);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
             finish();
         });
+    }
+
+    private void updateActionButtons(String status) {
+        if (btnRateThisOrder == null) return;
+        String upper = status != null ? status.toUpperCase() : "";
+        if (upper.contains("CANCEL")) {
+            btnRateThisOrder.setVisibility(View.GONE);
+        } else if (upper.contains("DELIVER")) {
+            btnRateThisOrder.setVisibility(View.VISIBLE);
+            btnRateThisOrder.setText("Rate Order");
+            btnRateThisOrder.setTextColor(ContextCompat.getColor(this, R.color.accent_blossom_pink));
+            btnRateThisOrder.setOnClickListener(v -> {
+                Intent intent = new Intent(CustomerOrderDetailsActivity.this, RateOrderActivity.class);
+                intent.putExtra("ORDER_DB_ID", orderDbId);
+                intent.putExtra("ORDER_ID", orderId);
+                intent.putExtra("FLOWER_ID", primaryFlowerId);
+                startActivity(intent);
+            });
+        } else {
+            // Pending, Placed, Preparing, Confirmed
+            btnRateThisOrder.setVisibility(View.VISIBLE);
+            btnRateThisOrder.setText("Cancel Order");
+            btnRateThisOrder.setTextColor(ContextCompat.getColor(this, R.color.error_red));
+            btnRateThisOrder.setOnClickListener(v -> showCancelConfirmationDialog());
+        }
+    }
+
+    private void showCancelConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Cancel Order")
+                .setMessage("Are you sure you want to cancel this order? Floral stock will be automatically restored.")
+                .setPositiveButton("Yes, Cancel", (dialog, which) -> cancelOrder())
+                .setNegativeButton("No", null)
+                .show();
+    }
+
+    private void cancelOrder() {
+        int idToCancel = orderDbId > 0 ? orderDbId : extractNumericOrderId(orderId);
+        if (idToCancel <= 0) {
+            Toast.makeText(this, "Invalid order ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiClient.getApiService(this)
+                .updateOrderStatusLive(idToCancel, new OrderStatusUpdateRequest("CANCELLED", "Cancelled"))
+                .enqueue(new Callback<CommonResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<CommonResponse> call, @NonNull Response<CommonResponse> response) {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (response.isSuccessful()) {
+                            orderStatus = "Cancelled";
+                            if (badgeOrderDetailsStatus != null) {
+                                badgeOrderDetailsStatus.setText("Cancelled");
+                            }
+                            if (tvOrderDetailsDate != null) {
+                                tvOrderDetailsDate.setText("Cancelled");
+                            }
+                            updateActionButtons("Cancelled");
+                            Toast.makeText(CustomerOrderDetailsActivity.this, "Order cancelled. Floral stocks restored in database.", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(CustomerOrderDetailsActivity.this, "Unable to cancel order at this stage.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<CommonResponse> call, @NonNull Throwable t) {
+                        if (isFinishing() || isDestroyed()) return;
+                        Toast.makeText(CustomerOrderDetailsActivity.this, "Network error. Please try again.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private int extractNumericOrderId(String rawId) {
+        if (rawId == null) return -1;
+        String digits = rawId.replaceAll("\\D+", "");
+        try {
+            return digits.isEmpty() ? -1 : Integer.parseInt(digits);
+        } catch (Exception e) {
+            return -1;
+        }
     }
 }

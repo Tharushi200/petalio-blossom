@@ -70,6 +70,8 @@ public class OrderDetailResponse {
         public String name;
         public String category;
         public String image_url;
+        public int stock;
+        public int stock_quantity;
     }
 
     public static class InvoiceData {

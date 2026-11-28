@@ -337,11 +337,21 @@ public class PaymentActivity extends AppCompatActivity {
         final EditText etAddress = new EditText(this);
         etAddress.setHint("Street / House No. (e.g. 42 Flower Rd, Colombo 07)");
         etAddress.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        String savedAddr = PetalioUserPrefs.getUserAddress(this);
+        if (savedAddr != null && !savedAddr.trim().isEmpty()) {
+            etAddress.setText(savedAddr);
+            etAddress.setSelection(savedAddr.length());
+        }
         container.addView(etAddress);
 
         final EditText etCity = new EditText(this);
         etCity.setHint("City (e.g. Colombo)");
         etCity.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        String savedCity = PetalioUserPrefs.getUserCity(this);
+        if (savedCity != null && !savedCity.trim().isEmpty()) {
+            etCity.setText(savedCity);
+            etCity.setSelection(savedCity.length());
+        }
         container.addView(etCity);
 
         new AlertDialog.Builder(this)
