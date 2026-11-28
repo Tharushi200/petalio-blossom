@@ -3691,7 +3691,7 @@ const getSupplierDashboardData = async (rawSupplierId) => {
   // 2. Real Active Orders count scoped to this supplier
   const [activeOrdRows] = await pool.query(
     `SELECT COUNT(*) AS c FROM orders o
-     WHERE UPPER(COALESCE(o.status, '')) IN ('ACCEPTED', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'SHIPPED')
+     WHERE UPPER(COALESCE(o.status, '')) IN ('ACCEPTED', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'SHIPPED', 'IN_PROGRESS', 'IN PROGRESS')
        AND UPPER(COALESCE(o.fulfilment_status, '')) NOT IN ('DELIVERED', 'CANCELLED')
        AND ${ordFilter.clause}`,
     ordFilter.params
@@ -3703,7 +3703,19 @@ const getSupplierDashboardData = async (rawSupplierId) => {
     `SELECT COUNT(DISTINCT f.flower_id) AS c FROM flowers f WHERE ${flFilter.clause}`,
     flFilter.params
   );
-  const suppliedVarieties = Number(varietyRows[0]?.c || 0);
+  let suppliedVarieties = Number(varietyRows[0]?.c || 0);
+  try {
+    const [declRows] = await pool.query(
+      `SELECT COUNT(DISTINCT COALESCE(NULLIF(TRIM(flower_name), ''), CAST(flower_id AS CHAR))) AS c
+       FROM supplier_flowers
+       WHERE (supplier_id = ? OR supplier_user_id = ?)`,
+      [resolvedSupplierId, resolvedSupplierId]
+    );
+    const declCount = Number(declRows[0]?.c || 0);
+    if (declCount > suppliedVarieties) {
+      suppliedVarieties = declCount;
+    }
+  } catch (_) {}
 
   // 4. Real Total Payouts scoped to this supplier: DELIVERED orders + completed batch settlements
   const [deliveredEarnRows] = await pool.query(`
@@ -3725,12 +3737,18 @@ const getSupplierDashboardData = async (rawSupplierId) => {
   `, ordFilter.params);
   const deliveredOrdersTotal = parseFloat(deliveredEarnRows[0]?.delivered_total || 0);
 
-  const [batchEarnRows] = await pool.query(
-    `SELECT COALESCE(SUM(amount), 0) AS batch_total FROM supplier_payments WHERE UPPER(COALESCE(status, '')) = 'COMPLETED' AND supplier_id = ?`,
-    [resolvedSupplierId]
-  );
-  const batchSettlementTotal = parseFloat(batchEarnRows[0]?.batch_total || 0);
-  const totalPayouts = deliveredOrdersTotal + batchSettlementTotal;
+  let batchSettlementTotal = 0;
+  try {
+    const [batchEarnRows] = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) AS batch_total FROM supplier_payments WHERE UPPER(COALESCE(status, '')) = 'COMPLETED' AND (supplier_id = ? OR supplier_id IN (SELECT supplier_id FROM suppliers WHERE user_id = ?))`,
+      [resolvedSupplierId, resolvedSupplierId]
+    );
+    batchSettlementTotal = parseFloat(batchEarnRows[0]?.batch_total || 0);
+  } catch (_) {}
+  const totalPayouts = Math.max(0, deliveredOrdersTotal + batchSettlementTotal);
+  const formattedPayouts = totalPayouts > 0
+    ? 'Rs. ' + Math.round(totalPayouts).toLocaleString('en-US')
+    : 'Rs. 0';
 
   // 5. Latest live supplier notification summary, recent alerts (top 2), & exact count from MySQL feed
   let latestNotification = `${newRequestsCount} pending request(s) and ${activeOrdersCount} active order(s) in queue.`;
@@ -3762,7 +3780,7 @@ const getSupplierDashboardData = async (rawSupplierId) => {
     active_orders_count: activeOrdersCount,
     supplied_varieties_count: suppliedVarieties,
     total_payouts: totalPayouts,
-    total_payouts_formatted: 'Rs. ' + Math.round(totalPayouts).toLocaleString('en-US'),
+    total_payouts_formatted: formattedPayouts,
     monthly_capacity: Number(supplier.monthly_capacity || 0),
     latest_notification: latestNotification,
     recent_alerts: recentAlerts,

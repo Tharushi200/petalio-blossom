@@ -325,6 +325,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_chip_unselected"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="14dp"
@@ -348,6 +350,15 @@
                 android:layout_weight="1"
                 android:background="@null"
                 android:spinnerMode="dropdown" />
+
+            <ImageView
+                android:id="@+id/ivPriceFilterDropdownChevron"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="4dp"
+                android:contentDescription="Price filter dropdown arrow"
+                android:src="@drawable/ic_arrow_drop_down"
+                app:tint="@color/primary_brand" />
         </LinearLayout>
 
         <!-- Filter Chips for Database Flowers (Dynamically synchronized with MySQL backend) -->

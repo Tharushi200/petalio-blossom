@@ -71,6 +71,7 @@ public class BrowseFragment extends Fragment {
     private String currentSubTab = "ALL";
 
     private final List<TextView> categoryChipViews = new ArrayList<>();
+    private View layoutPriceFilter;
     private Spinner spinnerPriceFilter;
     private String selectedPriceOption = "All Prices";
 
@@ -220,6 +221,7 @@ public class BrowseFragment extends Fragment {
         layoutNoResults = v.findViewById(R.id.layoutNoResults);
         btnClearSearchFilter = v.findViewById(R.id.btnClearSearchFilter);
         layoutChipsContainer = v.findViewById(R.id.layoutChipsContainer);
+        layoutPriceFilter = v.findViewById(R.id.layoutPriceFilter);
         spinnerPriceFilter = v.findViewById(R.id.spinnerPriceFilter);
 
         // Sub-tabs
@@ -468,20 +470,21 @@ public class BrowseFragment extends Fragment {
             return false;
         });
 
-        // Open Filter Activity from search bar filter icon
+        // Open Price Filter dropdown directly from search bar filter icon or Price Filter container
         AnimationUtilsHelper.applyPressScale(btnOpenFilter);
         btnOpenFilter.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), FilterActivity.class);
-            intent.putExtra("CURRENT_CATEGORY", filterCategory);
-            intent.putExtra("CURRENT_AVAILABILITY", filterAvailability);
-            if (filterMinPrice >= 0) {
-                intent.putExtra("CURRENT_MIN_PRICE", String.valueOf(filterMinPrice));
+            if (spinnerPriceFilter != null) {
+                spinnerPriceFilter.performClick();
             }
-            if (filterMaxPrice >= 0) {
-                intent.putExtra("CURRENT_MAX_PRICE", String.valueOf(filterMaxPrice));
-            }
-            filterLauncher.launch(intent);
         });
+
+        if (layoutPriceFilter != null) {
+            layoutPriceFilter.setOnClickListener(v -> {
+                if (spinnerPriceFilter != null) {
+                    spinnerPriceFilter.performClick();
+                }
+            });
+        }
 
         // Open Wishlist from top heart icon
         if (btnOpenWishlist != null) {

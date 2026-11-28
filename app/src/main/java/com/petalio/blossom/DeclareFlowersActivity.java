@@ -300,14 +300,22 @@ public class DeclareFlowersActivity extends AppCompatActivity {
 
             // Quick Remove Action
             TextView btnRemove = new TextView(this);
-            LinearLayout.LayoutParams removeParams = new LinearLayout.LayoutParams(dp28, dp28);
-            removeParams.setMarginStart(dp4 / 2);
+            LinearLayout.LayoutParams removeParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            removeParams.setMarginStart(dp8);
             btnRemove.setLayoutParams(removeParams);
             btnRemove.setGravity(Gravity.CENTER);
             btnRemove.setText("Remove");
-            btnRemove.setTextSize(13);
+            btnRemove.setTextSize(12);
+            btnRemove.setMaxLines(1);
+            btnRemove.setSingleLine(true);
+            btnRemove.setEllipsize(null);
+            btnRemove.setPadding(dp8, dp4, dp8, dp4);
+            btnRemove.setBackgroundResource(R.drawable.bg_chip_unselected);
             btnRemove.setTypeface(null, android.graphics.Typeface.BOLD);
-            btnRemove.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            btnRemove.setTextColor(ContextCompat.getColor(this, R.color.badge_dispatched_text));
             btnRemove.setOnClickListener(v -> confirmRemoveDeclaredVariety(f));
             row.addView(btnRemove);
 

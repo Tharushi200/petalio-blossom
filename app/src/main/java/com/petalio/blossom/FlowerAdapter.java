@@ -325,22 +325,19 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
             }
         }
 
-        // Sold count / Fresh Harvest / Out of Stock social-proof
+        // Out of Stock badge & clean stock text: "Out of Stock" or "X left"
         if (holder.tvOutOfStockBadge != null) {
+            holder.tvOutOfStockBadge.setText("Out of Stock");
             holder.tvOutOfStockBadge.setVisibility(flower.available <= 0 ? View.VISIBLE : View.GONE);
         }
 
         if (holder.tvFlowerAvailable != null) {
             if (flower.available <= 0) {
-                holder.tvFlowerAvailable.setText("Out of Stock");
+                holder.tvFlowerAvailable.setText("• Out of Stock");
                 holder.tvFlowerAvailable.setTextColor(ContextCompat.getColor(context, R.color.badge_dispatched_text));
             } else {
                 holder.tvFlowerAvailable.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
-                if (flower.soldCount > 0) {
-                    holder.tvFlowerAvailable.setText("• " + flower.soldCount + " sold");
-                } else {
-                    holder.tvFlowerAvailable.setText("• Fresh Harvest");
-                }
+                holder.tvFlowerAvailable.setText("• " + flower.available + " left • Fresh Harvest");
             }
         }
 
