@@ -161,8 +161,14 @@ public interface ApiService {
     @GET("suppliers/demand")
     Call<SupplierDemandResponse> getSupplierDemand(@Query("supplier_id") int supplierId);
 
+    @GET("suppliers/demand-summary")
+    Call<SupplierDemandResponse> getSupplierDemandSummary(@Query("supplier_id") int supplierId);
+
     @GET("suppliers/{supplierId}/notifications")
     Call<SupplierNotificationsResponse> getSupplierNotifications(@Path("supplierId") int supplierId);
+
+    @GET("notifications")
+    Call<SupplierNotificationsResponse> getEstateAlerts(@Query("user_id") int userId, @Query("role") String role);
 
     @POST("supplier/harvest-fulfilment")
     Call<CommonResponse> submitHarvestFulfilment(@Body HarvestFulfilmentRequest request);

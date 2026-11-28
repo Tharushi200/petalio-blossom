@@ -112,12 +112,12 @@ public class SupplierNotificationsActivity extends AppCompatActivity {
                             } else {
                                 if (layoutEmpty != null) layoutEmpty.setVisibility(View.VISIBLE);
                                 if (rvNotifications != null) rvNotifications.setVisibility(View.GONE);
-                                if (tvEmpty != null) tvEmpty.setText("You're all caught up! No pending requests or alerts.");
+                                if (tvEmpty != null) tvEmpty.setText("No active estate alerts");
                                 if (tvSubtitle != null) tvSubtitle.setText("No active estate alerts");
                             }
                             if (adapter != null) adapter.notifyDataSetChanged();
                         } else {
-                            showEmptyError("Unable to load notifications from server.");
+                            showEmptyError("No active estate alerts");
                         }
                     }
 
@@ -125,7 +125,7 @@ public class SupplierNotificationsActivity extends AppCompatActivity {
                     public void onFailure(@NonNull Call<SupplierNotificationsResponse> call, @NonNull Throwable t) {
                         if (isFinishing() || isDestroyed()) return;
                         if (pbLoading != null) pbLoading.setVisibility(View.GONE);
-                        showEmptyError("Network error: Could not load notifications.");
+                        showEmptyError("No active estate alerts");
                     }
                 });
     }
@@ -134,7 +134,7 @@ public class SupplierNotificationsActivity extends AppCompatActivity {
         if (notificationList.isEmpty()) {
             if (layoutEmpty != null) layoutEmpty.setVisibility(View.VISIBLE);
             if (rvNotifications != null) rvNotifications.setVisibility(View.GONE);
-            if (tvEmpty != null) tvEmpty.setText(message);
+            if (tvEmpty != null) tvEmpty.setText("No active estate alerts");
             if (tvSubtitle != null) tvSubtitle.setText("No active estate alerts");
         } else {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();

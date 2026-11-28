@@ -77,6 +77,30 @@ async function initDatabaseTables() {
       await pool.query('ALTER TABLE supplier_flowers ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     } catch (_) {}
 
+    // Ensure notifications table exists with all required columns: (id, user_id, role, title, message, type, is_read, created_at)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
+        role VARCHAR(50) DEFAULT 'ALL',
+        title VARCHAR(255) NOT NULL DEFAULT '',
+        message TEXT NOT NULL,
+        type VARCHAR(50) DEFAULT 'SYSTEM',
+        is_read TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN id INT NULL'); } catch (_) {}
+    try { await pool.query('UPDATE notifications SET id = notification_id WHERE id IS NULL'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN role VARCHAR(50) DEFAULT "ALL"'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN title VARCHAR(255) DEFAULT ""'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN message TEXT NOT NULL'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN type VARCHAR(50) DEFAULT "SYSTEM"'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN is_read TINYINT(1) DEFAULT 0'); } catch (_) {}
+    try { await pool.query('UPDATE notifications SET is_read = 1 WHERE status = "READ"'); } catch (_) {}
+    try { await pool.query('UPDATE notifications SET title = "Estate Alert" WHERE title IS NULL OR title = ""'); } catch (_) {}
+    console.log('🌸 MySQL table notifications is ready');
+
     try {
       await pool.query('ALTER TABLE orders ADD COLUMN supplier_id INT DEFAULT NULL');
       await pool.query('UPDATE orders SET supplier_id = 3 WHERE supplier_id IS NULL');
@@ -1743,7 +1767,7 @@ const getSupplierNotificationsFeed = async (rawSupplierId) => {
         COALESCE(pay.payment_date, inv.issue_date, o.order_date) AS payment_date
       FROM orders o
       LEFT JOIN (
-        SELECT order_id, MAX(invoice_id) AS invoice_id, MAX(total_amount) AS total_amount, MAX(issue_date) AS issue_date
+        SELECT order_id, MAX(invoice_id) AS invoice_id, MAX(total_amount) AS total_amount, MAX(COALESCE(date, created_at)) AS issue_date
         FROM invoices
         GROUP BY order_id
       ) inv ON o.order_id = inv.order_id
@@ -1802,73 +1826,157 @@ const getSupplierNotificationsFeed = async (rawSupplierId) => {
   return notifications;
 };
 
-// Dedicated Supplier Notifications endpoint
-app.get(['/api/suppliers/:supplierId/notifications', '/api/supplier/notifications/:supplierId', '/api/notifications'], async (req, res) => {
+// Dedicated and Unified Notifications endpoint
+// Supports GET /api/notifications, GET /api/notifications/:userId,
+// GET /api/suppliers/:supplierId/notifications, GET /api/supplier/notifications/:supplierId
+app.get([
+  '/api/notifications',
+  '/api/notifications/:userId',
+  '/api/suppliers/:supplierId/notifications',
+  '/api/supplier/notifications/:supplierId'
+], async (req, res) => {
   try {
-    const supplierId = req.params.supplierId || req.query.supplierId || req.query.userId || 0;
-    const notifications = await getSupplierNotificationsFeed(supplierId);
+    const rawUserId = req.query.user_id || req.query.userId || req.params.userId;
+    const rawSupplierId = req.params.supplierId || req.query.supplier_id || req.query.supplierId;
+    const rawRole = (req.query.role || '').toUpperCase().trim();
+
+    const userId = rawUserId ? parseInt(rawUserId, 10) : null;
+    let supplierId = rawSupplierId ? await resolveSupplierIdFlexible(rawSupplierId) : null;
+
+    let userRole = rawRole;
+    if (!userRole && userId && !isNaN(userId) && userId > 0) {
+      try {
+        const [uRows] = await pool.query('SELECT role FROM users WHERE user_id = ? LIMIT 1', [userId]);
+        if (uRows.length > 0) userRole = String(uRows[0].role || '').toUpperCase();
+      } catch (_) {}
+    }
+
+    if (!supplierId && (userRole === 'SUPPLIER' || (!userRole && userId))) {
+      const resolvedSid = await resolveSupplierIdFlexible(userId);
+      if (resolvedSid && resolvedSid > 0) {
+        supplierId = resolvedSid;
+        userRole = 'SUPPLIER';
+      }
+    }
+
+    const notifications = [];
+    const seenIds = new Set();
+
+    // 1. Check MySQL notifications table
+    let tableQuery = 'SELECT id, notification_id, order_id, user_id, role, title, message, type, is_read, status, created_at FROM notifications';
+    const queryConds = [];
+    const queryParams = [];
+
+    if (userId && !isNaN(userId) && userId > 0) {
+      if (userRole) {
+        queryConds.push('(user_id = ? OR role = ? OR role = "ALL" OR role IS NULL)');
+        queryParams.push(userId, userRole);
+      } else {
+        queryConds.push('(user_id = ? OR role = "ALL" OR role IS NULL)');
+        queryParams.push(userId);
+      }
+    } else if (userRole) {
+      queryConds.push('(role = ? OR role = "ALL" OR role IS NULL)');
+      queryParams.push(userRole);
+    }
+
+    if (queryConds.length > 0) {
+      tableQuery += ' WHERE ' + queryConds.join(' AND ');
+    }
+    tableQuery += ' ORDER BY created_at DESC LIMIT 30';
+
+    try {
+      const [dbRows] = await pool.query(tableQuery, queryParams);
+      for (const row of dbRows) {
+        const notifId = String(row.id || row.notification_id || `db-${Math.random()}`);
+        seenIds.add(notifId);
+        const isRead = row.is_read === 1 || String(row.status || '').toUpperCase() === 'READ';
+        notifications.push({
+          id: notifId,
+          notification_id: row.id || row.notification_id,
+          order_id: row.order_id,
+          user_id: row.user_id,
+          role: row.role || userRole || 'ALL',
+          title: row.title || 'Estate Alert',
+          message: row.message || '',
+          subtitle: row.message || '',
+          type: (row.type || 'SYSTEM').toUpperCase(),
+          badge: (row.type || 'SYSTEM').toUpperCase() === 'LOW_STOCK' ? 'Low Stock' : 'Alert',
+          action_hint: 'Tap to review alert →',
+          is_read: isRead ? 1 : 0,
+          status: isRead ? 'READ' : 'UNREAD',
+          created_at: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString()
+        });
+      }
+    } catch (err) {
+      console.warn('Notifications table query fallback:', err.message);
+    }
+
+    // 2. If supplier or if no rows in notifications table, dynamically include live supplier feed or customer order updates
+    if (userRole === 'SUPPLIER' || (supplierId && supplierId > 0)) {
+      const sid = supplierId || 3;
+      const supplierFeed = await getSupplierNotificationsFeed(sid);
+      for (const item of supplierFeed) {
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id);
+          notifications.push({
+            ...item,
+            notification_id: item.order_id || item.flower_id || 1,
+            user_id: userId || sid,
+            role: 'SUPPLIER',
+            message: item.subtitle || item.title || '',
+            is_read: 0,
+            status: item.status || 'UNREAD'
+          });
+        }
+      }
+    } else if (notifications.length === 0 && userId && !isNaN(userId) && userId > 0) {
+      // Customer order status updates
+      try {
+        const [ordRows] = await pool.query(
+          `SELECT order_id, order_code, status, COALESCE(fulfilment_status, status) AS fulfilment_status, order_date
+           FROM orders
+           WHERE customer_id = ?
+           ORDER BY order_id DESC
+           LIMIT 15`,
+          [userId]
+        );
+        for (const o of ordRows) {
+          const notifId = `ord-${o.order_id}`;
+          if (!seenIds.has(notifId)) {
+            seenIds.add(notifId);
+            const statusLabel = o.fulfilment_status || o.status || 'Update';
+            notifications.push({
+              id: notifId,
+              notification_id: o.order_id,
+              order_id: o.order_id,
+              user_id: userId,
+              role: 'CUSTOMER',
+              title: `Order ${statusLabel}`,
+              subtitle: `Your floral order ${o.order_code || ('#PB-' + o.order_id)} is currently ${statusLabel}.`,
+              message: `Your floral order ${o.order_code || ('#PB-' + o.order_id)} is currently ${statusLabel}.`,
+              type: 'ORDER_UPDATE',
+              badge: statusLabel,
+              action_hint: 'Tap to track order →',
+              is_read: 0,
+              status: 'UNREAD',
+              created_at: o.order_date ? new Date(o.order_date).toISOString() : new Date().toISOString()
+            });
+          }
+        }
+      } catch (ordErr) {
+        console.warn('Customer orders feed error:', ordErr.message);
+      }
+    }
+
     return res.json({
       success: true,
       count: notifications.length,
       notifications
     });
   } catch (error) {
-    console.error('Supplier Notifications Error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch supplier notifications', error: error.message });
-  }
-});
-
-// Get User Notifications (returns live supplier feed for SUPPLIER users, customer notifications otherwise)
-app.get('/api/notifications/:userId', async (req, res) => {
-  const userId = parseInt(req.params.userId, 10);
-
-  try {
-    if (!isNaN(userId) && userId > 0) {
-      const [uRows] = await pool.query('SELECT role FROM users WHERE user_id = ? LIMIT 1', [userId]);
-      if (uRows.length > 0 && String(uRows[0].role || '').toUpperCase() === 'SUPPLIER') {
-        const supplierNotifs = await getSupplierNotificationsFeed(userId);
-        return res.json({
-          success: true,
-          count: supplierNotifs.length,
-          notifications: supplierNotifs
-        });
-      }
-    }
-
-    const [rows] = await pool.query(
-      'SELECT notification_id, order_id, user_id, title, message, status, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 20',
-      [isNaN(userId) ? 0 : userId]
-    );
-
-    let notifications = rows;
-    if (notifications.length === 0 && !isNaN(userId) && userId > 0) {
-      // Derive notifications strictly from real MySQL orders if no rows exist in notifications table
-      const [ordRows] = await pool.query(
-        `SELECT order_id, order_code, status, COALESCE(fulfilment_status, status) AS fulfilment_status, order_date
-         FROM orders
-         WHERE customer_id = ?
-         ORDER BY order_id DESC
-         LIMIT 15`,
-        [userId]
-      );
-      notifications = ordRows.map((o) => ({
-        notification_id: o.order_id,
-        order_id: o.order_id,
-        user_id: userId,
-        title: `Order ${o.fulfilment_status || o.status || 'Update'}`,
-        message: `Your floral order ${o.order_code || ('#PB-' + o.order_id)} is currently ${o.fulfilment_status || o.status}.`,
-        status: 'UNREAD',
-        created_at: o.order_date
-      }));
-    }
-
-    return res.json({
-      success: true,
-      notifications
-    });
-  } catch (error) {
-    console.error('Notifications Error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch notifications', error: error.message });
+    console.error('Unified Notifications Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch notifications', error: error.message, notifications: [] });
   }
 });
 
@@ -3274,9 +3382,15 @@ app.delete(['/api/suppliers/declared-flowers/:id', '/api/suppliers/:userId/decla
 });
 
 // Real Supplier Demand, Low Stock Insights & Completed Orders/Payments (scoped per supplier_id)
-app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
+// Endpoints: GET /api/suppliers/demand, GET /api/suppliers/demand-summary, GET /api/supplier/demand, GET /api/supplier/demand-summary
+app.get([
+  '/api/suppliers/demand',
+  '/api/suppliers/demand-summary',
+  '/api/supplier/demand',
+  '/api/supplier/demand-summary'
+], async (req, res) => {
   try {
-    const rawSup = req.query.supplier_id || req.query.user_id || req.query.supplierId;
+    const rawSup = req.query.supplier_id || req.query.user_id || req.query.supplierId || req.query.userId;
     let flWhere = '';
     let flParams = [];
     let ordWhere = '';
@@ -3289,12 +3403,21 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
       if (!sid || sid <= 0) {
         return res.json({
           success: true,
+          low_stock_count: 0,
+          low_stock_summary: 'All declared varieties are well stocked',
           low_stock_alerts: [],
+          alerts: [],
           top_demanded: [],
-          completed_payments: [],
+          shortfall_count: 0,
+          shortfall_summary: 'No seasonal shortfalls projected',
+          seasonal_forecasts: [],
+          forecasts: [],
+          settled_orders_count: 0,
           total_payouts: 0,
           total_payouts_formatted: 'Rs. 0',
-          forecasts: []
+          payouts_summary: 'No settled payouts recorded yet',
+          completed_payouts: [],
+          completed_payments: []
         });
       }
       const flFilter = buildSupplierFlowerPredicate('f', sid);
@@ -3314,9 +3437,9 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         f.flower_id, 
         f.name AS flower_name, 
         f.category, 
-        COALESCE(f.stock_quantity, inv.stock_quantity, 0) AS stock_quantity, 
+        COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) AS stock_quantity, 
         COALESCE(inv.reorder_level, 30) AS reorder_level,
-        f.unit_price
+        COALESCE(f.unit_price, 0) AS unit_price
       FROM flowers f
       LEFT JOIN (
         SELECT flower_id, MAX(stock_quantity) AS stock_quantity, MAX(reorder_level) AS reorder_level
@@ -3324,27 +3447,50 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         GROUP BY flower_id
       ) inv ON f.flower_id = inv.flower_id
       ${flWhere}
-      ORDER BY (COALESCE(f.stock_quantity, inv.stock_quantity, 0) - COALESCE(inv.reorder_level, 30)) ASC,
-               COALESCE(f.stock_quantity, inv.stock_quantity, 0) ASC
+      ORDER BY (COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) - COALESCE(inv.reorder_level, 30)) ASC,
+               COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) ASC
     `, flParams);
 
+    // Critical low stock (<= 15 or <= reorder_level)
     const criticalAlerts = inventoryAlerts
-      .filter(item => Number(item.stock_quantity) <= Number(item.reorder_level))
-      .map(item => ({ ...item, alert_status: 'LOW_STOCK', alert_label: 'Low Stock' }));
+      .filter(item => Number(item.stock_quantity) <= 15 || Number(item.stock_quantity) <= Number(item.reorder_level))
+      .map(item => {
+        const stock = Number(item.stock_quantity);
+        const reorder = Number(item.reorder_level);
+        const isDepleted = stock <= 15 || stock <= reorder;
+        return {
+          ...item,
+          stock_quantity: stock,
+          reorder_level: reorder,
+          alert_status: isDepleted ? 'LOW_STOCK' : 'NEAR_REORDER',
+          alert_label: stock <= 15 ? 'Low Stock' : (isDepleted ? 'Low Stock' : 'Near Reorder')
+        };
+      });
 
     let lowStock = criticalAlerts;
-    if (criticalAlerts.length < 2) {
-      const approachingAlerts = inventoryAlerts
+    if (lowStock.length === 0) {
+      // Check if any flower is approaching reorder
+      const approaching = inventoryAlerts
         .filter(item => {
           const stock = Number(item.stock_quantity);
           const reorder = Number(item.reorder_level);
-          const nearCeiling = Math.max(reorder + 20, Math.round(reorder * 1.8));
-          return stock > reorder && stock <= nearCeiling;
+          return stock <= Math.max(reorder + 20, 50);
         })
-        .slice(0, 2 - criticalAlerts.length)
-        .map(item => ({ ...item, alert_status: 'NEAR_REORDER', alert_label: 'Near Reorder' }));
-      lowStock = [...criticalAlerts, ...approachingAlerts];
+        .slice(0, 2)
+        .map(item => ({
+          ...item,
+          stock_quantity: Number(item.stock_quantity),
+          reorder_level: Number(item.reorder_level),
+          alert_status: 'NEAR_REORDER',
+          alert_label: 'Near Reorder'
+        }));
+      lowStock = approaching;
     }
+
+    const lowStockCount = lowStock.length;
+    const lowStockSummary = lowStockCount > 0
+      ? `${lowStockCount} ${lowStockCount === 1 ? 'variety requires' : 'varieties require'} grower attention`
+      : 'All declared varieties are well stocked';
 
     const [topDemanded] = await pool.query(`
       SELECT 
@@ -3352,7 +3498,7 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         f.name AS flower_name, 
         f.category, 
         COALESCE(SUM(oi.quantity), 0) AS total_ordered_stems,
-        COALESCE(f.stock_quantity, inv.stock_quantity, 0) AS current_stock
+        COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) AS current_stock
       FROM flowers f
       LEFT JOIN order_items oi ON f.flower_id = oi.flower_id
       LEFT JOIN (
@@ -3361,7 +3507,7 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         GROUP BY flower_id
       ) inv ON f.flower_id = inv.flower_id
       ${flWhere}
-      GROUP BY f.flower_id, f.name, f.category, f.stock_quantity, inv.stock_quantity
+      GROUP BY f.flower_id, f.name, f.category, f.stock_quantity, inv.stock_quantity, f.stock
       ORDER BY total_ordered_stems DESC
       LIMIT 6
     `, flParams);
@@ -3384,7 +3530,7 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
           'COMPLETED' AS status
         FROM orders o
         LEFT JOIN (
-          SELECT order_id, MAX(invoice_id) AS invoice_id, MAX(invoice_number) AS invoice_number, MAX(total_amount) AS total_amount, MAX(issue_date) AS issue_date
+          SELECT order_id, MAX(invoice_id) AS invoice_id, MAX(invoice_number) AS invoice_number, MAX(total_amount) AS total_amount, MAX(COALESCE(date, created_at)) AS issue_date
           FROM invoices
           GROUP BY order_id
         ) inv ON o.order_id = inv.order_id
@@ -3426,6 +3572,9 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
 
     const totalPayouts = completedPayments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
     const totalPayoutsFormatted = 'Rs. ' + Math.round(totalPayouts).toLocaleString('en-US');
+    const payoutsSummary = completedPayments.length > 0
+      ? `Total settled payouts: ${totalPayoutsFormatted} across ${completedPayments.length} orders`
+      : 'No settled payouts recorded yet';
 
     // Dynamically calculate seasonal demand forecasts alongside live current stock scoped by supplier
     const [forecasts] = await pool.query(`
@@ -3436,8 +3585,8 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         COALESCE(MAX(df.season_event), 'Next 30 Days') AS season_event,
         (COALESCE(MAX(df.predicted_demand), 0) + COALESCE(SUM(oi.quantity), 0)) AS predicted_demand,
         COALESCE(SUM(oi.quantity), 0) AS live_ordered_stems,
-        COALESCE(f.stock_quantity, inv.stock_quantity, 0) AS current_stock,
-        f.unit_price,
+        COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) AS current_stock,
+        COALESCE(f.unit_price, 0) AS unit_price,
         COALESCE(MAX(df.forecast_date), NOW()) AS forecast_date
       FROM flowers f
       LEFT JOIN order_items oi ON f.flower_id = oi.flower_id
@@ -3448,20 +3597,34 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         GROUP BY flower_id
       ) inv ON f.flower_id = inv.flower_id
       ${flWhere}
-      GROUP BY f.flower_id, f.name, f.unit_price, f.stock_quantity, inv.stock_quantity
+      GROUP BY f.flower_id, f.name, f.unit_price, f.stock_quantity, inv.stock_quantity, f.stock
       HAVING predicted_demand > 0
       ORDER BY live_ordered_stems DESC, predicted_demand DESC
-      LIMIT 6
+      LIMIT 10
     `, flParams);
+
+    const shortfallCount = forecasts.filter(f => Number(f.current_stock) < Number(f.predicted_demand)).length;
+    const shortfallSummary = shortfallCount > 0
+      ? `${shortfallCount} ${shortfallCount === 1 ? 'variety with projected shortfall' : 'varieties with projected shortfalls'} in next 30 days`
+      : 'No seasonal shortfalls projected';
 
     return res.json({
       success: true,
+      low_stock_count: lowStockCount,
+      low_stock_summary: lowStockSummary,
       low_stock_alerts: lowStock,
+      alerts: lowStock,
+      shortfall_count: shortfallCount,
+      shortfall_summary: shortfallSummary,
+      seasonal_forecasts: forecasts,
+      forecasts: forecasts,
       top_demanded: topDemanded,
-      completed_payments: completedPayments,
+      settled_orders_count: completedPayments.length,
       total_payouts: totalPayouts,
       total_payouts_formatted: totalPayoutsFormatted,
-      forecasts: forecasts
+      payouts_summary: payoutsSummary,
+      completed_payouts: completedPayments,
+      completed_payments: completedPayments
     });
   } catch (error) {
     console.error('Get Supplier Demand Error:', error);

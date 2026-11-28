@@ -9,14 +9,32 @@ public class SupplierDemandResponse {
     @SerializedName("low_stock_alerts")
     private List<LowStockAlertDto> lowStockAlerts;
 
+    @SerializedName("low_stock_count")
+    private int lowStockCount;
+
+    @SerializedName("low_stock_summary")
+    private String lowStockSummary;
+
     @SerializedName("top_demanded")
     private List<TopDemandedDto> topDemanded;
 
-    @SerializedName("completed_payments")
+    @SerializedName(value = "completed_payouts", alternate = {"completed_payments"})
     private List<CompletedPaymentDto> completedPayments;
 
-    @SerializedName("forecasts")
+    @SerializedName("settled_orders_count")
+    private int settledOrdersCount;
+
+    @SerializedName("payouts_summary")
+    private String payoutsSummary;
+
+    @SerializedName(value = "seasonal_forecasts", alternate = {"forecasts"})
     private List<DemandForecastDto> forecasts;
+
+    @SerializedName("shortfall_count")
+    private int shortfallCount;
+
+    @SerializedName("shortfall_summary")
+    private String shortfallSummary;
 
     @SerializedName("total_payouts")
     private double totalPayouts;
@@ -26,9 +44,15 @@ public class SupplierDemandResponse {
 
     public boolean isSuccess() { return success; }
     public List<LowStockAlertDto> getLowStockAlerts() { return lowStockAlerts; }
+    public int getLowStockCount() { return lowStockCount > 0 ? lowStockCount : (lowStockAlerts != null ? lowStockAlerts.size() : 0); }
+    public String getLowStockSummary() { return lowStockSummary != null ? lowStockSummary : ""; }
     public List<TopDemandedDto> getTopDemanded() { return topDemanded; }
     public List<CompletedPaymentDto> getCompletedPayments() { return completedPayments; }
+    public int getSettledOrdersCount() { return settledOrdersCount > 0 ? settledOrdersCount : (completedPayments != null ? completedPayments.size() : 0); }
+    public String getPayoutsSummary() { return payoutsSummary != null ? payoutsSummary : ""; }
     public List<DemandForecastDto> getForecasts() { return forecasts; }
+    public int getShortfallCount() { return shortfallCount; }
+    public String getShortfallSummary() { return shortfallSummary != null ? shortfallSummary : ""; }
     public double getTotalPayouts() { return totalPayouts; }
     public String getTotalPayoutsFormatted() { return totalPayoutsFormatted != null ? totalPayoutsFormatted : ""; }
 
