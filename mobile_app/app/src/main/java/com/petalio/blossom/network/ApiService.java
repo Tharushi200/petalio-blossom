@@ -100,6 +100,9 @@ public interface ApiService {
     @POST("reviews")
     Call<CommonResponse> submitReview(@Body ReviewRequest request);
 
+    @POST("flowers/{id}/reviews")
+    Call<CommonResponse> submitFlowerReview(@Path("id") int flowerId, @Body ReviewRequest request);
+
     // 5. Supplier Workflows & Stock
     @POST("supplier/stock-update")
     Call<CommonResponse> updateSupplierStock(@Body StockUpdateRequest request);

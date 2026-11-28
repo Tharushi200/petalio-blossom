@@ -8,6 +8,10 @@ public class ReviewRequest {
     private int rating;
     private String comment;
 
+    public ReviewRequest(int customer_id, int flower_id, int rating, String comment) {
+        this(0, null, customer_id, flower_id, rating, comment);
+    }
+
     public ReviewRequest(int order_id, int customer_id, int flower_id, int rating, String comment) {
         this(order_id, null, customer_id, flower_id, rating, comment);
     }

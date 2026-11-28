@@ -212,6 +212,9 @@ async function initDatabaseTables() {
         WHERE rr.customer_id IS NULL
       `);
     } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE rating_reviews MODIFY order_id INT DEFAULT 0');
+    } catch (_) {}
 
     try {
       await pool.query('ALTER TABLE deliveries ADD COLUMN vehicle_number VARCHAR(50) DEFAULT "WP CAD-4521"');
@@ -4209,9 +4212,10 @@ app.get('/api/customers/:customerId/payment-methods', async (req, res) => {
 /* ==========================================================
    5. REVIEWS & RATINGS
    ========================================================== */
-app.post('/api/reviews', async (req, res) => {
-  const { order_id, order_code, customer_id, flower_id, rating, comment } = req.body;
-  const custId = parseInt(customer_id, 10);
+app.post(['/api/reviews', '/api/flowers/:id/reviews'], async (req, res) => {
+  const flowerIdParam = req.params.id ? parseInt(req.params.id, 10) : null;
+  const { order_id, order_code, customer_id, user_id, flower_id, rating, comment } = req.body || {};
+  const custId = parseInt(customer_id || user_id, 10);
   const ratingVal = Math.min(5, Math.max(1, parseInt(rating, 10) || 5));
   const cleanComment = (comment || '').trim();
 
@@ -4228,40 +4232,68 @@ app.post('/api/reviews', async (req, res) => {
       resolvedOrderId = 0;
     }
 
-    // Resolve matching order from MySQL by order_id or order_code
+    // Resolve matching order from MySQL by order_id or order_code if provided
     const rawCode = String(order_code || order_id || '').replace(/^#/, '').trim();
-    const [ordRows] = await pool.query(
-      'SELECT order_id FROM orders WHERE order_id = ? OR order_code = ? OR order_code = ? LIMIT 1',
-      [resolvedOrderId, rawCode, `PB-${rawCode}`]
-    );
-    if (ordRows.length > 0) {
-      resolvedOrderId = ordRows[0].order_id;
-    }
-
-    if (resolvedOrderId <= 0) {
-      return res.status(404).json({ success: false, message: 'Matching order not found in MySQL' });
-    }
-
-    let resolvedFlowerId = parseInt(flower_id, 10);
-    if (isNaN(resolvedFlowerId) || resolvedFlowerId <= 0) {
-      const [itemRows] = await pool.query(
-        'SELECT flower_id FROM order_items WHERE order_id = ? ORDER BY order_item_id ASC LIMIT 1',
-        [resolvedOrderId]
+    if (resolvedOrderId > 0 || rawCode) {
+      const [ordRows] = await pool.query(
+        'SELECT order_id FROM orders WHERE order_id = ? OR order_code = ? OR order_code = ? LIMIT 1',
+        [resolvedOrderId, rawCode, `PB-${rawCode}`]
       );
-      if (itemRows.length > 0) {
-        resolvedFlowerId = itemRows[0].flower_id;
+      if (ordRows.length > 0) {
+        resolvedOrderId = ordRows[0].order_id;
+      }
+    }
+
+    let resolvedFlowerId = (flowerIdParam && !isNaN(flowerIdParam) && flowerIdParam > 0)
+      ? flowerIdParam
+      : parseInt(flower_id, 10);
+
+    if (isNaN(resolvedFlowerId) || resolvedFlowerId <= 0) {
+      if (resolvedOrderId > 0) {
+        const [itemRows] = await pool.query(
+          'SELECT flower_id FROM order_items WHERE order_id = ? ORDER BY order_item_id ASC LIMIT 1',
+          [resolvedOrderId]
+        );
+        if (itemRows.length > 0) {
+          resolvedFlowerId = itemRows[0].flower_id;
+        }
       }
     }
 
     if (!resolvedFlowerId || resolvedFlowerId <= 0) {
-      return res.status(400).json({ success: false, message: 'No flower item found for this order' });
+      return res.status(400).json({ success: false, message: 'Valid flower_id is required' });
+    }
+
+    // If order_id was not provided, look up any previous order for this customer and flower
+    if (resolvedOrderId <= 0) {
+      const [custOrd] = await pool.query(
+        `SELECT oi.order_id FROM order_items oi
+         JOIN orders o ON oi.order_id = o.order_id
+         WHERE o.customer_id = ? AND oi.flower_id = ?
+         ORDER BY o.order_id DESC LIMIT 1`,
+        [custId, resolvedFlowerId]
+      );
+      if (custOrd.length > 0) {
+        resolvedOrderId = custOrd[0].order_id;
+      } else {
+        const [anyOrd] = await pool.query('SELECT order_id FROM orders ORDER BY order_id DESC LIMIT 1');
+        resolvedOrderId = anyOrd.length > 0 ? anyOrd[0].order_id : 0;
+      }
     }
 
     await pool.query(
       'INSERT INTO rating_reviews (order_id, customer_id, flower_id, rating, comment) VALUES (?, ?, ?, ?, ?)',
       [resolvedOrderId, custId, resolvedFlowerId, ratingVal, cleanComment]
     );
-    return res.json({ success: true, message: 'Review recorded successfully', order_id: resolvedOrderId, flower_id: resolvedFlowerId });
+
+    return res.json({
+      success: true,
+      message: 'Review recorded successfully',
+      order_id: resolvedOrderId,
+      flower_id: resolvedFlowerId,
+      rating: ratingVal,
+      comment: cleanComment
+    });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
