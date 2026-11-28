@@ -14,10 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -32,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.petalio.blossom.network.ApiClient;
+import com.petalio.blossom.network.CategoriesResponse;
 import com.petalio.blossom.network.CustomerOrdersResponse;
 import com.petalio.blossom.network.FlowerDto;
 import com.petalio.blossom.network.FlowersResponse;
@@ -66,7 +70,10 @@ public class BrowseFragment extends Fragment {
     private View indicatorSubAll, indicatorSubRated, indicatorSubBestSelling, indicatorSubNewIn;
     private String currentSubTab = "ALL";
 
-    private TextView[] categoryChips;
+    private final List<TextView> categoryChipViews = new ArrayList<>();
+    private View layoutPriceFilter;
+    private Spinner spinnerPriceFilter;
+    private String selectedPriceOption = "All Prices";
 
     // Process-wide in-memory catalog cache for instant frame-1 rendering
     private static final List<FlowerDto> cachedFlowerDtos = new ArrayList<>();
@@ -168,6 +175,7 @@ public class BrowseFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_browse, container, false);
 
         initViews(view);
+        setupPriceSpinner();
         setupSubTabs();
         setupRecyclerView();
         setupSearchAndFilter();
@@ -213,6 +221,8 @@ public class BrowseFragment extends Fragment {
         layoutNoResults = v.findViewById(R.id.layoutNoResults);
         btnClearSearchFilter = v.findViewById(R.id.btnClearSearchFilter);
         layoutChipsContainer = v.findViewById(R.id.layoutChipsContainer);
+        layoutPriceFilter = v.findViewById(R.id.layoutPriceFilter);
+        spinnerPriceFilter = v.findViewById(R.id.spinnerPriceFilter);
 
         // Sub-tabs
         tabSubAll = v.findViewById(R.id.tabSubAll);
@@ -232,24 +242,35 @@ public class BrowseFragment extends Fragment {
         indicatorSubNewIn = v.findViewById(R.id.indicatorSubNewIn);
 
         TextView chipAll = v.findViewById(R.id.chipAll);
-        TextView chipRoses = v.findViewById(R.id.chipRoses);
-        TextView chipOrchids = v.findViewById(R.id.chipOrchids);
-        TextView chipLilies = v.findViewById(R.id.chipLilies);
-        TextView chipCarnations = v.findViewById(R.id.chipCarnations);
-        TextView chipChrysanthemums = v.findViewById(R.id.chipChrysanthemums);
-        TextView chipGerberas = v.findViewById(R.id.chipGerberas);
-        TextView chipSunflowers = v.findViewById(R.id.chipSunflowers);
-        TextView chipTulips = v.findViewById(R.id.chipTulips);
-        TextView chipLavender = v.findViewById(R.id.chipLavender);
-        TextView chipHydrangeas = v.findViewById(R.id.chipHydrangeas);
-        TextView chipPeonies = v.findViewById(R.id.chipPeonies);
+        categoryChipViews.clear();
+        if (chipAll != null) {
+            categoryChipViews.add(chipAll);
+        }
+    }
 
-        categoryChips = new TextView[]{
-                chipAll, chipRoses, chipOrchids, chipLilies,
-                chipCarnations, chipChrysanthemums, chipGerberas,
-                chipSunflowers, chipTulips, chipLavender,
-                chipHydrangeas, chipPeonies
+    private void setupPriceSpinner() {
+        if (spinnerPriceFilter == null || getContext() == null) return;
+        String[] priceOptions = new String[]{
+                "All Prices",
+                "Price: Low to High",
+                "Price: High to Low",
+                "Under Rs. 2,500",
+                "Rs. 2,500 – Rs. 5,000",
+                "Above Rs. 5,000"
         };
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, priceOptions);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerPriceFilter.setAdapter(adapter);
+        spinnerPriceFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedPriceOption = priceOptions[position];
+                applyFilters();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
 
     private void setupSubTabs() {
@@ -374,6 +395,7 @@ public class BrowseFragment extends Fragment {
 
     private void fetchLiveFlowersFromBackend(boolean allowSpinner) {
         if (getContext() == null) return;
+        WishlistManager.syncWithServer(requireContext(), null);
         if (allowSpinner && !isCatalogLoaded && cachedFlowerDtos.isEmpty() && pbBrowseLoading != null) {
             pbBrowseLoading.setVisibility(View.VISIBLE);
         }
@@ -398,6 +420,9 @@ public class BrowseFragment extends Fragment {
                         flowerAdapter.setMasterData(liveItems);
                         applyFilters();
                         FlowerImageHelper.preloadFlowerImages(requireContext(), liveItems, 200, 175);
+                    }
+                    if (categoryChipViews.size() <= 1) {
+                        loadCategories();
                     }
                 } else if (flowerAdapter != null && flowerAdapter.getMasterCount() == 0) {
                     layoutNoResults.setVisibility(View.VISIBLE);
@@ -445,20 +470,21 @@ public class BrowseFragment extends Fragment {
             return false;
         });
 
-        // Open Filter Activity from search bar filter icon
+        // Open Price Filter dropdown directly from search bar filter icon or Price Filter container
         AnimationUtilsHelper.applyPressScale(btnOpenFilter);
         btnOpenFilter.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), FilterActivity.class);
-            intent.putExtra("CURRENT_CATEGORY", filterCategory);
-            intent.putExtra("CURRENT_AVAILABILITY", filterAvailability);
-            if (filterMinPrice >= 0) {
-                intent.putExtra("CURRENT_MIN_PRICE", String.valueOf(filterMinPrice));
+            if (spinnerPriceFilter != null) {
+                spinnerPriceFilter.performClick();
             }
-            if (filterMaxPrice >= 0) {
-                intent.putExtra("CURRENT_MAX_PRICE", String.valueOf(filterMaxPrice));
-            }
-            filterLauncher.launch(intent);
         });
+
+        if (layoutPriceFilter != null) {
+            layoutPriceFilter.setOnClickListener(v -> {
+                if (spinnerPriceFilter != null) {
+                    spinnerPriceFilter.performClick();
+                }
+            });
+        }
 
         // Open Wishlist from top heart icon
         if (btnOpenWishlist != null) {
@@ -479,6 +505,10 @@ public class BrowseFragment extends Fragment {
                 filterMaxPrice = -1;
                 currentSubTab = "ALL";
                 currentSearchQuery = "";
+                selectedPriceOption = "All Prices";
+                if (spinnerPriceFilter != null) {
+                    spinnerPriceFilter.setSelection(0);
+                }
                 etSearchFlowers.setText("");
                 syncTopChipWithCategory("All");
                 selectSubTab("ALL");
@@ -487,27 +517,121 @@ public class BrowseFragment extends Fragment {
     }
 
     private void setupChips() {
-        View.OnClickListener listener = v -> {
-            TextView selected = (TextView) v;
-            String text = selected.getText().toString();
-            filterCategory = text;
-            syncTopChipWithCategory(text);
-            applyFilters();
-        };
+        if (layoutChipsContainer == null) return;
 
-        for (TextView chip : categoryChips) {
-            if (chip != null) {
-                AnimationUtilsHelper.applyPressScale(chip);
-                chip.setOnClickListener(listener);
+        if (!categoryChipViews.isEmpty()) {
+            TextView chipAll = categoryChipViews.get(0);
+            AnimationUtilsHelper.applyPressScale(chipAll);
+            chipAll.setOnClickListener(v -> {
+                filterCategory = "All";
+                syncTopChipWithCategory("All");
+                applyFilters();
+            });
+        }
+
+        loadCategories();
+    }
+
+    private void loadCategories() {
+        if (getContext() == null) return;
+        ApiClient.getApiService(requireContext()).getCategories().enqueue(new Callback<CategoriesResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CategoriesResponse> call, @NonNull Response<CategoriesResponse> response) {
+                if (!isAdded() || getContext() == null) return;
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess() && response.body().getCategories() != null) {
+                    populateCategoryChips(response.body().getCategories());
+                } else {
+                    populateFallbackCategories();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CategoriesResponse> call, @NonNull Throwable t) {
+                if (!isAdded() || getContext() == null) return;
+                populateFallbackCategories();
+            }
+        });
+    }
+
+    private void populateCategoryChips(List<String> categories) {
+        if (layoutChipsContainer == null || getContext() == null) return;
+        if (categories == null || categories.isEmpty()) {
+            populateFallbackCategories();
+            return;
+        }
+
+        while (layoutChipsContainer.getChildCount() > 1) {
+            layoutChipsContainer.removeViewAt(1);
+        }
+        categoryChipViews.clear();
+        TextView chipAll = layoutChipsContainer.findViewById(R.id.chipAll);
+        if (chipAll != null) {
+            categoryChipViews.add(chipAll);
+        }
+
+        int marginStart = (int) (8 * getResources().getDisplayMetrics().density);
+        int padH = (int) (16 * getResources().getDisplayMetrics().density);
+        int heightPx = (int) (34 * getResources().getDisplayMetrics().density);
+
+        for (String cat : categories) {
+            if (cat == null || cat.trim().isEmpty()) continue;
+            final String categoryName = cat.trim();
+            TextView chip = new TextView(requireContext());
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    heightPx
+            );
+            lp.setMarginStart(marginStart);
+            chip.setLayoutParams(lp);
+            chip.setGravity(android.view.Gravity.CENTER);
+            chip.setPadding(padH, 0, padH, 0);
+            chip.setText(categoryName);
+            chip.setTextSize(13);
+            chip.setBackgroundResource(R.drawable.bg_chip_unselected);
+            chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary));
+            chip.setClickable(true);
+            chip.setFocusable(true);
+            AnimationUtilsHelper.applyPressScale(chip);
+
+            chip.setOnClickListener(v -> {
+                filterCategory = categoryName;
+                syncTopChipWithCategory(categoryName);
+                applyFilters();
+            });
+
+            layoutChipsContainer.addView(chip);
+            categoryChipViews.add(chip);
+        }
+
+        syncTopChipWithCategory(filterCategory);
+    }
+
+    private void populateFallbackCategories() {
+        List<String> categories = new ArrayList<>();
+        if (!cachedFlowerDtos.isEmpty()) {
+            for (FlowerDto f : cachedFlowerDtos) {
+                if (f.getCategory() != null && !f.getCategory().trim().isEmpty() && !categories.contains(f.getCategory().trim())) {
+                    categories.add(f.getCategory().trim());
+                }
             }
         }
-        syncTopChipWithCategory(filterCategory);
+        if (categories.isEmpty()) {
+            String[] defaults = new String[]{
+                    "Alstroemeria", "Baby's Breath", "Bird of Paradise", "Carnation",
+                    "Chrysanthemum", "Eucalyptus", "Freesia", "Gerbera",
+                    "Hydrangea", "Lavender", "Lily", "Lisianthus",
+                    "Orchid", "Peony", "Ranunculus", "Rose",
+                    "Sunflower", "Tuberose", "Tulip"
+            };
+            for (String d : defaults) categories.add(d);
+        }
+        populateCategoryChips(categories);
     }
 
     private void syncTopChipWithCategory(String category) {
         if (!isAdded() || getContext() == null) return;
 
-        for (TextView c : categoryChips) {
+        for (TextView c : categoryChipViews) {
             if (c != null) {
                 c.setBackgroundResource(R.drawable.bg_chip_unselected);
                 c.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary));
@@ -516,8 +640,10 @@ public class BrowseFragment extends Fragment {
         }
 
         String normalizedInput = FlowerAdapter.normalizeCategoryToken(category);
-        TextView targetChip = "all".equals(normalizedInput) || normalizedInput.isEmpty() ? categoryChips[0] : null;
-        for (TextView c : categoryChips) {
+        TextView targetChip = ("all".equals(normalizedInput) || normalizedInput.isEmpty()) && !categoryChipViews.isEmpty()
+                ? categoryChipViews.get(0) : null;
+
+        for (TextView c : categoryChipViews) {
             if (c == null) continue;
             String chipLabel = c.getText().toString();
             if (chipLabel.equalsIgnoreCase(category)
@@ -537,13 +663,14 @@ public class BrowseFragment extends Fragment {
     private void applyFilters() {
         if (!isAdded() || getContext() == null || flowerAdapter == null) return;
 
-        flowerAdapter.applyFilter(currentSearchQuery, filterCategory, filterAvailability, filterMinPrice, filterMaxPrice, currentSubTab);
+        flowerAdapter.applyFilter(currentSearchQuery, filterCategory, filterAvailability, filterMinPrice, filterMaxPrice, currentSubTab, selectedPriceOption);
 
         // Highlight filter icon if custom filter applied from FilterActivity
         boolean hasCustomFilter = (!"All".equalsIgnoreCase(filterCategory))
                 || (!"All".equalsIgnoreCase(filterAvailability))
                 || (filterMinPrice >= 0)
-                || (filterMaxPrice >= 0);
+                || (filterMaxPrice >= 0)
+                || (!"All Prices".equalsIgnoreCase(selectedPriceOption));
 
         if (hasCustomFilter) {
             btnOpenFilter.setBackgroundResource(R.drawable.bg_chip_selected);

@@ -260,7 +260,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                     String welcomeName = (user != null && user.getName() != null && !user.getName().trim().isEmpty())
                             ? (", " + user.getName().trim()) : "";
-                    Toast.makeText(LoginActivity.this, "✓ Welcome back" + welcomeName + "!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Welcome back" + welcomeName + "!", Toast.LENGTH_SHORT).show();
                     navigateNext(role);
                 } else {
                     String fallbackMsg = "Incorrect password! Please check your credentials.";
@@ -332,13 +332,19 @@ public class LoginActivity extends AppCompatActivity {
     private void saveUserSession(UserDto user) {
         if (user == null) return;
         int prevUserId = PetalioUserPrefs.getUserId(this);
-        BrowseFragment.clearCache();
+        String prevRole = PetalioUserPrefs.getUserRole(this);
+
+        // Session isolation: If switching accounts or changing roles, purge all prior user state
+        if (prevUserId > 0 && (prevUserId != user.getUserId() || !user.getRole().equalsIgnoreCase(prevRole))) {
+            PetalioUserPrefs.clear(this);
+        } else {
+            BrowseFragment.clearCache();
+        }
+
         if ("SUPPLIER".equalsIgnoreCase(user.getRole())) {
-            if (prevUserId > 0) {
-                CartManager.getInstance(this).clearCartForUser(prevUserId);
-            }
             CartManager.getInstance(this).clearCart();
             int supId = user.getSupplierId() != null ? user.getSupplierId() : user.getUserId();
+            boolean approved = user.isApproved();
             PetalioUserPrefs.saveSupplierInfo(
                     this,
                     supId,
@@ -350,16 +356,14 @@ public class LoginActivity extends AppCompatActivity {
                     user.getCity(),
                     user.getAddress(),
                     user.getMonthlyCapacity() != null ? user.getMonthlyCapacity() : 0,
-                    user.isApproved()
+                    approved
             );
+            PetalioUserPrefs.setApprovalStatus(this, approved ? "APPROVED" : "PENDING");
             return;
         }
         int customerId = (user.getCustomerId() != null && user.getCustomerId() > 0)
                 ? user.getCustomerId()
                 : user.getUserId();
-        if (prevUserId > 0 && prevUserId != user.getUserId()) {
-            CartManager.getInstance(this).clearCartForUser(prevUserId);
-        }
         PetalioUserPrefs.saveCustomerInfo(
                 this,
                 user.getUserId(),
@@ -370,6 +374,7 @@ public class LoginActivity extends AppCompatActivity {
                 user.getAddress(),
                 user.getCity()
         );
+        PetalioUserPrefs.setApprovalStatus(this, "APPROVED");
     }
 
     private void navigateNext(String role) {

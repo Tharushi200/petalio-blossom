@@ -32,7 +32,6 @@ import com.petalio.blossom.network.ApiClient;
 import com.petalio.blossom.network.ApiService;
 import com.petalio.blossom.network.ChangePasswordRequest;
 import com.petalio.blossom.network.CommonResponse;
-import com.petalio.blossom.network.CustomerPaymentMethodsResponse;
 import com.petalio.blossom.network.RedeemPointsResponse;
 import com.petalio.blossom.network.ReminderDto;
 import com.petalio.blossom.network.RemindersResponse;
@@ -71,7 +70,7 @@ public class ProfileFragment extends Fragment {
     private ProgressBar pbRewardsProgress;
     private TextView tvReminderTitle, tvReminderDate, tvReminderPreset;
     private TextView tvSavedAddressesCount;
-    private View rowSavedAddresses, rowPaymentMethods, rowFavourites, rowSupport, rowSecurity;
+    private View rowSavedAddresses, rowFavourites, rowSupport, rowSecurity;
     private SwitchCompat switchNotifications;
     private Button btnProfileLogout;
 
@@ -176,7 +175,6 @@ public class ProfileFragment extends Fragment {
 
         tvSavedAddressesCount = v.findViewById(R.id.tvSavedAddressesCount);
         rowSavedAddresses = v.findViewById(R.id.rowSavedAddresses);
-        rowPaymentMethods = v.findViewById(R.id.rowPaymentMethods);
         rowFavourites = v.findViewById(R.id.rowFavourites);
         rowSupport = v.findViewById(R.id.rowSupport);
         rowSecurity = v.findViewById(R.id.rowSecurity);
@@ -453,7 +451,6 @@ public class ProfileFragment extends Fragment {
         AnimationUtilsHelper.applyPressScale(cardReminderItem);
         AnimationUtilsHelper.applyPressScale(tvReminderDate);
         AnimationUtilsHelper.applyPressScale(rowSavedAddresses);
-        AnimationUtilsHelper.applyPressScale(rowPaymentMethods);
         AnimationUtilsHelper.applyPressScale(rowFavourites);
         AnimationUtilsHelper.applyPressScale(rowSupport);
         AnimationUtilsHelper.applyPressScale(rowSecurity);
@@ -497,9 +494,6 @@ public class ProfileFragment extends Fragment {
 
         // Saved Delivery Addresses -> View & Edit
         rowSavedAddresses.setOnClickListener(v -> showSavedAddressesDialog());
-
-        // Payment Methods & Cards
-        rowPaymentMethods.setOnClickListener(v -> showPaymentMethodsDialog());
 
         // Wishlist / Favourites
         rowFavourites.setOnClickListener(v -> {
@@ -686,7 +680,7 @@ public class ProfileFragment extends Fragment {
                     btnSubmit.setText("Update Password");
 
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        Toast.makeText(getContext(), "✓ Password changed successfully! Please use your new password next time.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "Password changed successfully! Please use your new password next time.", Toast.LENGTH_LONG).show();
                         dialog.dismiss();
                     } else {
                         String msg = (response.body() != null && response.body().getMessage() != null && !response.body().getMessage().trim().isEmpty())
@@ -793,7 +787,7 @@ public class ProfileFragment extends Fragment {
 
                     // Success dialog
                     new AlertDialog.Builder(requireContext())
-                            .setTitle("Redemption Successful! 🎉")
+                            .setTitle("Redemption Successful!")
                             .setMessage("Successfully redeemed 500 Bloom Points for Rs. 500 Wallet Credit!\n\nNew Points Balance: " + currentLoyaltyPoints + " Points\nNew Wallet Balance: Rs. " + String.format(Locale.US, "%,d", Math.round(currentWalletCredits)))
                             .setPositiveButton("Awesome", null)
                             .show();
@@ -920,53 +914,6 @@ public class ProfileFragment extends Fragment {
                 .setPositiveButton("Update Address", (dialog, which) -> showEditProfileDialog())
                 .setNegativeButton("Close", null)
                 .show();
-    }
-
-    private void showPaymentMethodsDialog() {
-        if (getContext() == null || currentUserId <= 0) return;
-        Toast.makeText(getContext(), "Loading payment records...", Toast.LENGTH_SHORT).show();
-
-        ApiClient.getApiService(requireContext())
-                .getCustomerPaymentMethods(currentUserId)
-                .enqueue(new Callback<CustomerPaymentMethodsResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<CustomerPaymentMethodsResponse> call, @NonNull Response<CustomerPaymentMethodsResponse> response) {
-                        if (!isAdded() || getContext() == null) return;
-                        StringBuilder msg = new StringBuilder();
-                        msg.append("Accepted Checkout Methods:\n• Credit / Debit Card\n• Direct Bank Transfer (Commercial Bank)\n");
-
-                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            List<CustomerPaymentMethodsResponse.PaymentRecord> payments = response.body().getPayments();
-                            msg.append("\nRecent Payments:\n");
-                            if (payments.isEmpty()) {
-                                msg.append("No recorded transactions yet.");
-                            } else {
-                                int limit = Math.min(5, payments.size());
-                                for (int i = 0; i < limit; i++) {
-                                    CustomerPaymentMethodsResponse.PaymentRecord p = payments.get(i);
-                                    String code = p.order_code != null && !p.order_code.isEmpty() ? p.order_code : ("#PB-" + p.order_id);
-                                    String method = "BANK_TRANSFER".equalsIgnoreCase(p.payment_method) ? "Bank Transfer" : "Card Payment";
-                                    String date = (p.payment_date != null && p.payment_date.length() >= 10) ? p.payment_date.substring(0, 10) : "";
-                                    msg.append("• ").append(code).append(" — ").append(method)
-                                       .append(" (Rs. ").append(String.format(Locale.US, "%,d", Math.round(p.amount_paid))).append(")")
-                                       .append(date.isEmpty() ? "" : (" · " + date)).append("\n");
-                                }
-                            }
-                        }
-
-                        new AlertDialog.Builder(requireContext())
-                                .setTitle("Payment Methods & History")
-                                .setMessage(msg.toString().trim())
-                                .setPositiveButton("Close", null)
-                                .show();
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<CustomerPaymentMethodsResponse> call, @NonNull Throwable t) {
-                        if (!isAdded() || getContext() == null) return;
-                        Toast.makeText(getContext(), "Unable to fetch payment records right now.", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 
     private void showLogoutConfirmationDialog() {

@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -17,6 +18,7 @@ import com.petalio.blossom.network.ApiClient;
 import com.petalio.blossom.network.DemandForecastDto;
 import com.petalio.blossom.network.SupplierDemandResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -33,6 +35,11 @@ public class SupplierDemandFragment extends Fragment {
     private TextView tvHubAlertsBadge, tvHubAlertsPreview;
     private TextView tvHubForecastsBadge, tvHubForecastsPreview;
     private TextView tvHubPayoutsBadge, tvHubPayoutsPreview;
+
+    private final List<SupplierDemandResponse.LowStockAlertDto> cachedAlerts = new ArrayList<>();
+    private final List<DemandForecastDto> cachedForecasts = new ArrayList<>();
+    private final List<SupplierDemandResponse.CompletedPaymentDto> cachedPayments = new ArrayList<>();
+    private String cachedPayoutTotal = "Rs. 0";
 
     @Nullable
     @Override
@@ -70,25 +77,25 @@ public class SupplierDemandFragment extends Fragment {
     private void setupListeners() {
         if (cardMasterLowStock != null) {
             AnimationUtilsHelper.applyPressScale(cardMasterLowStock);
-            cardMasterLowStock.setOnClickListener(v ->
-                    startActivity(new Intent(requireContext(), SupplierLowStockActivity.class)));
+            cardMasterLowStock.setOnClickListener(v -> showLowStockDialog(cachedAlerts));
         }
         if (cardMasterForecasts != null) {
             AnimationUtilsHelper.applyPressScale(cardMasterForecasts);
-            cardMasterForecasts.setOnClickListener(v ->
-                    startActivity(new Intent(requireContext(), SupplierForecastsActivity.class)));
+            cardMasterForecasts.setOnClickListener(v -> showForecastsDialog(cachedForecasts));
         }
         if (cardMasterPayouts != null) {
             AnimationUtilsHelper.applyPressScale(cardMasterPayouts);
-            cardMasterPayouts.setOnClickListener(v ->
-                    startActivity(new Intent(requireContext(), SupplierPayoutsActivity.class)));
+            cardMasterPayouts.setOnClickListener(v -> showPayoutsDialog(cachedPayments, cachedPayoutTotal));
         }
     }
 
     private void fetchDemandHubSummary() {
         if (getContext() == null) return;
         int supplierId = PetalioUserPrefs.getSupplierId(requireContext());
-        if (supplierId <= 0) return;
+        if (supplierId <= 0) {
+            applyDefaultCleanTexts();
+            return;
+        }
 
         ApiClient.getApiService(requireContext())
                 .getSupplierDemand(supplierId)
@@ -99,15 +106,60 @@ public class SupplierDemandFragment extends Fragment {
 
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             SupplierDemandResponse body = response.body();
-                            bindLowStockHubCard(body.getLowStockAlerts());
-                            bindForecastsHubCard(body.getTopDemanded(), body.getForecasts());
-                            bindPayoutsHubCard(body.getCompletedPayments(), body.getTotalPayoutsFormatted());
+                            cachedAlerts.clear();
+                            if (body.getLowStockAlerts() != null) cachedAlerts.addAll(body.getLowStockAlerts());
+
+                            cachedForecasts.clear();
+                            if (body.getForecasts() != null) cachedForecasts.addAll(body.getForecasts());
+
+                            cachedPayments.clear();
+                            if (body.getCompletedPayments() != null) cachedPayments.addAll(body.getCompletedPayments());
+
+                            cachedPayoutTotal = SupplierDemandUiHelper.resolveTotalPayoutFormatted(
+                                    body.getCompletedPayments(), body.getTotalPayoutsFormatted()
+                            );
+
+                            bindLowStockHubCard(cachedAlerts);
+                            bindForecastsHubCard(body.getTopDemanded(), cachedForecasts);
+                            bindPayoutsHubCard(cachedPayments, cachedPayoutTotal);
+                        } else {
+                            applyDefaultCleanTexts();
                         }
                     }
 
                     @Override
-                    public void onFailure(@NonNull Call<SupplierDemandResponse> call, @NonNull Throwable t) {}
+                    public void onFailure(@NonNull Call<SupplierDemandResponse> call, @NonNull Throwable t) {
+                        if (!isAdded() || getContext() == null) return;
+                        applyDefaultCleanTexts();
+                    }
                 });
+    }
+
+    private void applyDefaultCleanTexts() {
+        if (tvHubAlertsPreview != null) {
+            tvHubAlertsPreview.setText("All declared varieties are well stocked");
+        }
+        if (tvHubAlertsBadge != null) {
+            tvHubAlertsBadge.setText("0 Alerts");
+            tvHubAlertsBadge.setBackgroundResource(R.drawable.bg_badge_in_stock);
+            tvHubAlertsBadge.setTextColor(ContextCompat.getColor(requireContext(), R.color.badge_in_stock_text));
+        }
+        if (tvHubForecastsPreview != null) {
+            tvHubForecastsPreview.setText("No seasonal shortfalls projected");
+        }
+        if (tvHubForecastsBadge != null) {
+            tvHubForecastsBadge.setText("All Covered");
+            tvHubForecastsBadge.setBackgroundResource(R.drawable.bg_badge_in_stock);
+            tvHubForecastsBadge.setTextColor(ContextCompat.getColor(requireContext(), R.color.badge_in_stock_text));
+        }
+        if (tvHubPayoutsPreview != null) {
+            tvHubPayoutsPreview.setText("No settled payouts recorded yet");
+        }
+        if (tvHubPayoutsBadge != null) {
+            tvHubPayoutsBadge.setText("Rs. 0");
+            tvHubPayoutsBadge.setBackgroundResource(R.drawable.bg_badge_in_stock);
+            tvHubPayoutsBadge.setTextColor(ContextCompat.getColor(requireContext(), R.color.badge_in_stock_text));
+        }
     }
 
     private void bindLowStockHubCard(List<SupplierDemandResponse.LowStockAlertDto> alerts) {
@@ -125,7 +177,7 @@ public class SupplierDemandFragment extends Fragment {
 
         if (tvHubAlertsPreview != null) {
             if (count == 0) {
-                tvHubAlertsPreview.setText("All harvest varieties healthy above reorder levels");
+                tvHubAlertsPreview.setText("All declared varieties are well stocked");
             } else {
                 StringBuilder preview = new StringBuilder();
                 int limit = Math.min(2, count);
@@ -164,7 +216,7 @@ public class SupplierDemandFragment extends Fragment {
         }
 
         if (tvHubForecastsPreview != null) {
-            if (!sorted.isEmpty()) {
+            if (shortfalls > 0) {
                 StringBuilder preview = new StringBuilder("Top demand: ");
                 int limit = Math.min(2, sorted.size());
                 for (int i = 0; i < limit; i++) {
@@ -173,17 +225,17 @@ public class SupplierDemandFragment extends Fragment {
                     preview.append(f.getFlowerName()).append(" (").append(f.getPredictedDemand()).append(" stems)");
                 }
                 tvHubForecastsPreview.setText(preview.toString());
-            } else if (topDemanded != null && !topDemanded.isEmpty()) {
-                StringBuilder preview = new StringBuilder("Top demand: ");
-                int limit = Math.min(2, topDemanded.size());
+            } else if (!sorted.isEmpty()) {
+                StringBuilder preview = new StringBuilder("All varieties covered: ");
+                int limit = Math.min(2, sorted.size());
                 for (int i = 0; i < limit; i++) {
-                    SupplierDemandResponse.TopDemandedDto t = topDemanded.get(i);
+                    DemandForecastDto f = sorted.get(i);
                     if (i > 0) preview.append(" • ");
-                    preview.append(t.getFlowerName()).append(" (").append(t.getTotalOrderedStems()).append(" stems)");
+                    preview.append(f.getFlowerName()).append(" (").append(f.getCurrentStock()).append(" in stock)");
                 }
                 tvHubForecastsPreview.setText(preview.toString());
             } else {
-                tvHubForecastsPreview.setText("No seasonal demand forecasts available yet");
+                tvHubForecastsPreview.setText("No seasonal shortfalls projected");
             }
         }
     }
@@ -195,13 +247,93 @@ public class SupplierDemandFragment extends Fragment {
         }
         if (tvHubPayoutsPreview != null) {
             if (payments == null || payments.isEmpty()) {
-                tvHubPayoutsPreview.setText("No completed settlements recorded yet");
+                tvHubPayoutsPreview.setText("No settled payouts recorded yet");
             } else {
                 SupplierDemandResponse.CompletedPaymentDto latest = payments.get(0);
                 String code = latest.getOrderCode();
                 if (!code.startsWith("#")) code = "#" + code;
-                tvHubPayoutsPreview.setText("Latest: " + code + " (" + latest.getAmountFormatted() + ") • Paid ✓");
+                tvHubPayoutsPreview.setText("Latest: " + code + " (" + latest.getAmountFormatted() + ") • Paid");
             }
         }
+    }
+
+    private void showLowStockDialog(List<SupplierDemandResponse.LowStockAlertDto> alerts) {
+        if (getContext() == null) return;
+        StringBuilder sb = new StringBuilder();
+        if (alerts == null || alerts.isEmpty()) {
+            sb.append("All declared varieties are well stocked above reorder thresholds.");
+        } else {
+            sb.append("Itemized Stock Alert Varieties:\n\n");
+            for (int i = 0; i < alerts.size(); i++) {
+                SupplierDemandResponse.LowStockAlertDto a = alerts.get(i);
+                sb.append(i + 1).append(". ").append(a.getFlowerName()).append("\n")
+                  .append("   • Current Stock: ").append(a.getStockQuantity()).append(" stems\n")
+                  .append("   • Reorder Threshold: ").append(a.getReorderLevel()).append(" stems\n")
+                  .append("   • Status: ").append(a.getAlertLabel()).append("\n\n");
+            }
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Low Stock & Replenishment Alerts")
+                .setMessage(sb.toString().trim())
+                .setPositiveButton("Open Inventory", (dialog, which) -> {
+                    startActivity(new Intent(requireContext(), SupplierLowStockActivity.class));
+                })
+                .setNegativeButton("Close", null)
+                .show();
+    }
+
+    private void showForecastsDialog(List<DemandForecastDto> forecasts) {
+        if (getContext() == null) return;
+        StringBuilder sb = new StringBuilder();
+        if (forecasts == null || forecasts.isEmpty()) {
+            sb.append("No seasonal shortfalls projected for the next 30 days.");
+        } else {
+            sb.append("30-Day Demand Projection vs Inventory:\n\n");
+            for (int i = 0; i < forecasts.size(); i++) {
+                DemandForecastDto f = forecasts.get(i);
+                int shortfall = Math.max(0, f.getPredictedDemand() - f.getCurrentStock());
+                sb.append(i + 1).append(". ").append(f.getFlowerName()).append(" (").append(f.getSeasonEvent()).append(")\n")
+                  .append("   • Projected Demand: ").append(f.getPredictedDemand()).append(" stems\n")
+                  .append("   • Current Stock: ").append(f.getCurrentStock()).append(" stems\n")
+                  .append("   • Status: ").append(shortfall > 0 ? ("⚠ Shortfall of " + shortfall + " stems") : "✓ Fully Covered").append("\n\n");
+            }
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Seasonal Demand Forecasts")
+                .setMessage(sb.toString().trim())
+                .setPositiveButton("View Demand Hub", (dialog, which) -> {
+                    startActivity(new Intent(requireContext(), SupplierForecastsActivity.class));
+                })
+                .setNegativeButton("Close", null)
+                .show();
+    }
+
+    private void showPayoutsDialog(List<SupplierDemandResponse.CompletedPaymentDto> payments, String totalFormatted) {
+        if (getContext() == null) return;
+        StringBuilder sb = new StringBuilder();
+        if (payments == null || payments.isEmpty()) {
+            sb.append("No settled payouts recorded in ledger yet.");
+        } else {
+            sb.append("Total Settled: ").append(totalFormatted).append("\n\n")
+              .append("Itemized Settled Orders:\n\n");
+            for (int i = 0; i < payments.size(); i++) {
+                SupplierDemandResponse.CompletedPaymentDto p = payments.get(i);
+                sb.append(i + 1).append(". ").append(p.getOrderCode()).append(" — ").append(p.getAmountFormatted()).append("\n")
+                  .append("   • Method: ").append(p.getPaymentMethod()).append("\n")
+                  .append("   • Date: ").append(p.getPaymentDate()).append("\n")
+                  .append("   • Status: ").append(p.getStatus()).append("\n\n");
+            }
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Completed Orders & Payouts")
+                .setMessage(sb.toString().trim())
+                .setPositiveButton("View Full Ledger", (dialog, which) -> {
+                    startActivity(new Intent(requireContext(), SupplierPayoutsActivity.class));
+                })
+                .setNegativeButton("Close", null)
+                .show();
     }
 }

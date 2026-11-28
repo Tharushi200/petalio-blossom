@@ -30,7 +30,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * WishlistActivity: Live wishlist screen synced 100% with GET /api/flowers from MySQL.
+ * WishlistActivity: Live wishlist screen synced 100% with GET /api/flowers from
+ * MySQL.
  */
 public class WishlistActivity extends AppCompatActivity {
 
@@ -79,9 +80,11 @@ public class WishlistActivity extends AppCompatActivity {
 
     private void loadLiveWishlist() {
         int customerId = PetalioUserPrefs.getCustomerId(this);
-        if (customerId <= 0) customerId = PetalioUserPrefs.getUserId(this);
+        if (customerId <= 0)
+            customerId = PetalioUserPrefs.getUserId(this);
         if (customerId <= 0) {
-            if (pbWishlistLoading != null) pbWishlistLoading.setVisibility(View.GONE);
+            if (pbWishlistLoading != null)
+                pbWishlistLoading.setVisibility(View.GONE);
             savedFlowers.clear();
             updateEmptyState();
             return;
@@ -90,51 +93,70 @@ public class WishlistActivity extends AppCompatActivity {
             pbWishlistLoading.setVisibility(View.VISIBLE);
         }
 
-        ApiClient.getApiService(getApplicationContext())
-                .getFlowers()
-                .enqueue(new Callback<FlowersResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<FlowersResponse> call, @NonNull Response<FlowersResponse> response) {
-                        if (isFinishing() || isDestroyed()) return;
-                        if (pbWishlistLoading != null) pbWishlistLoading.setVisibility(View.GONE);
+        WishlistManager.syncWithServer(this, () -> {
+            if (isFinishing() || isDestroyed())
+                return;
+            ApiClient.getApiService(getApplicationContext())
+                    .getFlowers()
+                    .enqueue(new Callback<FlowersResponse>() {
+                        @Override
+                        public void onResponse(@NonNull Call<FlowersResponse> call,
+                                @NonNull Response<FlowersResponse> response) {
+                            if (isFinishing() || isDestroyed())
+                                return;
+                            if (pbWishlistLoading != null)
+                                pbWishlistLoading.setVisibility(View.GONE);
 
-                        savedFlowers.clear();
-                        if (response.isSuccessful() && response.body() != null && response.body().getFlowers() != null) {
-                            for (FlowerDto dto : response.body().getFlowers()) {
-                                if (WishlistManager.isFavorite(WishlistActivity.this, dto.getName())) {
-                                    savedFlowers.add(dto);
+                            savedFlowers.clear();
+                            if (response.isSuccessful() && response.body() != null
+                                    && response.body().getFlowers() != null) {
+                                for (FlowerDto dto : response.body().getFlowers()) {
+                                    if (WishlistManager.isFavorite(WishlistActivity.this, dto.getName())) {
+                                        savedFlowers.add(dto);
+                                    }
                                 }
                             }
+                            updateEmptyState();
                         }
-                        updateEmptyState();
-                    }
 
-                    @Override
-                    public void onFailure(@NonNull Call<FlowersResponse> call, @NonNull Throwable t) {
-                        if (isFinishing() || isDestroyed()) return;
-                        if (pbWishlistLoading != null) pbWishlistLoading.setVisibility(View.GONE);
-                        updateEmptyState();
-                        Toast.makeText(WishlistActivity.this, "Unable to sync wishlist from server.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        @Override
+                        public void onFailure(@NonNull Call<FlowersResponse> call, @NonNull Throwable t) {
+                            if (isFinishing() || isDestroyed())
+                                return;
+                            if (pbWishlistLoading != null)
+                                pbWishlistLoading.setVisibility(View.GONE);
+                            updateEmptyState();
+                            Toast.makeText(WishlistActivity.this, "Unable to sync wishlist from server.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
     }
 
     private void updateEmptyState() {
         int count = savedFlowers.size();
         if (count == 0) {
-            if (layoutWishlistEmpty != null) layoutWishlistEmpty.setVisibility(View.VISIBLE);
-            if (rvWishlist != null) rvWishlist.setVisibility(View.GONE);
-            if (bottomWishlistBar != null) bottomWishlistBar.setVisibility(View.GONE);
-            if (tvWishlistCount != null) tvWishlistCount.setText("0 items saved");
+            if (layoutWishlistEmpty != null)
+                layoutWishlistEmpty.setVisibility(View.VISIBLE);
+            if (rvWishlist != null)
+                rvWishlist.setVisibility(View.GONE);
+            if (bottomWishlistBar != null)
+                bottomWishlistBar.setVisibility(View.GONE);
+            if (tvWishlistCount != null)
+                tvWishlistCount.setText("0 items saved");
         } else {
-            if (layoutWishlistEmpty != null) layoutWishlistEmpty.setVisibility(View.GONE);
-            if (rvWishlist != null) rvWishlist.setVisibility(View.VISIBLE);
-            if (bottomWishlistBar != null) bottomWishlistBar.setVisibility(View.VISIBLE);
+            if (layoutWishlistEmpty != null)
+                layoutWishlistEmpty.setVisibility(View.GONE);
+            if (rvWishlist != null)
+                rvWishlist.setVisibility(View.VISIBLE);
+            if (bottomWishlistBar != null)
+                bottomWishlistBar.setVisibility(View.VISIBLE);
             if (tvWishlistCount != null) {
                 tvWishlistCount.setText(count + (count == 1 ? " flower saved" : " flowers saved"));
             }
         }
-        if (adapter != null) adapter.notifyDataSetChanged();
+        if (adapter != null)
+            adapter.notifyDataSetChanged();
     }
 
     private void setupListeners() {
@@ -149,7 +171,8 @@ public class WishlistActivity extends AppCompatActivity {
         });
 
         btnAddAllWishlistToCart.setOnClickListener(v -> {
-            if (savedFlowers.isEmpty()) return;
+            if (savedFlowers.isEmpty())
+                return;
             for (FlowerDto dto : savedFlowers) {
                 CartManager.getInstance(this).addItem(new CartManager.CartItem(
                         dto.getFlowerId(),
@@ -158,8 +181,7 @@ public class WishlistActivity extends AppCompatActivity {
                         (int) Math.round(dto.getUnitPrice()),
                         1,
                         dto.getName().toLowerCase().replace(" ", "_"),
-                        dto.getStockQuantity()
-                ));
+                        dto.getStockQuantity()));
             }
             Toast.makeText(this, "All wishlist flowers added to your Cart!", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(WishlistActivity.this, CustomerMainActivity.class);
@@ -215,7 +237,8 @@ public class WishlistActivity extends AppCompatActivity {
                 WishlistManager.setFavorite(WishlistActivity.this, dto.getName(), false);
                 savedFlowers.remove(position);
                 updateEmptyState();
-                Toast.makeText(WishlistActivity.this, dto.getName() + " removed from your Wishlist", Toast.LENGTH_SHORT).show();
+                Toast.makeText(WishlistActivity.this, dto.getName() + " removed from your Wishlist", Toast.LENGTH_SHORT)
+                        .show();
             });
 
             holder.btnAddToCart.setOnClickListener(v -> {
@@ -226,9 +249,9 @@ public class WishlistActivity extends AppCompatActivity {
                         unitPrice,
                         1,
                         dto.getName().toLowerCase().replace(" ", "_"),
-                        dto.getStockQuantity()
-                ));
-                Toast.makeText(WishlistActivity.this, dto.getName() + " added to your Cart!", Toast.LENGTH_SHORT).show();
+                        dto.getStockQuantity()));
+                Toast.makeText(WishlistActivity.this, dto.getName() + " added to your Cart!", Toast.LENGTH_SHORT)
+                        .show();
             });
         }
 

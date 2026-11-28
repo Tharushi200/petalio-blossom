@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Petalio Blossom Luxury Floriculture Aesthetic -->
+    <!-- Primary Brand Colors: Deep Berry Maroon & Rose-Burgundy -->
+    <color name="primary_brand">#9E1946</color>
+    <color name="primary_brand_dark">#7A1135</color>
+    <color name="primary_forest">#9E1946</color>
+    <color name="primary_forest_dark">#7A1135</color>
+    <color name="petalio_burgundy">#8B1E3F</color>
+    <color name="petalio_rose_accent">#C23B63</color>
+
+    <!-- Soft Blush Tints -->
+    <color name="blush_tint_light">#FDF2F5</color>
+    <color name="blush_tint_pill">#FCE7ED</color>
+    <color name="accent_blossom_soft">#FDF2F5</color>
+    <color name="accent_blossom_pink">#9E1946</color>
+    <color name="accent_blossom_pink_light">#FDF2F5</color>
+
+    <!-- Status & Badges: Emerald Accent (#15803D) -->
+    <color name="emerald_accent">#15803D</color>
+    <color name="accent_leaf_green">#15803D</color>
+    <color name="badge_in_stock_bg">#DCFCE7</color>
+    <color name="badge_in_stock_text">#15803D</color>
+    <color name="badge_dispatched_bg">#FCE7ED</color>
+    <color name="badge_dispatched_text">#9E1946</color>
+
+    <!-- Backgrounds & Card Surfaces -->
+    <color name="bg_botanical_light">#FAF7F6</color>
+    <color name="card_surface">#FFFFFF</color>
+    <color name="card_flower_thumb">#FCE7ED</color>
+    <color name="card_orchid_thumb">#FDF2F5</color>
+    <color name="card_anthurium_thumb">#FCE7ED</color>
+    <color name="card_lily_thumb">#FFF7ED</color>
+
+    <!-- Borders & Dividers (Rose-Tinted) -->
+    <color name="border_subtle">#F0DCE2</color>
+    <color name="border_prominent">#E2CBD2</color>
+    <color name="chip_border">#E2CBD2</color>
+    <color name="divider_color">#F0DCE2</color>
+    <color name="input_bg">#FFFFFF</color>
+    <color name="input_background">#FFFFFF</color>
+
+    <!-- Chips & Navigation -->
+    <color name="chip_bg_unselected">#FFFFFF</color>
+    <color name="chip_bg_selected">#9E1946</color>
+
+    <!-- Supplier ID Badge -->
+    <color name="supplier_id_bg">#FDF2F5</color>
+    <color name="supplier_id_text">#9E1946</color>
+    <color name="supplier_id_border">#F0DCE2</color>
+
+    <!-- Loyalty & Warm Accents -->
+    <color name="gold_loyalty">#B45309</color>
+    <color name="gold_loyalty_light">#FEF3C7</color>
+
+    <!-- Typography -->
+    <color name="text_primary">#1E191B</color>
+    <color name="text_secondary">#6E6266</color>
+    <color name="text_hint">#A89DA1</color>
+    <color name="text_white">#FFFFFF</color>
+    <color name="star_active">#9E1946</color>
+    <color name="star_inactive">#E2CBD2</color>
+    <color name="error_red">#DC2626</color>
+</resources>

@@ -129,7 +129,7 @@
                         android:paddingTop="5dp"
                         android:paddingEnd="10dp"
                         android:paddingBottom="5dp"
-                        android:text="Settled ✓"
+                        android:text="Settled"
                         android:textColor="@color/badge_in_stock_text"
                         android:textSize="12sp"
                         android:textStyle="bold" />

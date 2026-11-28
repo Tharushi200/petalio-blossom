@@ -165,7 +165,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.03"
-                        android:text="✓ Cold-Chain Freshness  |  ✓ Same-Day Luxury Delivery"
+                        android:text="Cold-Chain Freshness  •  Same-Day Luxury Delivery"
                         android:textColor="@color/primary_brand"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -235,7 +235,7 @@
                         android:paddingTop="5dp"
                         android:paddingEnd="12dp"
                         android:paddingBottom="5dp"
-                        android:text="✓ In Stock &amp; Fresh"
+                        android:text="In Stock &amp; Fresh"
                         android:textColor="@color/badge_in_stock_text"
                         android:textSize="12sp"
                         android:textStyle="bold" />
@@ -472,14 +472,80 @@
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:lineSpacingExtra="3dp"
-                            android:text="🔒 256-Bit SSL Encrypted Safe Checkout\n🌸 7-Day Bloom Longevity &amp; Luxury Freshness Guarantee\n🚚 Temperature-Controlled Cold-Chain Courier Delivery"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
+                            android:layout_marginTop="10dp"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_security"
+                                    app:tint="@color/petalio_burgundy" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_weight="1"
+                                    android:text="256-Bit SSL Encrypted Safe Checkout"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_flower_petal"
+                                    app:tint="@color/petalio_burgundy" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_weight="1"
+                                    android:text="7-Day Bloom Longevity &amp; Luxury Freshness Guarantee"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_truck"
+                                    app:tint="@color/petalio_burgundy" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_weight="1"
+                                    android:text="Temperature-Controlled Cold-Chain Courier Delivery"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+                        </LinearLayout>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 

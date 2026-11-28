@@ -114,9 +114,13 @@
             android:name=".HarvestFulfilmentActivity"
             android:exported="false" />
 
-        <!-- D4: Supplier Notifications -->
+        <!-- D4: Supplier Notifications / Estate Alerts -->
         <activity
             android:name=".SupplierNotificationsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".NotificationsActivity"
             android:exported="false" />
 
         <!-- D5-D7: Demand & Payments Dedicated Sub-Screens -->

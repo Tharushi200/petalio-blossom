@@ -176,7 +176,7 @@ public class FlowerDetailActivity extends AppCompatActivity {
         // Populate compact above-the-fold review highlight banner with latest review
         if (cardReviewHighlight != null && tvReviewHighlightText != null) {
             FlowerReviewDto latest = reviews.get(0);
-            String ratingPrefix = "★ " + String.format(Locale.US, "%.1f", (double) latest.getRating());
+            String ratingPrefix = String.format(Locale.US, "%.1f", (double) latest.getRating());
             String commentSnippet = latest.getComment();
             String bannerText = !commentSnippet.isEmpty()
                     ? (ratingPrefix + " \"" + commentSnippet + "\" — " + latest.getReviewerName())
@@ -290,7 +290,8 @@ public class FlowerDetailActivity extends AppCompatActivity {
             quantity = 1;
             if (btnAddToCartDetail != null) {
                 btnAddToCartDetail.setEnabled(false);
-                btnAddToCartDetail.setAlpha(0.55f);
+                btnAddToCartDetail.setAlpha(0.5f);
+                btnAddToCartDetail.setText("Out of Stock");
             }
         } else {
             tvDetailAvailable.setText(availableStock + " stems available");
@@ -308,7 +309,7 @@ public class FlowerDetailActivity extends AppCompatActivity {
             String soldText = sold > 0 ? (sold + " stems sold") : "Fresh Highland Harvest";
             if (reviews > 0 && rating > 0) {
                 String reviewLabel = reviews == 1 ? "1 review" : (reviews + " reviews");
-                tvDetailRatingSocial.setText("★ " + String.format(Locale.US, "%.1f", rating) + " (" + reviewLabel + ") ›  •  " + soldText);
+                tvDetailRatingSocial.setText(String.format(Locale.US, "%.1f", rating) + " (" + reviewLabel + ") ›  •  " + soldText);
             } else {
                 tvDetailRatingSocial.setText("No reviews yet  •  " + soldText);
             }
@@ -331,10 +332,35 @@ public class FlowerDetailActivity extends AppCompatActivity {
         int total = quantity * unitPrice;
         if (btnAddToCartDetail != null) {
             if (availableStock <= 0) {
+                btnAddToCartDetail.setEnabled(false);
+                btnAddToCartDetail.setAlpha(0.5f);
                 btnAddToCartDetail.setText("Out of Stock");
             } else {
+                btnAddToCartDetail.setEnabled(true);
+                btnAddToCartDetail.setAlpha(1f);
                 btnAddToCartDetail.setText("Add to Cart  •  Rs. " + total);
             }
+        }
+
+        // Stepper '+' button disabled at stock limit
+        boolean canIncrement = availableStock > 0 && quantity < availableStock;
+        if (btnQtyPlus != null) {
+            btnQtyPlus.setEnabled(canIncrement);
+            btnQtyPlus.setAlpha(canIncrement ? 1.0f : 0.4f);
+        }
+        if (btnQtyPlusBottom != null) {
+            btnQtyPlusBottom.setEnabled(canIncrement);
+            btnQtyPlusBottom.setAlpha(canIncrement ? 1.0f : 0.4f);
+        }
+
+        boolean canDecrement = quantity > 1 && availableStock > 0;
+        if (btnQtyMinus != null) {
+            btnQtyMinus.setEnabled(canDecrement);
+            btnQtyMinus.setAlpha(canDecrement ? 1.0f : 0.4f);
+        }
+        if (btnQtyMinusBottom != null) {
+            btnQtyMinusBottom.setEnabled(canDecrement);
+            btnQtyMinusBottom.setAlpha(canDecrement ? 1.0f : 0.4f);
         }
     }
 
@@ -452,9 +478,9 @@ public class FlowerDetailActivity extends AppCompatActivity {
             if (alreadyInCart + quantity > availableStock) {
                 int remaining = Math.max(0, availableStock - alreadyInCart);
                 String msg = remaining == 0
-                        ? ("All " + availableStock + " available stems of " + flowerName + " are already in your cart.")
-                        : ("Only " + remaining + " more stem" + (remaining == 1 ? "" : "s") + " available to add (" + availableStock + " in stock).");
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                        ? "Stock limit reached"
+                        : ("Stock limit reached (Only " + remaining + " more stem" + (remaining == 1 ? "" : "s") + " available)");
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 return;
             }
             int total = quantity * unitPrice;
@@ -476,13 +502,18 @@ public class FlowerDetailActivity extends AppCompatActivity {
     private void incrementQuantityWithinStock() {
         if (availableStock <= 0) {
             Toast.makeText(this, flowerName + " is currently out of stock.", Toast.LENGTH_SHORT).show();
+            updateQuantityDisplay();
             return;
         }
         if (quantity < availableStock) {
             quantity++;
             updateQuantityDisplay();
+            if (quantity >= availableStock) {
+                Toast.makeText(this, "Stock limit reached", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(this, "Maximum available stock reached (" + availableStock + " stems)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Stock limit reached", Toast.LENGTH_SHORT).show();
+            updateQuantityDisplay();
         }
     }
 }

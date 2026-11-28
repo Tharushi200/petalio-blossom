@@ -224,14 +224,26 @@ public class CartFragment extends Fragment {
                 });
 
                 // Stepper "+" button with live stock cap
+                final int maxStock = item.getMaxStock();
+                final int currentQty = item.getQuantity();
+                boolean canAddMore = maxStock <= 0 || currentQty < maxStock;
+                btnCartItemPlus.setEnabled(canAddMore);
+                btnCartItemPlus.setAlpha(canAddMore ? 1.0f : 0.4f);
+
                 btnCartItemPlus.setOnClickListener(v -> {
-                    int newQty = item.getQuantity() + 1;
-                    int maxStock = item.getMaxStock();
-                    if (maxStock > 0 && newQty > maxStock) {
-                        Toast.makeText(getContext(), "Only " + maxStock + " stems available for " + item.getName(), Toast.LENGTH_SHORT).show();
+                    int latestQty = item.getQuantity();
+                    int cap = item.getMaxStock();
+                    if (cap > 0 && latestQty >= cap) {
+                        btnCartItemPlus.setEnabled(false);
+                        btnCartItemPlus.setAlpha(0.4f);
+                        Toast.makeText(getContext(), "Stock limit reached", Toast.LENGTH_SHORT).show();
                         return;
                     }
+                    int newQty = latestQty + 1;
                     CartManager.getInstance(getContext()).updateQuantity(item.getFlowerId(), newQty);
+                    if (cap > 0 && newQty >= cap) {
+                        Toast.makeText(getContext(), "Stock limit reached", Toast.LENGTH_SHORT).show();
+                    }
                     renderCart();
                 });
 

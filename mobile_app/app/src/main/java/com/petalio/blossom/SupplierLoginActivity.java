@@ -207,7 +207,7 @@ public class SupplierLoginActivity extends AppCompatActivity {
                                 if (isFinishing() || isDestroyed()) return;
                                 btnSubmit.setEnabled(true);
                                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                                    Toast.makeText(SupplierLoginActivity.this, "✓ " + response.body().getMessage(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(SupplierLoginActivity.this, "" + response.body().getMessage(), Toast.LENGTH_LONG).show();
                                     if (etSupplierLoginEmail != null) etSupplierLoginEmail.setText(email);
                                     if (etSupplierLoginPassword != null) etSupplierLoginPassword.setText(newPass);
                                     dialog.dismiss();
@@ -233,8 +233,18 @@ public class SupplierLoginActivity extends AppCompatActivity {
 
     private void saveSupplierSession(UserDto user) {
         if (user == null) return;
-        CartManager.getInstance(this).clearCart();
+        int prevUserId = PetalioUserPrefs.getUserId(this);
+        String prevRole = PetalioUserPrefs.getUserRole(this);
+
+        // Session isolation: Purge previous user state on switch
+        if (prevUserId > 0 && (prevUserId != user.getUserId() || !"SUPPLIER".equalsIgnoreCase(prevRole))) {
+            PetalioUserPrefs.clear(this);
+        } else {
+            CartManager.getInstance(this).clearCart();
+        }
+
         int supId = user.getSupplierId() != null ? user.getSupplierId() : user.getUserId();
+        boolean approved = user.isApproved();
         PetalioUserPrefs.saveSupplierInfo(
                 this,
                 supId,
@@ -246,7 +256,8 @@ public class SupplierLoginActivity extends AppCompatActivity {
                 user.getCity(),
                 user.getAddress(),
                 user.getMonthlyCapacity() != null ? user.getMonthlyCapacity() : 0,
-                user.isApproved()
+                approved
         );
+        PetalioUserPrefs.setApprovalStatus(this, approved ? "APPROVED" : "PENDING");
     }
 }

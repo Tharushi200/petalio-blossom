@@ -4,6 +4,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -19,6 +20,9 @@ public interface ApiService {
     // 1. Auth & Profile Endpoints
     @POST("auth/login")
     Call<LoginResponse> login(@Body LoginRequest request);
+
+    @POST("auth/register")
+    Call<CommonResponse> registerGeneric(@Body CustomerRegisterRequest request);
 
     @POST("auth/register-customer")
     Call<CommonResponse> registerCustomer(@Body CustomerRegisterRequest request);
@@ -63,6 +67,16 @@ public interface ApiService {
     @GET("flowers")
     Call<FlowersResponse> getFlowers();
 
+    @GET("categories")
+    Call<CategoriesResponse> getCategories();
+
+    @Headers("Cache-Control: no-cache, no-store")
+    @GET("wishlist")
+    Call<WishlistResponse> getWishlist(@Query("user_id") int userId);
+
+    @POST("wishlist")
+    Call<CommonResponse> toggleWishlist(@Body WishlistRequest request);
+
     @GET("flowers")
     Call<FlowersResponse> getSupplierFlowers(@Query("supplier_id") int supplierId);
 
@@ -90,6 +104,15 @@ public interface ApiService {
     @POST("supplier/stock-update")
     Call<CommonResponse> updateSupplierStock(@Body StockUpdateRequest request);
 
+    @Headers("Cache-Control: no-cache, no-store")
+    @GET("suppliers/status")
+    Call<SupplierStatusResponse> getSupplierStatusQuery(
+            @Query("supplier_code") String supplierCode,
+            @Query("user_id") String userId,
+            @Query("email") String email
+    );
+
+    @Headers("Cache-Control: no-cache, no-store")
     @GET("supplier/status/{id}")
     Call<SupplierStatusResponse> getSupplierStatus(@Path("id") String id);
 
@@ -138,8 +161,14 @@ public interface ApiService {
     @GET("suppliers/demand")
     Call<SupplierDemandResponse> getSupplierDemand(@Query("supplier_id") int supplierId);
 
+    @GET("suppliers/demand-summary")
+    Call<SupplierDemandResponse> getSupplierDemandSummary(@Query("supplier_id") int supplierId);
+
     @GET("suppliers/{supplierId}/notifications")
     Call<SupplierNotificationsResponse> getSupplierNotifications(@Path("supplierId") int supplierId);
+
+    @GET("notifications")
+    Call<SupplierNotificationsResponse> getEstateAlerts(@Query("user_id") int userId, @Query("role") String role);
 
     @POST("supplier/harvest-fulfilment")
     Call<CommonResponse> submitHarvestFulfilment(@Body HarvestFulfilmentRequest request);

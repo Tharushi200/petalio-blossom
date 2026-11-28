@@ -217,7 +217,11 @@ public class CartManager {
         }
         for (CartItem item : items) {
             if (item.getFlowerId() == flowerId) {
-                item.setQuantity(quantity);
+                int capped = quantity;
+                if (item.getMaxStock() > 0 && capped > item.getMaxStock()) {
+                    capped = item.getMaxStock();
+                }
+                item.setQuantity(capped);
                 break;
             }
         }

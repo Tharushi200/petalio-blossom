@@ -500,46 +500,6 @@
                     android:layout_height="1dp"
                     android:background="@color/divider_color" />
 
-                <!-- Row 2: Payment Methods -->
-                <LinearLayout
-                    android:id="@+id/rowPaymentMethods"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="18dp">
-
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:src="@drawable/ic_credit_card" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:layout_weight="1"
-                        android:text="Payment Methods &amp; Cards"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="›"
-                        android:textColor="@color/text_hint"
-                        android:textSize="20sp" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider_color" />
-
                 <!-- Row 3: Wishlist / Favourites -->
                 <LinearLayout
                     android:id="@+id/rowFavourites"

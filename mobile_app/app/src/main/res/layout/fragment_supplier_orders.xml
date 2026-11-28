@@ -140,7 +140,7 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:overScrollMode="ifContentScrolls"
-        android:paddingBottom="24dp"
+        android:paddingBottom="96dp"
         android:scrollbars="none" />
 
 </LinearLayout>

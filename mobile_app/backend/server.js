@@ -77,6 +77,30 @@ async function initDatabaseTables() {
       await pool.query('ALTER TABLE supplier_flowers ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     } catch (_) {}
 
+    // Ensure notifications table exists with all required columns: (id, user_id, role, title, message, type, is_read, created_at)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
+        role VARCHAR(50) DEFAULT 'ALL',
+        title VARCHAR(255) NOT NULL DEFAULT '',
+        message TEXT NOT NULL,
+        type VARCHAR(50) DEFAULT 'SYSTEM',
+        is_read TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN id INT NULL'); } catch (_) {}
+    try { await pool.query('UPDATE notifications SET id = notification_id WHERE id IS NULL'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN role VARCHAR(50) DEFAULT "ALL"'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN title VARCHAR(255) DEFAULT ""'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN message TEXT NOT NULL'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN type VARCHAR(50) DEFAULT "SYSTEM"'); } catch (_) {}
+    try { await pool.query('ALTER TABLE notifications ADD COLUMN is_read TINYINT(1) DEFAULT 0'); } catch (_) {}
+    try { await pool.query('UPDATE notifications SET is_read = 1 WHERE status = "READ"'); } catch (_) {}
+    try { await pool.query('UPDATE notifications SET title = "Estate Alert" WHERE title IS NULL OR title = ""'); } catch (_) {}
+    console.log('🌸 MySQL table notifications is ready');
+
     try {
       await pool.query('ALTER TABLE orders ADD COLUMN supplier_id INT DEFAULT NULL');
       await pool.query('UPDATE orders SET supplier_id = 3 WHERE supplier_id IS NULL');
@@ -104,6 +128,10 @@ async function initDatabaseTables() {
     }
     try {
       await pool.query('ALTER TABLE flowers ADD COLUMN stock_quantity INT DEFAULT 100');
+    } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE flowers ADD COLUMN stock INT DEFAULT 100');
+      await pool.query('UPDATE flowers SET stock = COALESCE(stock_quantity, 100) WHERE stock IS NULL');
     } catch (_) {}
     try {
       await pool.query('ALTER TABLE supplier_payments ADD COLUMN supplier_id INT DEFAULT NULL');
@@ -169,20 +197,20 @@ async function initDatabaseTables() {
       await pool.query('ALTER TABLE rating_reviews ADD COLUMN customer_id INT DEFAULT NULL');
     } catch (_) {}
     try {
-      await pool.query(
+      await pool.query(`
         UPDATE rating_reviews rr 
         JOIN order_items oi ON rr.order_id = oi.order_id 
         SET rr.flower_id = oi.flower_id 
         WHERE rr.flower_id IS NULL
-      );
+      `);
     } catch (_) {}
     try {
-      await pool.query(
+      await pool.query(`
         UPDATE rating_reviews rr 
         JOIN orders o ON rr.order_id = o.order_id 
         SET rr.customer_id = o.customer_id 
         WHERE rr.customer_id IS NULL
-      );
+      `);
     } catch (_) {}
 
     try {
@@ -201,6 +229,13 @@ async function initDatabaseTables() {
     try {
       await pool.query('ALTER TABLE invoices ADD COLUMN invoice_number VARCHAR(50) DEFAULT NULL');
     } catch (_) {}
+    try {
+      await pool.query('ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_reference VARCHAR(100) NULL');
+    } catch (_) {
+      try {
+        await pool.query('ALTER TABLE payments ADD COLUMN payment_reference VARCHAR(100) NULL');
+      } catch (__) {}
+    }
     try {
       await pool.query('ALTER TABLE deliveries ADD COLUMN destination_address VARCHAR(255) DEFAULT NULL');
     } catch (_) {}
@@ -224,6 +259,21 @@ async function initDatabaseTables() {
       await pool.query("UPDATE deliveries d JOIN orders o ON d.order_id = o.order_id SET d.status = 'DELIVERED' WHERE UPPER(o.status) = 'DELIVERED' AND d.status != 'DELIVERED'");
     } catch (_) {}
 
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS wishlists (
+          wishlist_id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          flower_id INT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY unique_user_flower (user_id, flower_id),
+          INDEX idx_wishlist_user (user_id),
+          INDEX idx_wishlist_flower (flower_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+      `);
+      console.log('🌸 MySQL table wishlists is ready');
+    } catch (_) {}
+
   } catch (err) {
     console.error('Error initializing tables:', err.message);
   }
@@ -244,6 +294,19 @@ const escapeHtml = (val) => String(val || '')
   .replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;');
+
+function isStatusApproved(val) {
+  if (val === 1 || val === '1' || val === true) return true;
+  if (!val) return false;
+  const s = String(val).trim().toUpperCase();
+  return s === 'APPROVED' || s === 'ACTIVE' || s === '1' || s === 'TRUE';
+}
+
+function isStatusRejected(val) {
+  if (!val) return false;
+  const s = String(val).trim().toUpperCase();
+  return s === 'REJECTED' || s === 'DECLINED' || s === 'BLOCKED';
+}
 
 function createSmtpTransporter() {
   const smtpUser = (process.env.SMTP_USER || '').trim();
@@ -654,14 +717,28 @@ app.post('/api/auth/login', async (req, res) => {
         profileDetails = {
           supplier_id: user.user_id,
           supplier_code: `SUP-2026-${String(user.user_id).padStart(4, '0')}`,
-          is_approved: String(user.status || '').toUpperCase() === 'ACTIVE' ? 1 : 0
+          is_approved: isStatusApproved(user.status) ? 1 : 0
         };
       }
-      const isApprNum = Number(profileDetails.is_approved) === 1 ? 1 : 0;
-      profileDetails.is_approved = isApprNum;
-      profileDetails.approval_status = isApprNum === 1
-        ? 'Approved'
-        : (String(user.status || '').toUpperCase() === 'REJECTED' ? 'Rejected' : 'Pending');
+
+      const approved = isStatusApproved(profileDetails.is_approved) || isStatusApproved(user.status);
+      const rejected = isStatusRejected(profileDetails.is_approved) || isStatusRejected(user.status);
+
+      if (approved) {
+        profileDetails.is_approved = 1;
+        profileDetails.approval_status = 'Approved';
+        user.status = 'ACTIVE';
+        pool.query('UPDATE suppliers SET is_approved = 1 WHERE supplier_id = ?', [user.user_id]).catch(() => {});
+        pool.query('UPDATE users SET status = "ACTIVE" WHERE user_id = ?', [user.user_id]).catch(() => {});
+      } else if (rejected) {
+        profileDetails.is_approved = 0;
+        profileDetails.approval_status = 'Rejected';
+        user.status = 'REJECTED';
+      } else {
+        profileDetails.is_approved = 0;
+        profileDetails.approval_status = 'Pending';
+        user.status = 'PENDING';
+      }
     } else {
       const [customerRows] = await pool.query('SELECT * FROM customers WHERE customer_id = ?', [user.user_id]);
       if (customerRows.length > 0) {
@@ -673,13 +750,24 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const { password_hash: _omittedHash, ...safeUser } = user;
+    const cleanUser = {
+      ...safeUser,
+      ...profileDetails,
+      id: user.user_id,
+      user_id: user.user_id,
+      name: user.name || profileDetails.customer_name || profileDetails.supplier_name || '',
+      email: user.email || '',
+      phone: user.phone || profileDetails.contact_number || '',
+      address: profileDetails.address || '',
+      city: profileDetails.city || '',
+      role: user.role || 'CUSTOMER',
+      status: user.status || 'ACTIVE'
+    };
+
     return res.json({
       success: true,
       message: 'Login successful',
-      user: {
-        ...safeUser,
-        ...profileDetails
-      }
+      user: cleanUser
     });
   } catch (error) {
     console.error('Login Error:', error);
@@ -687,9 +775,9 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Customer Registration
-app.post('/api/auth/register-customer', async (req, res) => {
-  const { name, email, password, phone, address, city } = req.body;
+// Helper: Handle Customer Registration
+async function handleRegisterCustomer(req, res) {
+  const { name, email, password, phone, address, city } = req.body || {};
   const userName = (name || '').trim();
   const userEmail = (email || '').trim().toLowerCase();
   const userPhone = (phone || '').trim();
@@ -735,11 +823,16 @@ app.post('/api/auth/register-customer', async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Customer registered successfully',
+      id: userId,
       user_id: userId,
       customer_id: userId,
       role: 'CUSTOMER',
       name: userName,
-      email: userEmail
+      email: userEmail,
+      phone: userPhone,
+      address: userAddress,
+      city: userCity,
+      status: 'ACTIVE'
     });
   } catch (error) {
     try { await conn.rollback(); } catch (_) {}
@@ -751,11 +844,11 @@ app.post('/api/auth/register-customer', async (req, res) => {
   } finally {
     conn.release();
   }
-});
+}
 
-// Supplier Registration
-app.post('/api/auth/register-supplier', async (req, res) => {
-  const { farmName, contactPerson, password, phone, farmLocation, email, supplierId, monthly_capacity } = req.body;
+// Helper: Handle Supplier Registration
+async function handleRegisterSupplier(req, res) {
+  const { farmName, contactPerson, password, phone, farmLocation, email, supplierId, monthly_capacity } = req.body || {};
   const name = (contactPerson || farmName || '').trim();
   const farmTitle = (farmName || name).trim();
   const supplierEmail = (email || '').trim().toLowerCase();
@@ -811,12 +904,20 @@ app.post('/api/auth/register-supplier', async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Supplier registration submitted and awaiting Admin approval.',
+      id: userId,
       user_id: userId,
       supplier_id: assignedCode,
       supplier_code: assignedCode,
       farmName: farmTitle,
+      name: name,
+      email: supplierEmail,
+      phone: supplierPhone,
+      city: location,
+      address: location,
+      role: 'SUPPLIER',
       is_approved: 0,
-      approval_status: 'Pending'
+      approval_status: 'Pending',
+      status: 'PENDING'
     });
   } catch (error) {
     try { await conn.rollback(); } catch (_) {}
@@ -828,7 +929,22 @@ app.post('/api/auth/register-supplier', async (req, res) => {
   } finally {
     conn.release();
   }
+}
+
+// Unified Registration endpoint
+app.post('/api/auth/register', async (req, res) => {
+  const role = String(req.body?.role || '').trim().toUpperCase();
+  if (role === 'SUPPLIER') {
+    return handleRegisterSupplier(req, res);
+  }
+  return handleRegisterCustomer(req, res);
 });
+
+// Customer Registration
+app.post('/api/auth/register-customer', handleRegisterCustomer);
+
+// Supplier Registration
+app.post('/api/auth/register-supplier', handleRegisterSupplier);
 
 // Forgot Password (Generate 32-byte token, 15m expiry, send Nodemailer reset email or console fallback)
 app.post('/api/auth/forgot-password', async (req, res) => {
@@ -1045,7 +1161,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 });
 
 // Get User Profile & Real Stats (Orders count, Total spend, Points)
-app.get('/api/users/:userId/profile', async (req, res) => {
+app.get(['/api/users/:userId/profile', '/api/users/:userId', '/api/customers/:userId/profile', '/api/customers/:userId'], async (req, res) => {
   const userId = parseInt(req.params.userId, 10);
   if (isNaN(userId)) {
     return res.status(400).json({ success: false, message: 'Invalid user ID' });
@@ -1336,7 +1452,7 @@ app.post(['/api/customers/:customerId/redeem-points', '/api/users/:customerId/re
 });
 
 // Update User Profile
-app.put('/api/users/:userId/profile', async (req, res) => {
+app.put(['/api/users/:userId/profile', '/api/users/:userId', '/api/customers/:userId/profile', '/api/customers/:userId'], async (req, res) => {
   const userId = parseInt(req.params.userId, 10);
   const { name, phone, address, city } = req.body;
 
@@ -1651,7 +1767,7 @@ const getSupplierNotificationsFeed = async (rawSupplierId) => {
         COALESCE(pay.payment_date, inv.issue_date, o.order_date) AS payment_date
       FROM orders o
       LEFT JOIN (
-        SELECT order_id, MAX(invoice_id) AS invoice_id, MAX(total_amount) AS total_amount, MAX(issue_date) AS issue_date
+        SELECT order_id, MAX(invoice_id) AS invoice_id, MAX(total_amount) AS total_amount, MAX(COALESCE(date, created_at)) AS issue_date
         FROM invoices
         GROUP BY order_id
       ) inv ON o.order_id = inv.order_id
@@ -1710,73 +1826,157 @@ const getSupplierNotificationsFeed = async (rawSupplierId) => {
   return notifications;
 };
 
-// Dedicated Supplier Notifications endpoint
-app.get(['/api/suppliers/:supplierId/notifications', '/api/supplier/notifications/:supplierId', '/api/notifications'], async (req, res) => {
+// Dedicated and Unified Notifications endpoint
+// Supports GET /api/notifications, GET /api/notifications/:userId,
+// GET /api/suppliers/:supplierId/notifications, GET /api/supplier/notifications/:supplierId
+app.get([
+  '/api/notifications',
+  '/api/notifications/:userId',
+  '/api/suppliers/:supplierId/notifications',
+  '/api/supplier/notifications/:supplierId'
+], async (req, res) => {
   try {
-    const supplierId = req.params.supplierId || req.query.supplierId || req.query.userId || 0;
-    const notifications = await getSupplierNotificationsFeed(supplierId);
+    const rawUserId = req.query.user_id || req.query.userId || req.params.userId;
+    const rawSupplierId = req.params.supplierId || req.query.supplier_id || req.query.supplierId;
+    const rawRole = (req.query.role || '').toUpperCase().trim();
+
+    const userId = rawUserId ? parseInt(rawUserId, 10) : null;
+    let supplierId = rawSupplierId ? await resolveSupplierIdFlexible(rawSupplierId) : null;
+
+    let userRole = rawRole;
+    if (!userRole && userId && !isNaN(userId) && userId > 0) {
+      try {
+        const [uRows] = await pool.query('SELECT role FROM users WHERE user_id = ? LIMIT 1', [userId]);
+        if (uRows.length > 0) userRole = String(uRows[0].role || '').toUpperCase();
+      } catch (_) {}
+    }
+
+    if (!supplierId && (userRole === 'SUPPLIER' || (!userRole && userId))) {
+      const resolvedSid = await resolveSupplierIdFlexible(userId);
+      if (resolvedSid && resolvedSid > 0) {
+        supplierId = resolvedSid;
+        userRole = 'SUPPLIER';
+      }
+    }
+
+    const notifications = [];
+    const seenIds = new Set();
+
+    // 1. Check MySQL notifications table
+    let tableQuery = 'SELECT id, notification_id, order_id, user_id, role, title, message, type, is_read, status, created_at FROM notifications';
+    const queryConds = [];
+    const queryParams = [];
+
+    if (userId && !isNaN(userId) && userId > 0) {
+      if (userRole) {
+        queryConds.push('(user_id = ? OR role = ? OR role = "ALL" OR role IS NULL)');
+        queryParams.push(userId, userRole);
+      } else {
+        queryConds.push('(user_id = ? OR role = "ALL" OR role IS NULL)');
+        queryParams.push(userId);
+      }
+    } else if (userRole) {
+      queryConds.push('(role = ? OR role = "ALL" OR role IS NULL)');
+      queryParams.push(userRole);
+    }
+
+    if (queryConds.length > 0) {
+      tableQuery += ' WHERE ' + queryConds.join(' AND ');
+    }
+    tableQuery += ' ORDER BY created_at DESC LIMIT 30';
+
+    try {
+      const [dbRows] = await pool.query(tableQuery, queryParams);
+      for (const row of dbRows) {
+        const notifId = String(row.id || row.notification_id || `db-${Math.random()}`);
+        seenIds.add(notifId);
+        const isRead = row.is_read === 1 || String(row.status || '').toUpperCase() === 'READ';
+        notifications.push({
+          id: notifId,
+          notification_id: row.id || row.notification_id,
+          order_id: row.order_id,
+          user_id: row.user_id,
+          role: row.role || userRole || 'ALL',
+          title: row.title || 'Estate Alert',
+          message: row.message || '',
+          subtitle: row.message || '',
+          type: (row.type || 'SYSTEM').toUpperCase(),
+          badge: (row.type || 'SYSTEM').toUpperCase() === 'LOW_STOCK' ? 'Low Stock' : 'Alert',
+          action_hint: 'Tap to review alert →',
+          is_read: isRead ? 1 : 0,
+          status: isRead ? 'READ' : 'UNREAD',
+          created_at: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString()
+        });
+      }
+    } catch (err) {
+      console.warn('Notifications table query fallback:', err.message);
+    }
+
+    // 2. If supplier or if no rows in notifications table, dynamically include live supplier feed or customer order updates
+    if (userRole === 'SUPPLIER' || (supplierId && supplierId > 0)) {
+      const sid = supplierId || 3;
+      const supplierFeed = await getSupplierNotificationsFeed(sid);
+      for (const item of supplierFeed) {
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id);
+          notifications.push({
+            ...item,
+            notification_id: item.order_id || item.flower_id || 1,
+            user_id: userId || sid,
+            role: 'SUPPLIER',
+            message: item.subtitle || item.title || '',
+            is_read: 0,
+            status: item.status || 'UNREAD'
+          });
+        }
+      }
+    } else if (notifications.length === 0 && userId && !isNaN(userId) && userId > 0) {
+      // Customer order status updates
+      try {
+        const [ordRows] = await pool.query(
+          `SELECT order_id, order_code, status, COALESCE(fulfilment_status, status) AS fulfilment_status, order_date
+           FROM orders
+           WHERE customer_id = ?
+           ORDER BY order_id DESC
+           LIMIT 15`,
+          [userId]
+        );
+        for (const o of ordRows) {
+          const notifId = `ord-${o.order_id}`;
+          if (!seenIds.has(notifId)) {
+            seenIds.add(notifId);
+            const statusLabel = o.fulfilment_status || o.status || 'Update';
+            notifications.push({
+              id: notifId,
+              notification_id: o.order_id,
+              order_id: o.order_id,
+              user_id: userId,
+              role: 'CUSTOMER',
+              title: `Order ${statusLabel}`,
+              subtitle: `Your floral order ${o.order_code || ('#PB-' + o.order_id)} is currently ${statusLabel}.`,
+              message: `Your floral order ${o.order_code || ('#PB-' + o.order_id)} is currently ${statusLabel}.`,
+              type: 'ORDER_UPDATE',
+              badge: statusLabel,
+              action_hint: 'Tap to track order →',
+              is_read: 0,
+              status: 'UNREAD',
+              created_at: o.order_date ? new Date(o.order_date).toISOString() : new Date().toISOString()
+            });
+          }
+        }
+      } catch (ordErr) {
+        console.warn('Customer orders feed error:', ordErr.message);
+      }
+    }
+
     return res.json({
       success: true,
       count: notifications.length,
       notifications
     });
   } catch (error) {
-    console.error('Supplier Notifications Error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch supplier notifications', error: error.message });
-  }
-});
-
-// Get User Notifications (returns live supplier feed for SUPPLIER users, customer notifications otherwise)
-app.get('/api/notifications/:userId', async (req, res) => {
-  const userId = parseInt(req.params.userId, 10);
-
-  try {
-    if (!isNaN(userId) && userId > 0) {
-      const [uRows] = await pool.query('SELECT role FROM users WHERE user_id = ? LIMIT 1', [userId]);
-      if (uRows.length > 0 && String(uRows[0].role || '').toUpperCase() === 'SUPPLIER') {
-        const supplierNotifs = await getSupplierNotificationsFeed(userId);
-        return res.json({
-          success: true,
-          count: supplierNotifs.length,
-          notifications: supplierNotifs
-        });
-      }
-    }
-
-    const [rows] = await pool.query(
-      'SELECT notification_id, order_id, user_id, title, message, status, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 20',
-      [isNaN(userId) ? 0 : userId]
-    );
-
-    let notifications = rows;
-    if (notifications.length === 0 && !isNaN(userId) && userId > 0) {
-      // Derive notifications strictly from real MySQL orders if no rows exist in notifications table
-      const [ordRows] = await pool.query(
-        `SELECT order_id, order_code, status, COALESCE(fulfilment_status, status) AS fulfilment_status, order_date
-         FROM orders
-         WHERE customer_id = ?
-         ORDER BY order_id DESC
-         LIMIT 15`,
-        [userId]
-      );
-      notifications = ordRows.map((o) => ({
-        notification_id: o.order_id,
-        order_id: o.order_id,
-        user_id: userId,
-        title: `Order ${o.fulfilment_status || o.status || 'Update'}`,
-        message: `Your floral order ${o.order_code || ('#PB-' + o.order_id)} is currently ${o.fulfilment_status || o.status}.`,
-        status: 'UNREAD',
-        created_at: o.order_date
-      }));
-    }
-
-    return res.json({
-      success: true,
-      notifications
-    });
-  } catch (error) {
-    console.error('Notifications Error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch notifications', error: error.message });
+    console.error('Unified Notifications Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch notifications', error: error.message, notifications: [] });
   }
 });
 
@@ -1812,6 +2012,7 @@ app.get('/api/flowers', async (req, res) => {
         f.created_at,
         f.supplier_id,
         COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock_quantity,
+        COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock,
         COALESCE(MAX(i.reorder_level), 30) AS reorder_level,
         COALESCE(sales.sold_count, 0) AS sold_count,
         COALESCE(reviews.avg_rating, 5.0) AS avg_rating,
@@ -1833,10 +2034,46 @@ app.get('/api/flowers', async (req, res) => {
       ORDER BY f.flower_id ASC
     `;
     const [flowers] = await pool.query(query, queryParams);
-    return res.json({ success: true, count: flowers.length, flowers });
+    const flowersFormatted = flowers.map(f => {
+      const st = Math.max(0, parseInt(f.stock !== undefined ? f.stock : f.stock_quantity, 10) || 0);
+      return {
+        ...f,
+        id: f.flower_id,
+        flower_id: f.flower_id,
+        price: Number(f.unit_price) || 0,
+        unit_price: Number(f.unit_price) || 0,
+        stock_quantity: st,
+        stock: st,
+        rating: Number(f.avg_rating) || 0,
+        avg_rating: Number(f.avg_rating) || 0,
+        review_count: Number(f.review_count) || 0,
+        sold_count: Number(f.sold_count) || 0,
+        image_url: f.image_url || '',
+        created_at: f.created_at || ''
+      };
+    });
+    return res.json({ success: true, count: flowersFormatted.length, flowers: flowersFormatted });
   } catch (error) {
     console.error('Get Flowers Error:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch flowers', error: error.message });
+  }
+});
+
+// Dynamic flower categories auto-synced from MySQL flowers table
+app.get(['/api/categories', '/api/flowers/categories'], async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT DISTINCT TRIM(category) AS category FROM flowers WHERE category IS NOT NULL AND TRIM(category) != '' ORDER BY category ASC"
+    );
+    const categories = rows.map(r => r.category).filter(Boolean);
+    return res.json({
+      success: true,
+      count: categories.length,
+      categories
+    });
+  } catch (error) {
+    console.error('Get Categories Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch categories', error: error.message });
   }
 });
 
@@ -1847,6 +2084,7 @@ app.get('/api/flowers/:id', async (req, res) => {
       SELECT 
         f.*,
         COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock_quantity,
+        COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock,
         COALESCE(MAX(i.reorder_level), 30) AS reorder_level,
         COALESCE(sales.sold_count, 0) AS sold_count,
         COALESCE(reviews.avg_rating, 0.0) AS avg_rating,
@@ -1889,14 +2127,325 @@ app.get('/api/flowers/:id', async (req, res) => {
       LIMIT 10
     `, [req.params.id]);
 
+    const flRow = rows[0];
+    const st = Math.max(0, parseInt(flRow.stock !== undefined ? flRow.stock : flRow.stock_quantity, 10) || 0);
     return res.json({
       success: true,
       flower: {
-        ...rows[0],
+        ...flRow,
+        id: flRow.flower_id,
+        flower_id: flRow.flower_id,
+        price: Number(flRow.unit_price) || 0,
+        unit_price: Number(flRow.unit_price) || 0,
+        stock_quantity: st,
+        stock: st,
+        rating: Number(flRow.avg_rating) || 0,
+        avg_rating: Number(flRow.avg_rating) || 0,
+        review_count: Number(flRow.review_count) || 0,
+        sold_count: Number(flRow.sold_count) || 0,
+        image_url: flRow.image_url || '',
+        created_at: flRow.created_at || '',
         reviews: reviewRows
       },
       reviews: reviewRows
     });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Add new flower (Supplier Portal & Admin)
+app.post(['/api/suppliers/flowers', '/api/flowers'], async (req, res) => {
+  const { name, category, unit_price, price, stock, stock_quantity, color, description, image_url, supplier_id, user_id } = req.body;
+  if (!name || !String(name).trim()) {
+    return res.status(400).json({ success: false, message: 'Flower name is required' });
+  }
+  const cleanName = String(name).trim();
+  const cleanCat = (category && String(category).trim()) || 'Bouquet';
+  const cleanColor = (color && String(color).trim()) || 'Multicolor';
+  const finalPrice = Math.max(0, parseFloat(unit_price !== undefined ? unit_price : price) || 0);
+  const finalStock = Math.max(0, parseInt(stock !== undefined ? stock : stock_quantity, 10) || 0);
+  const cleanImg = (image_url && String(image_url).trim()) || '';
+  const cleanDesc = (description && String(description).trim()) || `Fresh Highland ${cleanName} blooms harvested daily.`;
+  const resolvedSid = parseInt(supplier_id || user_id, 10) || null;
+
+  try {
+    const [insRes] = await pool.query(
+      `INSERT INTO flowers (name, category, color, unit_price, stock_quantity, stock, image_url, description, supplier_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [cleanName, cleanCat, cleanColor, finalPrice, finalStock, finalStock, cleanImg, cleanDesc, resolvedSid]
+    );
+    const flowerId = insRes.insertId;
+
+    // Sync inventory table
+    try {
+      await pool.query(
+        'INSERT INTO inventory (flower_id, stock_quantity, reorder_level) VALUES (?, ?, 30) ON DUPLICATE KEY UPDATE stock_quantity = VALUES(stock_quantity)',
+        [flowerId, finalStock]
+      );
+    } catch (_) {}
+
+    // Sync supplier_flowers table if supplier resolved
+    if (resolvedSid) {
+      try {
+        await pool.query(
+          'INSERT INTO supplier_flowers (flower_id, supplier_id, supplier_user_id, supply_price, capacity, supply_capacity) VALUES (?, ?, ?, ?, ?, ?)',
+          [flowerId, resolvedSid, resolvedSid, finalPrice, finalStock, finalStock]
+        );
+      } catch (_) {}
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Flower created successfully',
+      flower_id: flowerId,
+      flower: {
+        id: flowerId,
+        flower_id: flowerId,
+        name: cleanName,
+        category: cleanCat,
+        color: cleanColor,
+        unit_price: finalPrice,
+        price: finalPrice,
+        stock: finalStock,
+        stock_quantity: finalStock,
+        image_url: cleanImg,
+        description: cleanDesc
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to add flower', error: error.message });
+  }
+});
+
+// Update flower details & stock (Supplier Portal & Admin)
+app.put(['/api/flowers/:id', '/api/suppliers/flowers/:id'], async (req, res) => {
+  const flowerId = parseInt(req.params.id, 10);
+  if (isNaN(flowerId) || flowerId <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid flower ID' });
+  }
+
+  const { name, category, unit_price, price, stock, stock_quantity, color, description, image_url } = req.body;
+  try {
+    const [existing] = await pool.query('SELECT * FROM flowers WHERE flower_id = ?', [flowerId]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'Flower not found' });
+    }
+    const cur = existing[0];
+    const newName = name !== undefined ? String(name).trim() : cur.name;
+    const newCat = category !== undefined ? String(category).trim() : cur.category;
+    const newColor = color !== undefined ? String(color).trim() : cur.color;
+    const newPrice = (unit_price !== undefined || price !== undefined)
+      ? Math.max(0, parseFloat(unit_price !== undefined ? unit_price : price) || 0)
+      : parseFloat(cur.unit_price || 0);
+    const newStock = (stock !== undefined || stock_quantity !== undefined)
+      ? Math.max(0, parseInt(stock !== undefined ? stock : stock_quantity, 10) || 0)
+      : (parseInt(cur.stock !== undefined ? cur.stock : cur.stock_quantity, 10) || 0);
+    const newImg = image_url !== undefined ? String(image_url).trim() : (cur.image_url || '');
+    const newDesc = description !== undefined ? String(description).trim() : (cur.description || '');
+
+    await pool.query(
+      `UPDATE flowers 
+       SET name = ?, category = ?, color = ?, unit_price = ?, stock_quantity = ?, stock = ?, image_url = ?, description = ?
+       WHERE flower_id = ?`,
+      [newName, newCat, newColor, newPrice, newStock, newStock, newImg, newDesc, flowerId]
+    );
+
+    // Sync inventory table
+    try {
+      const [invCheck] = await pool.query('SELECT inventory_id FROM inventory WHERE flower_id = ?', [flowerId]);
+      if (invCheck.length > 0) {
+        await pool.query(
+          'UPDATE inventory SET stock_quantity = ?, last_restocked = CURRENT_TIMESTAMP WHERE flower_id = ?',
+          [newStock, flowerId]
+        );
+      } else {
+        await pool.query('INSERT INTO inventory (flower_id, stock_quantity, reorder_level) VALUES (?, ?, 30)', [flowerId, newStock]);
+      }
+    } catch (_) {}
+
+    return res.json({
+      success: true,
+      message: 'Flower updated successfully',
+      flower_id: flowerId,
+      flower: {
+        id: flowerId,
+        flower_id: flowerId,
+        name: newName,
+        category: newCat,
+        color: newColor,
+        unit_price: newPrice,
+        price: newPrice,
+        stock: newStock,
+        stock_quantity: newStock,
+        image_url: newImg,
+        description: newDesc
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Failed to update flower', error: error.message });
+  }
+});
+
+// Get user wishlist
+app.get('/api/wishlist', async (req, res) => {
+  try {
+    const rawUid = req.query.user_id || req.query.userId || req.query.customer_id;
+    const userId = parseInt(rawUid, 10);
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ success: false, message: 'Valid user_id is required.' });
+    }
+
+    const query = `
+      SELECT 
+        w.wishlist_id,
+        w.user_id,
+        w.flower_id,
+        w.flower_id AS id,
+        w.created_at AS wishlisted_at,
+        f.name,
+        f.category,
+        f.color,
+        f.unit_price,
+        f.unit_price AS price,
+        f.image_url,
+        f.description,
+        f.created_at,
+        COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock_quantity,
+        COALESCE(f.stock_quantity, MAX(i.stock_quantity), 0) AS stock,
+        COALESCE(sales.sold_count, 0) AS sold_count,
+        COALESCE(reviews.avg_rating, 5.0) AS avg_rating,
+        COALESCE(reviews.avg_rating, 5.0) AS rating,
+        COALESCE(reviews.review_count, 0) AS review_count
+      FROM wishlists w
+      JOIN flowers f ON w.flower_id = f.flower_id
+      LEFT JOIN inventory i ON f.flower_id = i.flower_id
+      LEFT JOIN (
+        SELECT flower_id, COALESCE(SUM(quantity), 0) AS sold_count
+        FROM order_items
+        GROUP BY flower_id
+      ) sales ON f.flower_id = sales.flower_id
+      LEFT JOIN (
+        SELECT flower_id, COALESCE(ROUND(AVG(rating), 1), 5.0) AS avg_rating, COUNT(review_id) AS review_count
+        FROM rating_reviews
+        GROUP BY flower_id
+      ) reviews ON f.flower_id = reviews.flower_id
+      WHERE w.user_id = ?
+      GROUP BY w.wishlist_id, f.flower_id
+      ORDER BY w.created_at DESC
+    `;
+    const [rows] = await pool.query(query, [userId]);
+    const flowerIds = rows.map(r => r.flower_id);
+    const flowerNames = rows.map(r => r.name);
+    return res.json({
+      success: true,
+      count: rows.length,
+      flowers: rows,
+      items: rows,
+      flower_ids: flowerIds,
+      flower_names: flowerNames
+    });
+  } catch (error) {
+    console.error('Get Wishlist Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch wishlist', error: error.message });
+  }
+});
+
+// Add / Remove / Toggle user wishlist item
+app.post('/api/wishlist', async (req, res) => {
+  try {
+    const { user_id, userId, customer_id, flower_id, flowerId, flower_name, flowerName, is_favorite, action } = req.body || {};
+    const resolvedUserId = parseInt(user_id || userId || customer_id, 10);
+    let resolvedFlowerId = parseInt(flower_id || flowerId, 10);
+    const name = String(flower_name || flowerName || '').trim();
+
+    if (!resolvedUserId || isNaN(resolvedUserId)) {
+      return res.status(400).json({ success: false, message: 'Valid user_id is required.' });
+    }
+
+    if ((!resolvedFlowerId || isNaN(resolvedFlowerId)) && name) {
+      const [lookupRows] = await pool.query('SELECT flower_id FROM flowers WHERE LOWER(name) = LOWER(?) LIMIT 1', [name]);
+      if (lookupRows.length > 0) {
+        resolvedFlowerId = lookupRows[0].flower_id;
+      }
+    }
+
+    if (!resolvedFlowerId || isNaN(resolvedFlowerId)) {
+      return res.status(400).json({ success: false, message: 'Valid flower_id or flower_name is required.' });
+    }
+
+    const shouldRemove = action === 'remove' || action === 'delete' || is_favorite === false || is_favorite === 0 || is_favorite === 'false';
+    const shouldAdd = action === 'add' || is_favorite === true || is_favorite === 1 || is_favorite === 'true';
+
+    if (shouldRemove) {
+      await pool.query('DELETE FROM wishlists WHERE user_id = ? AND flower_id = ?', [resolvedUserId, resolvedFlowerId]);
+      return res.json({
+        success: true,
+        action: 'removed',
+        is_favorite: false,
+        user_id: resolvedUserId,
+        flower_id: resolvedFlowerId,
+        message: 'Flower removed from wishlist'
+      });
+    }
+
+    if (shouldAdd) {
+      await pool.query(
+        'INSERT INTO wishlists (user_id, flower_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE created_at = CURRENT_TIMESTAMP',
+        [resolvedUserId, resolvedFlowerId]
+      );
+      return res.json({
+        success: true,
+        action: 'added',
+        is_favorite: true,
+        user_id: resolvedUserId,
+        flower_id: resolvedFlowerId,
+        message: 'Flower added to wishlist'
+      });
+    }
+
+    // Default: Toggle!
+    const [existing] = await pool.query('SELECT wishlist_id FROM wishlists WHERE user_id = ? AND flower_id = ? LIMIT 1', [resolvedUserId, resolvedFlowerId]);
+    if (existing.length > 0) {
+      await pool.query('DELETE FROM wishlists WHERE user_id = ? AND flower_id = ?', [resolvedUserId, resolvedFlowerId]);
+      return res.json({
+        success: true,
+        action: 'removed',
+        is_favorite: false,
+        user_id: resolvedUserId,
+        flower_id: resolvedFlowerId,
+        message: 'Flower removed from wishlist'
+      });
+    } else {
+      await pool.query(
+        'INSERT INTO wishlists (user_id, flower_id) VALUES (?, ?)',
+        [resolvedUserId, resolvedFlowerId]
+      );
+      return res.json({
+        success: true,
+        action: 'added',
+        is_favorite: true,
+        user_id: resolvedUserId,
+        flower_id: resolvedFlowerId,
+        message: 'Flower added to wishlist'
+      });
+    }
+  } catch (error) {
+    console.error('Wishlist Toggle Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update wishlist', error: error.message });
+  }
+});
+
+// Delete flower from wishlist
+app.delete(['/api/wishlist/:flowerId', '/api/wishlist'], async (req, res) => {
+  try {
+    const flowerId = parseInt(req.params.flowerId || req.query.flower_id || req.body?.flower_id, 10);
+    const userId = parseInt(req.query.user_id || req.query.userId || req.body?.user_id, 10);
+    if (!userId || !flowerId) {
+      return res.status(400).json({ success: false, message: 'Both user_id and flower_id are required' });
+    }
+    await pool.query('DELETE FROM wishlists WHERE user_id = ? AND flower_id = ?', [userId, flowerId]);
+    return res.json({ success: true, message: 'Removed from wishlist' });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }
@@ -1908,10 +2457,23 @@ app.get('/api/flowers/:id', async (req, res) => {
 
 // Place a new customer order (atomic MySQL transaction with stock locking & server pricing)
 app.post('/api/orders', async (req, res) => {
-  const { customer_id, delivery_address, delivery_city, payment_method, items, order_code } = req.body;
-  const custId = parseInt(customer_id, 10);
+  const {
+    customer_id,
+    user_id,
+    delivery_address,
+    delivery_city,
+    payment_method,
+    payment_reference,
+    reference_no,
+    items,
+    order_code,
+    delivery_date,
+    total_amount
+  } = req.body;
+
+  const custId = parseInt(customer_id || user_id, 10);
   if (isNaN(custId) || custId <= 0) {
-    return res.status(400).json({ success: false, message: 'Valid customer_id is required' });
+    return res.status(400).json({ success: false, message: 'Valid customer_id or user_id is required' });
   }
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ success: false, message: 'Order must include at least one flower item' });
@@ -1920,8 +2482,8 @@ app.post('/api/orders', async (req, res) => {
   // Consolidate & validate item quantities up-front
   const qtyByFlowerId = new Map();
   for (const item of items) {
-    const fId = parseInt(item && item.flower_id, 10);
-    const qty = parseInt(item && item.quantity, 10);
+    const fId = parseInt(item && (item.flower_id || item.id), 10);
+    const qty = parseInt(item && (item.quantity || item.qty), 10);
     if (isNaN(fId) || fId <= 0 || isNaN(qty) || qty <= 0) {
       return res.status(400).json({ success: false, message: 'Each item must have a valid flower_id and quantity >= 1' });
     }
@@ -1932,6 +2494,7 @@ app.post('/api/orders', async (req, res) => {
   }
 
   const payMethod = (payment_method && String(payment_method).trim()) ? String(payment_method).trim().toUpperCase() : 'CARD';
+  const payRef = (payment_reference || reference_no || (payMethod === 'CARD' ? `CARD-${Date.now()}` : 'BANK-TRANSFER')).trim();
   const conn = await pool.getConnection();
 
   try {
@@ -1965,7 +2528,7 @@ app.post('/api/orders', async (req, res) => {
     let resolvedOrderSupplierId = null;
     for (const [fId, qty] of qtyByFlowerId.entries()) {
       const [flRows] = await conn.query(
-        'SELECT flower_id, name, unit_price, stock_quantity, supplier_id FROM flowers WHERE flower_id = ? LIMIT 1 FOR UPDATE',
+        'SELECT flower_id, name, unit_price, stock_quantity, stock, supplier_id FROM flowers WHERE flower_id = ? LIMIT 1 FOR UPDATE',
         [fId]
       );
       if (flRows.length === 0) {
@@ -1984,7 +2547,7 @@ app.post('/api/orders', async (req, res) => {
           resolvedOrderSupplierId = (sfOwner.length > 0 && sfOwner[0].sid) ? Number(sfOwner[0].sid) : 3;
         }
       }
-      let rawStock = fl.stock_quantity;
+      let rawStock = (fl.stock !== undefined && fl.stock !== null) ? fl.stock : fl.stock_quantity;
       if (rawStock === null || rawStock === undefined) {
         const [invRows] = await conn.query('SELECT MAX(stock_quantity) AS stock_quantity FROM inventory WHERE flower_id = ?', [fId]);
         rawStock = invRows.length > 0 ? invRows[0].stock_quantity : 0;
@@ -1994,7 +2557,7 @@ app.post('/api/orders', async (req, res) => {
         await conn.rollback();
         return res.status(409).json({
           success: false,
-          message: `Insufficient stock for ${fl.name} (${available} stems available, requested ${qty}).`
+          message: `Requested quantity for ${fl.name} (${qty}) exceeds available stock (${available}).`
         });
       }
       const itemPrice = parseFloat(fl.unit_price) || 0;
@@ -2026,33 +2589,68 @@ app.post('/api/orders', async (req, res) => {
         'UPDATE flowers SET stock_quantity = GREATEST(0, COALESCE(stock_quantity, 0) - ?) WHERE flower_id = ?',
         [vi.qty, vi.flower_id]
       );
+      try {
+        await conn.query(
+          'UPDATE flowers SET stock = GREATEST(0, COALESCE(stock, 0) - ?) WHERE flower_id = ?',
+          [vi.qty, vi.flower_id]
+        );
+      } catch (_) {}
     }
 
     const deliveryFee = 200.00;
-    const totalAmount = subtotal + deliveryFee;
+    const finalTotal = subtotal + deliveryFee;
 
     // 3. Create invoice
     const invoiceNum = `INV-${orderId}-${Date.now().toString().slice(-4)}`;
     const [invRes] = await conn.query(
       `INSERT INTO invoices (invoice_number, order_id, customer_name, total_amount, status)
        VALUES (?, ?, ?, ?, 'PAID')`,
-      [invoiceNum, orderId, customerName, totalAmount]
+      [invoiceNum, orderId, customerName, finalTotal]
     );
 
-    // 4. Record payment
-    await conn.query(
-      `INSERT INTO payments (invoice_id, amount_paid, payment_method, status)
-       VALUES (?, ?, ?, 'SUCCESS')`,
-      [invRes.insertId, totalAmount, payMethod]
-    );
+    // 4. Record payment with payment_reference
+    try {
+      await conn.query(
+        `INSERT INTO payments (invoice_id, amount_paid, payment_method, payment_reference, status)
+         VALUES (?, ?, ?, ?, 'SUCCESS')`,
+        [invRes.insertId, finalTotal, payMethod, payRef]
+      );
+    } catch (_) {
+      await conn.query(
+        `INSERT INTO payments (invoice_id, amount_paid, payment_method, status)
+         VALUES (?, ?, ?, 'SUCCESS')`,
+        [invRes.insertId, finalTotal, payMethod]
+      );
+    }
 
-    // 5. Schedule Delivery
+    // 5. Schedule Delivery with selected delivery date
+    let targetDeliveryDateSql = 'DATE_ADD(CURDATE(), INTERVAL 1 DAY)';
+    let targetDeliveryDateParam = null;
+    let deliveryDateStr = 'Tomorrow';
+    if (delivery_date && typeof delivery_date === 'string' && delivery_date.trim()) {
+      const rawD = delivery_date.replace(/delivery\s*/i, '').trim();
+      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawD)) {
+        const [d, m, y] = rawD.split('/');
+        targetDeliveryDateSql = '?';
+        targetDeliveryDateParam = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+        deliveryDateStr = rawD;
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(rawD)) {
+        targetDeliveryDateSql = '?';
+        targetDeliveryDateParam = rawD;
+        deliveryDateStr = rawD;
+      }
+    }
+
     const deliveryCode = `DEL-${orderId}-${Math.floor(100 + Math.random() * 900)}`;
-    await conn.query(
-      `INSERT INTO deliveries (delivery_code, order_id, business_officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
-       VALUES (?, ?, 2, 'WP CAD-4521', 'Sunil Shantha', '+94 77 123 4567', ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'SCHEDULED')`,
-      [deliveryCode, orderId, address]
-    );
+    const delQuery = targetDeliveryDateParam
+      ? `INSERT INTO deliveries (delivery_code, order_id, business_officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
+         VALUES (?, ?, 2, 'WP CAD-4521', 'Sunil Shantha', '+94 77 123 4567', ?, ?, 'SCHEDULED')`
+      : `INSERT INTO deliveries (delivery_code, order_id, business_officer_id, vehicle_number, driver_name, driver_phone, destination_address, delivery_date, status)
+         VALUES (?, ?, 2, 'WP CAD-4521', 'Sunil Shantha', '+94 77 123 4567', ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'SCHEDULED')`;
+    const delParams = targetDeliveryDateParam
+      ? [deliveryCode, orderId, address, targetDeliveryDateParam]
+      : [deliveryCode, orderId, address];
+    await conn.query(delQuery, delParams);
 
     await conn.commit();
     return res.status(201).json({
@@ -2060,9 +2658,17 @@ app.post('/api/orders', async (req, res) => {
       message: 'Order created successfully!',
       order_id: orderId,
       order_code: orderCode,
-      total_amount: totalAmount,
+      total_amount: finalTotal,
       delivery_address: address,
-      status: 'PENDING'
+      status: 'PENDING',
+      tracking: {
+        delivery_code: deliveryCode,
+        delivery_date: deliveryDateStr,
+        driver_name: 'Sunil Shantha',
+        driver_phone: '+94 77 123 4567',
+        vehicle_number: 'WP CAD-4521',
+        status: 'SCHEDULED'
+      }
     });
   } catch (error) {
     try { await conn.rollback(); } catch (_) {}
@@ -2088,23 +2694,29 @@ app.get(['/api/orders/customer/:customerId', '/api/customers/:customerId/orders'
         o.delivery_address,
         o.delivery_city,
         o.payment_status,
+        COALESCE(p.payment_method, 'CARD') AS payment_method,
+        COALESCE(p.payment_reference, '') AS payment_reference,
         COALESCE(o.fulfilment_status, o.status) AS fulfilment_status,
         o.status,
         COALESCE(i.total_amount, 0) AS total_amount,
-        GROUP_CONCAT(CONCAT(oi.quantity, 'x ', f.name) SEPARATOR ', ') AS items_summary,
+        GROUP_CONCAT(DISTINCT CONCAT(oi.quantity, 'x ', f.name) SEPARATOR ', ') AS items_summary,
         d.delivery_code,
         COALESCE(d.status, 'IN_TRANSIT') AS delivery_status,
         d.delivery_date,
         d.vehicle_number,
-        d.driver_name,
-        d.driver_phone
+        COALESCE(d.driver_name, 'Sunil Shantha') AS driver_name,
+        COALESCE(d.driver_phone, '+94 77 123 4567') AS driver_phone,
+        COALESCE(u_bo.name, 'Chaminda Silva') AS officer_name,
+        COALESCE(u_bo.phone, '+94 71 889 9001') AS officer_phone
       FROM orders o
       LEFT JOIN invoices i ON o.order_id = i.order_id
+      LEFT JOIN payments p ON i.invoice_id = p.invoice_id
       LEFT JOIN order_items oi ON o.order_id = oi.order_id
       LEFT JOIN flowers f ON oi.flower_id = f.flower_id
       LEFT JOIN deliveries d ON o.order_id = d.order_id
+      LEFT JOIN users u_bo ON d.business_officer_id = u_bo.user_id
       WHERE o.customer_id = ?
-      GROUP BY o.order_id, d.delivery_id
+      GROUP BY o.order_id, d.delivery_id, p.payment_id
       ORDER BY o.order_date DESC, o.order_id DESC
     `;
     const [orders] = await pool.query(query, [custId]);
@@ -2191,7 +2803,19 @@ app.get('/api/orders/:orderId', async (req, res) => {
 
     const [invoice] = await pool.query('SELECT * FROM invoices WHERE order_id = ?', [order.order_id]);
     const [payment] = await pool.query('SELECT * FROM payments WHERE invoice_id = ? ORDER BY payment_id DESC LIMIT 1', [invoice[0] ? invoice[0].invoice_id : 0]);
-    const [deliveries] = await pool.query('SELECT * FROM deliveries WHERE order_id = ? ORDER BY delivery_id DESC LIMIT 1', [order.order_id]);
+    const [deliveries] = await pool.query(`
+      SELECT d.*,
+             COALESCE(u_bo.name, 'Chaminda Silva') AS officer_name,
+             COALESCE(u_bo.phone, '+94 71 889 9001') AS officer_phone
+      FROM deliveries d
+      LEFT JOIN users u_bo ON d.business_officer_id = u_bo.user_id
+      WHERE d.order_id = ?
+      ORDER BY d.delivery_id DESC
+      LIMIT 1
+    `, [order.order_id]);
+
+    const activePayment = payment[0] || null;
+    const activeDelivery = deliveries[0] || null;
 
     // Resolve supplier estate dynamically from MySQL suppliers/supplier_flowers
     let supplierInfo = null;
@@ -2228,8 +2852,10 @@ app.get('/api/orders/:orderId', async (req, res) => {
         subtotal: itemsSubtotal,
         delivery_fee: deliveryFee,
         invoice: invoice[0] || null,
-        payment: payment[0] || null,
-        delivery: deliveries[0] || null,
+        payment: activePayment,
+        delivery: activeDelivery,
+        payment_method: activePayment ? (activePayment.payment_method || 'CARD') : 'CARD',
+        payment_reference: activePayment ? (activePayment.payment_reference || '') : '',
         supplier: supplierInfo
       }
     });
@@ -2756,9 +3382,15 @@ app.delete(['/api/suppliers/declared-flowers/:id', '/api/suppliers/:userId/decla
 });
 
 // Real Supplier Demand, Low Stock Insights & Completed Orders/Payments (scoped per supplier_id)
-app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
+// Endpoints: GET /api/suppliers/demand, GET /api/suppliers/demand-summary, GET /api/supplier/demand, GET /api/supplier/demand-summary
+app.get([
+  '/api/suppliers/demand',
+  '/api/suppliers/demand-summary',
+  '/api/supplier/demand',
+  '/api/supplier/demand-summary'
+], async (req, res) => {
   try {
-    const rawSup = req.query.supplier_id || req.query.user_id || req.query.supplierId;
+    const rawSup = req.query.supplier_id || req.query.user_id || req.query.supplierId || req.query.userId;
     let flWhere = '';
     let flParams = [];
     let ordWhere = '';
@@ -2771,12 +3403,21 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
       if (!sid || sid <= 0) {
         return res.json({
           success: true,
+          low_stock_count: 0,
+          low_stock_summary: 'All declared varieties are well stocked',
           low_stock_alerts: [],
+          alerts: [],
           top_demanded: [],
-          completed_payments: [],
+          shortfall_count: 0,
+          shortfall_summary: 'No seasonal shortfalls projected',
+          seasonal_forecasts: [],
+          forecasts: [],
+          settled_orders_count: 0,
           total_payouts: 0,
           total_payouts_formatted: 'Rs. 0',
-          forecasts: []
+          payouts_summary: 'No settled payouts recorded yet',
+          completed_payouts: [],
+          completed_payments: []
         });
       }
       const flFilter = buildSupplierFlowerPredicate('f', sid);
@@ -2796,9 +3437,9 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         f.flower_id, 
         f.name AS flower_name, 
         f.category, 
-        COALESCE(f.stock_quantity, inv.stock_quantity, 0) AS stock_quantity, 
+        COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) AS stock_quantity, 
         COALESCE(inv.reorder_level, 30) AS reorder_level,
-        f.unit_price
+        COALESCE(f.unit_price, 0) AS unit_price
       FROM flowers f
       LEFT JOIN (
         SELECT flower_id, MAX(stock_quantity) AS stock_quantity, MAX(reorder_level) AS reorder_level
@@ -2806,27 +3447,50 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         GROUP BY flower_id
       ) inv ON f.flower_id = inv.flower_id
       ${flWhere}
-      ORDER BY (COALESCE(f.stock_quantity, inv.stock_quantity, 0) - COALESCE(inv.reorder_level, 30)) ASC,
-               COALESCE(f.stock_quantity, inv.stock_quantity, 0) ASC
+      ORDER BY (COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) - COALESCE(inv.reorder_level, 30)) ASC,
+               COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) ASC
     `, flParams);
 
+    // Critical low stock (<= 15 or <= reorder_level)
     const criticalAlerts = inventoryAlerts
-      .filter(item => Number(item.stock_quantity) <= Number(item.reorder_level))
-      .map(item => ({ ...item, alert_status: 'LOW_STOCK', alert_label: 'Low Stock' }));
+      .filter(item => Number(item.stock_quantity) <= 15 || Number(item.stock_quantity) <= Number(item.reorder_level))
+      .map(item => {
+        const stock = Number(item.stock_quantity);
+        const reorder = Number(item.reorder_level);
+        const isDepleted = stock <= 15 || stock <= reorder;
+        return {
+          ...item,
+          stock_quantity: stock,
+          reorder_level: reorder,
+          alert_status: isDepleted ? 'LOW_STOCK' : 'NEAR_REORDER',
+          alert_label: stock <= 15 ? 'Low Stock' : (isDepleted ? 'Low Stock' : 'Near Reorder')
+        };
+      });
 
     let lowStock = criticalAlerts;
-    if (criticalAlerts.length < 2) {
-      const approachingAlerts = inventoryAlerts
+    if (lowStock.length === 0) {
+      // Check if any flower is approaching reorder
+      const approaching = inventoryAlerts
         .filter(item => {
           const stock = Number(item.stock_quantity);
           const reorder = Number(item.reorder_level);
-          const nearCeiling = Math.max(reorder + 20, Math.round(reorder * 1.8));
-          return stock > reorder && stock <= nearCeiling;
+          return stock <= Math.max(reorder + 20, 50);
         })
-        .slice(0, 2 - criticalAlerts.length)
-        .map(item => ({ ...item, alert_status: 'NEAR_REORDER', alert_label: 'Near Reorder' }));
-      lowStock = [...criticalAlerts, ...approachingAlerts];
+        .slice(0, 2)
+        .map(item => ({
+          ...item,
+          stock_quantity: Number(item.stock_quantity),
+          reorder_level: Number(item.reorder_level),
+          alert_status: 'NEAR_REORDER',
+          alert_label: 'Near Reorder'
+        }));
+      lowStock = approaching;
     }
+
+    const lowStockCount = lowStock.length;
+    const lowStockSummary = lowStockCount > 0
+      ? `${lowStockCount} ${lowStockCount === 1 ? 'variety requires' : 'varieties require'} grower attention`
+      : 'All declared varieties are well stocked';
 
     const [topDemanded] = await pool.query(`
       SELECT 
@@ -2834,7 +3498,7 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         f.name AS flower_name, 
         f.category, 
         COALESCE(SUM(oi.quantity), 0) AS total_ordered_stems,
-        COALESCE(f.stock_quantity, inv.stock_quantity, 0) AS current_stock
+        COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) AS current_stock
       FROM flowers f
       LEFT JOIN order_items oi ON f.flower_id = oi.flower_id
       LEFT JOIN (
@@ -2843,7 +3507,7 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         GROUP BY flower_id
       ) inv ON f.flower_id = inv.flower_id
       ${flWhere}
-      GROUP BY f.flower_id, f.name, f.category, f.stock_quantity, inv.stock_quantity
+      GROUP BY f.flower_id, f.name, f.category, f.stock_quantity, inv.stock_quantity, f.stock
       ORDER BY total_ordered_stems DESC
       LIMIT 6
     `, flParams);
@@ -2866,7 +3530,7 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
           'COMPLETED' AS status
         FROM orders o
         LEFT JOIN (
-          SELECT order_id, MAX(invoice_id) AS invoice_id, MAX(invoice_number) AS invoice_number, MAX(total_amount) AS total_amount, MAX(issue_date) AS issue_date
+          SELECT order_id, MAX(invoice_id) AS invoice_id, MAX(invoice_number) AS invoice_number, MAX(total_amount) AS total_amount, MAX(COALESCE(date, created_at)) AS issue_date
           FROM invoices
           GROUP BY order_id
         ) inv ON o.order_id = inv.order_id
@@ -2908,6 +3572,9 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
 
     const totalPayouts = completedPayments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
     const totalPayoutsFormatted = 'Rs. ' + Math.round(totalPayouts).toLocaleString('en-US');
+    const payoutsSummary = completedPayments.length > 0
+      ? `Total settled payouts: ${totalPayoutsFormatted} across ${completedPayments.length} orders`
+      : 'No settled payouts recorded yet';
 
     // Dynamically calculate seasonal demand forecasts alongside live current stock scoped by supplier
     const [forecasts] = await pool.query(`
@@ -2918,8 +3585,8 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         COALESCE(MAX(df.season_event), 'Next 30 Days') AS season_event,
         (COALESCE(MAX(df.predicted_demand), 0) + COALESCE(SUM(oi.quantity), 0)) AS predicted_demand,
         COALESCE(SUM(oi.quantity), 0) AS live_ordered_stems,
-        COALESCE(f.stock_quantity, inv.stock_quantity, 0) AS current_stock,
-        f.unit_price,
+        COALESCE(f.stock_quantity, inv.stock_quantity, f.stock, 0) AS current_stock,
+        COALESCE(f.unit_price, 0) AS unit_price,
         COALESCE(MAX(df.forecast_date), NOW()) AS forecast_date
       FROM flowers f
       LEFT JOIN order_items oi ON f.flower_id = oi.flower_id
@@ -2930,20 +3597,34 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
         GROUP BY flower_id
       ) inv ON f.flower_id = inv.flower_id
       ${flWhere}
-      GROUP BY f.flower_id, f.name, f.unit_price, f.stock_quantity, inv.stock_quantity
+      GROUP BY f.flower_id, f.name, f.unit_price, f.stock_quantity, inv.stock_quantity, f.stock
       HAVING predicted_demand > 0
       ORDER BY live_ordered_stems DESC, predicted_demand DESC
-      LIMIT 6
+      LIMIT 10
     `, flParams);
+
+    const shortfallCount = forecasts.filter(f => Number(f.current_stock) < Number(f.predicted_demand)).length;
+    const shortfallSummary = shortfallCount > 0
+      ? `${shortfallCount} ${shortfallCount === 1 ? 'variety with projected shortfall' : 'varieties with projected shortfalls'} in next 30 days`
+      : 'No seasonal shortfalls projected';
 
     return res.json({
       success: true,
+      low_stock_count: lowStockCount,
+      low_stock_summary: lowStockSummary,
       low_stock_alerts: lowStock,
+      alerts: lowStock,
+      shortfall_count: shortfallCount,
+      shortfall_summary: shortfallSummary,
+      seasonal_forecasts: forecasts,
+      forecasts: forecasts,
       top_demanded: topDemanded,
-      completed_payments: completedPayments,
+      settled_orders_count: completedPayments.length,
       total_payouts: totalPayouts,
       total_payouts_formatted: totalPayoutsFormatted,
-      forecasts: forecasts
+      payouts_summary: payoutsSummary,
+      completed_payouts: completedPayments,
+      completed_payments: completedPayments
     });
   } catch (error) {
     console.error('Get Supplier Demand Error:', error);
@@ -2951,59 +3632,91 @@ app.get(['/api/suppliers/demand', '/api/supplier/demand'], async (req, res) => {
   }
 });
 
-// Check supplier approval status
-app.get('/api/supplier/status/:id', async (req, res) => {
-  const { id } = req.params;
+// Check supplier approval status (supporting path :id or query params supplier_code, user_id, email)
+app.get(['/api/suppliers/status', '/api/supplier/status', '/api/supplier/status/:id', '/api/suppliers/status/:id'], async (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+
+  const idParam = (req.params.id || '').trim();
+  const codeQuery = (req.query.supplier_code || req.query.code || '').trim();
+  const uidQuery = (req.query.user_id || req.query.id || '').trim();
+  const emailQuery = (req.query.email || '').trim();
+  const lookup = idParam || codeQuery || uidQuery || emailQuery;
+
+  if (!lookup) {
+    return res.status(400).json({ success: false, message: 'Supplier identifier (supplier_code, user_id, or email) is required.' });
+  }
+
   try {
     const [rows] = await pool.query(
-      `SELECT s.supplier_id, s.supplier_code, s.supplier_name, s.city, s.monthly_capacity, s.is_approved, u.status, u.name, u.email
+      `SELECT s.supplier_id, s.supplier_code, s.supplier_name, s.city, s.address, s.monthly_capacity, s.is_approved, u.user_id, u.status, u.name, u.email, u.phone
        FROM suppliers s
        LEFT JOIN users u ON s.supplier_id = u.user_id
-       WHERE s.supplier_id = ? OR u.user_id = ? OR LOWER(COALESCE(s.supplier_code, '')) = LOWER(?) OR s.supplier_name = ?
+       WHERE s.supplier_id = ? OR u.user_id = ? OR LOWER(COALESCE(s.supplier_code, '')) = LOWER(?) OR LOWER(u.email) = LOWER(?) OR s.supplier_name = ?
        LIMIT 1`,
-      [id, id, id, id]
+      [lookup, lookup, lookup, lookup, lookup]
     );
 
     if (rows.length === 0) {
       const [userRows] = await pool.query(
-        'SELECT user_id, name, email, status FROM users WHERE user_id = ? AND role = "SUPPLIER"',
-        [id]
+        'SELECT user_id, name, email, phone, status, role FROM users WHERE (user_id = ? OR LOWER(email) = LOWER(?)) AND role = "SUPPLIER" LIMIT 1',
+        [lookup, lookup]
       );
       if (userRows.length > 0) {
         const u = userRows[0];
-        const isAppr = u.status === 'ACTIVE' ? 1 : 0;
+        const approved = isStatusApproved(u.status);
+        const rejected = isStatusRejected(u.status);
+        const finalStatus = approved ? 'APPROVED' : (rejected ? 'REJECTED' : 'PENDING');
+        const finalIsApproved = approved ? 1 : 0;
+        const supCode = `SUP-2026-${String(u.user_id).padStart(4, '0')}`;
+
         return res.json({
           success: true,
+          status: finalStatus,
+          is_approved: finalIsApproved,
+          id: u.user_id,
+          user_id: u.user_id,
           supplier_id: u.user_id,
-          supplier_code: `SUP-2026-${String(u.user_id).padStart(4, '0')}`,
+          supplier_code: supCode,
           supplier_name: u.name,
           farm_name: u.name,
           city: '',
-          monthly_capacity: 0,
-          is_approved: isAppr,
-          status: isAppr === 1 ? 'Approved' : (u.status === 'REJECTED' ? 'Rejected' : 'Pending')
+          address: '',
+          monthly_capacity: 0
         });
       }
-      return res.status(404).json({ success: false, message: 'Supplier record not found' });
+      return res.status(404).json({ success: false, message: 'Supplier record not found.' });
     }
 
     const s = rows[0];
-    const isAppr = Number(s.is_approved) === 1 ? 1 : 0;
-    const finalStatus = isAppr === 1 ? 'Approved' : (String(s.status || '').toUpperCase() === 'REJECTED' ? 'Rejected' : 'Pending');
+    const approved = isStatusApproved(s.is_approved) || isStatusApproved(s.status);
+    const rejected = isStatusRejected(s.is_approved) || isStatusRejected(s.status);
+    const finalStatus = approved ? 'APPROVED' : (rejected ? 'REJECTED' : 'PENDING');
+    const finalIsApproved = approved ? 1 : 0;
+    const supCode = s.supplier_code || `SUP-2026-${String(s.supplier_id).padStart(4, '0')}`;
+
+    if (approved && (Number(s.is_approved) !== 1 || String(s.status || '').toUpperCase() !== 'ACTIVE')) {
+      pool.query('UPDATE suppliers SET is_approved = 1 WHERE supplier_id = ?', [s.supplier_id]).catch(() => {});
+      pool.query('UPDATE users SET status = "ACTIVE" WHERE user_id = ?', [s.supplier_id]).catch(() => {});
+    }
 
     return res.json({
       success: true,
+      status: finalStatus,
+      is_approved: finalIsApproved,
+      id: s.supplier_id,
+      user_id: s.supplier_id,
       supplier_id: s.supplier_id,
-      supplier_code: s.supplier_code || `SUP-2026-${String(s.supplier_id).padStart(4, '0')}`,
+      supplier_code: supCode,
       supplier_name: s.supplier_name || s.name,
       farm_name: s.supplier_name || s.name,
       city: s.city || '',
-      monthly_capacity: s.monthly_capacity || 0,
-      is_approved: isAppr,
-      status: finalStatus
+      address: s.address || '',
+      monthly_capacity: s.monthly_capacity || 0
     });
   } catch (error) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, message: 'Server error retrieving status', error: error.message });
   }
 });
 
@@ -3141,7 +3854,7 @@ const getSupplierDashboardData = async (rawSupplierId) => {
   // 2. Real Active Orders count scoped to this supplier
   const [activeOrdRows] = await pool.query(
     `SELECT COUNT(*) AS c FROM orders o
-     WHERE UPPER(COALESCE(o.status, '')) IN ('ACCEPTED', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'SHIPPED')
+     WHERE UPPER(COALESCE(o.status, '')) IN ('ACCEPTED', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'SHIPPED', 'IN_PROGRESS', 'IN PROGRESS')
        AND UPPER(COALESCE(o.fulfilment_status, '')) NOT IN ('DELIVERED', 'CANCELLED')
        AND ${ordFilter.clause}`,
     ordFilter.params
@@ -3153,7 +3866,19 @@ const getSupplierDashboardData = async (rawSupplierId) => {
     `SELECT COUNT(DISTINCT f.flower_id) AS c FROM flowers f WHERE ${flFilter.clause}`,
     flFilter.params
   );
-  const suppliedVarieties = Number(varietyRows[0]?.c || 0);
+  let suppliedVarieties = Number(varietyRows[0]?.c || 0);
+  try {
+    const [declRows] = await pool.query(
+      `SELECT COUNT(DISTINCT COALESCE(NULLIF(TRIM(flower_name), ''), CAST(flower_id AS CHAR))) AS c
+       FROM supplier_flowers
+       WHERE (supplier_id = ? OR supplier_user_id = ?)`,
+      [resolvedSupplierId, resolvedSupplierId]
+    );
+    const declCount = Number(declRows[0]?.c || 0);
+    if (declCount > suppliedVarieties) {
+      suppliedVarieties = declCount;
+    }
+  } catch (_) {}
 
   // 4. Real Total Payouts scoped to this supplier: DELIVERED orders + completed batch settlements
   const [deliveredEarnRows] = await pool.query(`
@@ -3175,12 +3900,18 @@ const getSupplierDashboardData = async (rawSupplierId) => {
   `, ordFilter.params);
   const deliveredOrdersTotal = parseFloat(deliveredEarnRows[0]?.delivered_total || 0);
 
-  const [batchEarnRows] = await pool.query(
-    `SELECT COALESCE(SUM(amount), 0) AS batch_total FROM supplier_payments WHERE UPPER(COALESCE(status, '')) = 'COMPLETED' AND supplier_id = ?`,
-    [resolvedSupplierId]
-  );
-  const batchSettlementTotal = parseFloat(batchEarnRows[0]?.batch_total || 0);
-  const totalPayouts = deliveredOrdersTotal + batchSettlementTotal;
+  let batchSettlementTotal = 0;
+  try {
+    const [batchEarnRows] = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) AS batch_total FROM supplier_payments WHERE UPPER(COALESCE(status, '')) = 'COMPLETED' AND (supplier_id = ? OR supplier_id IN (SELECT supplier_id FROM suppliers WHERE user_id = ?))`,
+      [resolvedSupplierId, resolvedSupplierId]
+    );
+    batchSettlementTotal = parseFloat(batchEarnRows[0]?.batch_total || 0);
+  } catch (_) {}
+  const totalPayouts = Math.max(0, deliveredOrdersTotal + batchSettlementTotal);
+  const formattedPayouts = totalPayouts > 0
+    ? 'Rs. ' + Math.round(totalPayouts).toLocaleString('en-US')
+    : 'Rs. 0';
 
   // 5. Latest live supplier notification summary, recent alerts (top 2), & exact count from MySQL feed
   let latestNotification = `${newRequestsCount} pending request(s) and ${activeOrdersCount} active order(s) in queue.`;
@@ -3212,7 +3943,7 @@ const getSupplierDashboardData = async (rawSupplierId) => {
     active_orders_count: activeOrdersCount,
     supplied_varieties_count: suppliedVarieties,
     total_payouts: totalPayouts,
-    total_payouts_formatted: 'Rs. ' + Math.round(totalPayouts).toLocaleString('en-US'),
+    total_payouts_formatted: formattedPayouts,
     monthly_capacity: Number(supplier.monthly_capacity || 0),
     latest_notification: latestNotification,
     recent_alerts: recentAlerts,
@@ -3527,3 +4258,4 @@ app.listen(PORT, '0.0.0.0', () => {
   }
   console.log(`===================================================`);
 });
+

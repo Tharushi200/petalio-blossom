@@ -27,12 +27,15 @@ public class OrderDetailResponse {
         public PaymentData payment;
         public DeliveryData delivery;
         public SupplierData supplier;
+        public String payment_method;
+        public String payment_reference;
     }
 
     public static class PaymentData {
         public int payment_id;
         public double amount_paid;
         public String payment_method;
+        public String payment_reference;
         public String payment_date;
         public String status;
     }
@@ -55,6 +58,8 @@ public class OrderDetailResponse {
         public String destination_address;
         public String delivery_date;
         public String status;
+        public String officer_name;
+        public String officer_phone;
     }
 
     public static class DetailItem {
@@ -64,6 +69,7 @@ public class OrderDetailResponse {
         public double price;
         public String name;
         public String category;
+        public String image_url;
     }
 
     public static class InvoiceData {
@@ -73,4 +79,3 @@ public class OrderDetailResponse {
         public String status;
     }
 }
-

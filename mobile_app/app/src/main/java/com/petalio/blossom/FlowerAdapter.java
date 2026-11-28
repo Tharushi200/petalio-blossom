@@ -134,6 +134,10 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
     }
 
     public void applyFilter(String query, String category, String availability, int minPrice, int maxPrice, String subTab) {
+        applyFilter(query, category, availability, minPrice, maxPrice, subTab, "All Prices");
+    }
+
+    public void applyFilter(String query, String category, String availability, int minPrice, int maxPrice, String subTab, String priceOption) {
         displayedList.clear();
         lastAnimatedPosition = -1;
         String q = (query != null) ? query.trim().toLowerCase(Locale.US) : "";
@@ -162,11 +166,32 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
                 continue;
             }
 
-            // 5. Availability filter
+            // 5. Availability filter (Pre-order removed)
             if (availability != null && !availability.equalsIgnoreCase("All")) {
                 if ("In stock".equalsIgnoreCase(availability) && item.available <= 0) {
                     continue;
-                } else if ("Pre-order".equalsIgnoreCase(availability) && item.available > 0) {
+                }
+            }
+
+            // 6. Price Dropdown Filter (Under Rs. 2,500, Rs. 2,500 – Rs. 5,000, Above Rs. 5,000)
+            if (priceOption != null) {
+                if ("Under Rs. 2,500".equalsIgnoreCase(priceOption) && item.price >= 2500) {
+                    continue;
+                } else if (("Rs. 2,500 – Rs. 5,000".equalsIgnoreCase(priceOption) || "Rs. 2,500 - Rs. 5,000".equalsIgnoreCase(priceOption))
+                        && (item.price < 2500 || item.price > 5000)) {
+                    continue;
+                } else if ("Above Rs. 5,000".equalsIgnoreCase(priceOption) && item.price <= 5000) {
+                    continue;
+                }
+            }
+
+            // 7. Sub-Tab filter:
+            if ("RATED".equalsIgnoreCase(subTab)) {
+                if (effectiveRating(item) < 4.0 && item.reviewCount <= 0) {
+                    continue;
+                }
+            } else if ("BEST_SELLING".equalsIgnoreCase(subTab)) {
+                if (hasAnySalesInMaster() && item.soldCount <= 0) {
                     continue;
                 }
             }
@@ -174,8 +199,39 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
             displayedList.add(item);
         }
 
-        // Sub-Tab filtering & sorting (All keeps default MySQL catalog order from masterList)
-        applySubTabFilterAndSort(subTab);
+        // Sorting: Price sorting takes priority if explicit; otherwise subTab sorting
+        if (priceOption != null && "Price: Low to High".equalsIgnoreCase(priceOption)) {
+            Collections.sort(displayedList, (a, b) -> Integer.compare(a.price, b.price));
+        } else if (priceOption != null && "Price: High to Low".equalsIgnoreCase(priceOption)) {
+            Collections.sort(displayedList, (a, b) -> Integer.compare(b.price, a.price));
+        } else if ("RATED".equalsIgnoreCase(subTab)) {
+            Collections.sort(displayedList, (a, b) -> {
+                int ratingCmp = Double.compare(effectiveRating(b), effectiveRating(a));
+                if (ratingCmp != 0) return ratingCmp;
+                int reviewCmp = Integer.compare(b.reviewCount, a.reviewCount);
+                if (reviewCmp != 0) return reviewCmp;
+                int soldCmp = Integer.compare(b.soldCount, a.soldCount);
+                if (soldCmp != 0) return soldCmp;
+                return Integer.compare(a.id, b.id);
+            });
+        } else if ("BEST_SELLING".equalsIgnoreCase(subTab)) {
+            Collections.sort(displayedList, (a, b) -> {
+                int soldCmp = Integer.compare(b.soldCount, a.soldCount);
+                if (soldCmp != 0) return soldCmp;
+                int ratingCmp = Double.compare(effectiveRating(b), effectiveRating(a));
+                if (ratingCmp != 0) return ratingCmp;
+                return Integer.compare(a.id, b.id);
+            });
+        } else if ("NEW_IN".equalsIgnoreCase(subTab)) {
+            Collections.sort(displayedList, (a, b) -> {
+                String ca = a.createdAt != null ? a.createdAt.trim() : "";
+                String cb = b.createdAt != null ? b.createdAt.trim() : "";
+                if (!ca.isEmpty() && !cb.isEmpty()) {
+                    return cb.compareTo(ca);
+                }
+                return Integer.compare(b.id, a.id);
+            });
+        }
 
         notifyDataSetChanged();
         if (countListener != null) {
@@ -261,26 +317,27 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
         // Live MySQL review rating or New badge (never show unreviewed defaults as 5-star)
         if (holder.tvFlowerRating != null) {
             if (flower.reviewCount > 0 && flower.avgRating > 0) {
-                holder.tvFlowerRating.setText("★ " + String.format(Locale.US, "%.1f", flower.avgRating) + " (" + flower.reviewCount + ")");
+                holder.tvFlowerRating.setText(String.format(Locale.US, "%.1f", flower.avgRating) + " (" + flower.reviewCount + ")");
                 holder.tvFlowerRating.setTextColor(ContextCompat.getColor(context, R.color.gold_loyalty));
             } else {
-                holder.tvFlowerRating.setText("★ New");
+                holder.tvFlowerRating.setText("New");
                 holder.tvFlowerRating.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
             }
         }
 
-        // Sold count / Fresh Harvest / Out of Stock social-proof
+        // Out of Stock badge & clean stock text: "Out of Stock" or "X left"
+        if (holder.tvOutOfStockBadge != null) {
+            holder.tvOutOfStockBadge.setText("Out of Stock");
+            holder.tvOutOfStockBadge.setVisibility(flower.available <= 0 ? View.VISIBLE : View.GONE);
+        }
+
         if (holder.tvFlowerAvailable != null) {
             if (flower.available <= 0) {
                 holder.tvFlowerAvailable.setText("• Out of Stock");
                 holder.tvFlowerAvailable.setTextColor(ContextCompat.getColor(context, R.color.badge_dispatched_text));
             } else {
                 holder.tvFlowerAvailable.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
-                if (flower.soldCount > 0) {
-                    holder.tvFlowerAvailable.setText("• " + flower.soldCount + " sold");
-                } else {
-                    holder.tvFlowerAvailable.setText("• Fresh Harvest");
-                }
+                holder.tvFlowerAvailable.setText("• " + flower.available + " left • Fresh Harvest");
             }
         }
 
@@ -289,6 +346,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
 
         // Cached, downsampled botanical flower photo with top focal crop for roses
         holder.ivFlowerImage.clearColorFilter();
+        holder.ivFlowerImage.setAlpha(flower.available <= 0 ? 0.65f : 1.0f);
         boolean isRose = flower.name != null
                 && flower.name.toLowerCase(Locale.US).contains("rose")
                 && !flower.name.toLowerCase(Locale.US).contains("tuberose");
@@ -345,11 +403,11 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
             }
         });
 
-        // Quick-Add Shopping Cart Action (🛒+) with live stock guard
+        // Quick-Add Shopping Cart Action (Quick Add) with live stock guard
         if (holder.btnAddToCart != null) {
             if (flower.available <= 0) {
                 holder.btnAddToCart.setEnabled(false);
-                holder.btnAddToCart.setAlpha(0.45f);
+                holder.btnAddToCart.setAlpha(0.5f);
                 holder.btnAddToCart.setOnClickListener(null);
             } else {
                 holder.btnAddToCart.setEnabled(true);
@@ -358,10 +416,14 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
                 holder.btnAddToCart.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (flower.available <= 0) {
+                            Toast.makeText(context, flower.name + " is currently out of stock.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         CartManager cartManager = CartManager.getInstance(context);
                         int existing = cartManager.getQuantityForFlower(flower.id);
                         if (existing + 1 > flower.available) {
-                            Toast.makeText(context, "Only " + flower.available + " stems available for " + flower.name, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Stock limit reached", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         cartManager.addItem(new CartManager.CartItem(
@@ -414,7 +476,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
     static class FlowerViewHolder extends RecyclerView.ViewHolder {
         CardView cardFlowerRoot;
         ImageView ivFlowerImage, btnFlowerFav;
-        TextView tvFlowerName, tvFlowerRating, tvFlowerAvailable, tvFlowerPrice, btnAddToCart;
+        TextView tvFlowerName, tvFlowerRating, tvFlowerAvailable, tvFlowerPrice, btnAddToCart, tvOutOfStockBadge;
 
         FlowerViewHolder(View itemView) {
             super(itemView);
@@ -426,6 +488,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.FlowerView
             tvFlowerAvailable = itemView.findViewById(R.id.tvFlowerAvailable);
             tvFlowerPrice = itemView.findViewById(R.id.tvFlowerPrice);
             btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
+            tvOutOfStockBadge = itemView.findViewById(R.id.tvOutOfStockBadge);
         }
     }
 }
