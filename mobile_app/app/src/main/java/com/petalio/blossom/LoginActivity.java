@@ -42,7 +42,10 @@ public class LoginActivity extends AppCompatActivity {
     private ImageView ivLogo;
     private TextView tvTagline;
     private CardView cardLoginForm;
-    private TextView btnRoleCustomer, btnRoleSupplier, tvRoleHint;
+    private View btnRoleCustomer, btnRoleSupplier;
+    private ImageView ivRoleCustomer, ivRoleSupplier;
+    private TextView tvRoleCustomer, tvRoleSupplier;
+    private TextView tvRoleHint;
     private TextInputLayout tilEmail, tilPassword;
     private TextInputEditText etEmail, etPassword;
     private Button btnLogin;
@@ -73,6 +76,10 @@ public class LoginActivity extends AppCompatActivity {
         cardLoginForm = findViewById(R.id.cardLoginForm);
         btnRoleCustomer = findViewById(R.id.btnRoleCustomer);
         btnRoleSupplier = findViewById(R.id.btnRoleSupplier);
+        ivRoleCustomer = findViewById(R.id.ivRoleCustomer);
+        tvRoleCustomer = findViewById(R.id.tvRoleCustomer);
+        ivRoleSupplier = findViewById(R.id.ivRoleSupplier);
+        tvRoleSupplier = findViewById(R.id.tvRoleSupplier);
         tvRoleHint = findViewById(R.id.tvRoleHint);
         tilEmail = findViewById(R.id.tilEmail);
         tilPassword = findViewById(R.id.tilPassword);
@@ -131,15 +138,17 @@ public class LoginActivity extends AppCompatActivity {
         selectedRole = role;
         if ("CUSTOMER".equals(role)) {
             btnRoleCustomer.setBackgroundResource(R.drawable.bg_role_active);
-            btnRoleCustomer.setTextColor(ContextCompat.getColor(this, R.color.text_white));
-            androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(btnRoleCustomer, android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_white)));
+            if (tvRoleCustomer != null) tvRoleCustomer.setTextColor(ContextCompat.getColor(this, R.color.text_white));
+            if (ivRoleCustomer != null) ivRoleCustomer.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_white)));
 
             btnRoleSupplier.setBackground(null);
-            btnRoleSupplier.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
-            androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(btnRoleSupplier, android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_primary)));
+            if (tvRoleSupplier != null) tvRoleSupplier.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+            if (ivRoleSupplier != null) ivRoleSupplier.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_primary)));
 
-            tvRoleHint.setText("Order fresh flowers & track deliveries in real-time");
-            tvRoleHint.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            if (tvRoleHint != null) {
+                tvRoleHint.setText("Order fresh flowers & track deliveries in real-time");
+                tvRoleHint.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            }
             if (tilEmail != null) {
                 tilEmail.setHint("Customer Email");
             }
@@ -148,15 +157,17 @@ public class LoginActivity extends AppCompatActivity {
             }
         } else {
             btnRoleSupplier.setBackgroundResource(R.drawable.bg_role_active);
-            btnRoleSupplier.setTextColor(ContextCompat.getColor(this, R.color.text_white));
-            androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(btnRoleSupplier, android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_white)));
+            if (tvRoleSupplier != null) tvRoleSupplier.setTextColor(ContextCompat.getColor(this, R.color.text_white));
+            if (ivRoleSupplier != null) ivRoleSupplier.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_white)));
 
             btnRoleCustomer.setBackground(null);
-            btnRoleCustomer.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
-            androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(btnRoleCustomer, android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_primary)));
+            if (tvRoleCustomer != null) tvRoleCustomer.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+            if (ivRoleCustomer != null) ivRoleCustomer.setImageTintList(android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_primary)));
 
-            tvRoleHint.setText("Manage stock, confirm orders & view payout records");
-            tvRoleHint.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            if (tvRoleHint != null) {
+                tvRoleHint.setText("Manage stock, confirm orders & view payout records");
+                tvRoleHint.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            }
             if (tilEmail != null) {
                 tilEmail.setHint("Supplier Email");
             }
