@@ -2274,10 +2274,11 @@ app.post(['/api/suppliers/flowers', '/api/flowers'], async (req, res) => {
 });
 
 // Update flower details & stock (Supplier Portal & Admin)
-app.put(['/api/flowers/:id', '/api/suppliers/flowers/:id'], async (req, res) => {
+app.put(['/api/flowers/:id', '/api/suppliers/flowers/:id'], async (req, res, next) => {
+  if (req.params.id === 'bulk-stock') return next();
   const flowerId = parseInt(req.params.id, 10);
   if (isNaN(flowerId) || flowerId <= 0) {
-    return res.status(400).json({ success: false, message: 'Invalid flower ID' });
+    return next();
   }
 
   const { name, category, unit_price, price, stock, stock_quantity, color, description, image_url } = req.body;

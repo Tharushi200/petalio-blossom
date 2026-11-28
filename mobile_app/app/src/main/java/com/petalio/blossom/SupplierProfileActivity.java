@@ -104,7 +104,8 @@ public class SupplierProfileActivity extends AppCompatActivity {
                     .setTitle("Logout")
                     .setMessage("Are you sure you want to log out from your Supplier Portal?")
                     .setPositiveButton("Logout", (dialog, which) -> {
-                        getSharedPreferences("PetalioUserPrefs", MODE_PRIVATE).edit().clear().apply();
+                        SessionManager.getInstance().logout(this);
+                        getSharedPreferences("PetalioSupplierPrefs", MODE_PRIVATE).edit().clear().apply();
                         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(SupplierProfileActivity.this, LoginActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
