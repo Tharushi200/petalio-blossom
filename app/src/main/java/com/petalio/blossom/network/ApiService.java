@@ -54,6 +54,9 @@ public interface ApiService {
     @PUT("users/{userId}/profile")
     Call<UserProfileResponse> updateUserProfile(@Path("userId") int userId, @Body UpdateProfileRequest request);
 
+    @PUT("users/profile")
+    Call<UserProfileResponse> updateUserProfileDirect(@Body UpdateProfileRequest request);
+
     @GET("notifications/{userId}")
     Call<NotificationsResponse> getNotifications(@Path("userId") int userId);
 
@@ -62,6 +65,9 @@ public interface ApiService {
 
     @POST("reminders")
     Call<CommonResponse> saveReminder(@Body ReminderDto request);
+
+    @DELETE("reminders/{id}")
+    Call<CommonResponse> deleteReminder(@Path("id") int reminderId);
 
     // 2. Flowers Catalog & Live Inventory
     @GET("flowers")

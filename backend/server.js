@@ -1483,9 +1483,16 @@ app.post(['/api/customers/:customerId/redeem-points', '/api/users/:customerId/re
 });
 
 // Update User Profile
-app.put(['/api/users/:userId/profile', '/api/users/:userId', '/api/customers/:userId/profile', '/api/customers/:userId'], async (req, res) => {
-  const userId = parseInt(req.params.userId, 10);
-  const { name, phone, address, city } = req.body;
+app.put([
+  '/api/users/profile',
+  '/api/customers/profile',
+  '/api/users/:userId/profile',
+  '/api/users/:userId',
+  '/api/customers/:userId/profile',
+  '/api/customers/:userId'
+], async (req, res) => {
+  const userId = parseInt(req.params.userId || req.body?.user_id || req.body?.userId || req.body?.customer_id || req.query.user_id, 10);
+  const { name, phone, address, city } = req.body || {};
 
   if (isNaN(userId)) {
     return res.status(400).json({ success: false, message: 'Invalid user ID' });
@@ -1556,8 +1563,9 @@ app.put(['/api/users/:userId/profile', '/api/users/:userId', '/api/customers/:us
 });
 
 // Floral Reminders: Get Reminders for User
-app.get('/api/reminders/:userId', async (req, res) => {
-  const userId = parseInt(req.params.userId, 10);
+app.get(['/api/reminders', '/api/reminders/:userId'], async (req, res) => {
+  const rawId = req.params.userId || req.query.user_id || req.query.userId || req.query.customer_id;
+  const userId = parseInt(rawId, 10);
   if (isNaN(userId)) {
     return res.status(400).json({ success: false, message: 'Invalid user ID' });
   }
@@ -1579,20 +1587,20 @@ app.get('/api/reminders/:userId', async (req, res) => {
 
 // Floral Reminders: Add/Save New Reminder
 app.post('/api/reminders', async (req, res) => {
-  const { user_id, occasion_title, occasion_date, bouquet_preset } = req.body;
-  const userId = parseInt(user_id, 10);
+  const { user_id, userId, customer_id, occasion_title, occasion_date, bouquet_preset } = req.body || {};
+  const resolvedUserId = parseInt(user_id || userId || customer_id, 10);
   const title = (occasion_title || '').trim();
   const date = (occasion_date || '').trim();
   const preset = (bouquet_preset || '').trim();
 
-  if (isNaN(userId) || !title) {
+  if (isNaN(resolvedUserId) || !title) {
     return res.status(400).json({ success: false, message: 'User ID and occasion title are required' });
   }
 
   try {
     const [result] = await pool.query(
       'INSERT INTO floral_reminders (user_id, occasion_title, occasion_date, bouquet_preset) VALUES (?, ?, ?, ?)',
-      [userId, title, date, preset]
+      [resolvedUserId, title, date, preset]
     );
 
     return res.json({
@@ -1603,6 +1611,22 @@ app.post('/api/reminders', async (req, res) => {
   } catch (error) {
     console.error('Save Reminder Error:', error);
     return res.status(500).json({ success: false, message: 'Failed to save reminder', error: error.message });
+  }
+});
+
+// Floral Reminders: Delete Reminder
+app.delete(['/api/reminders/:id', '/api/reminders'], async (req, res) => {
+  const reminderId = parseInt(req.params.id || req.query.reminder_id || req.query.id || req.body?.reminder_id, 10);
+  if (isNaN(reminderId) || reminderId <= 0) {
+    return res.status(400).json({ success: false, message: 'Valid reminder_id is required' });
+  }
+
+  try {
+    await pool.query('DELETE FROM floral_reminders WHERE reminder_id = ?', [reminderId]);
+    return res.json({ success: true, message: 'Reminder deleted successfully' });
+  } catch (error) {
+    console.error('Delete Reminder Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to delete reminder', error: error.message });
   }
 });
 
